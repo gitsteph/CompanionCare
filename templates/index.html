@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}MedAlert (for non-human companions){% endblock %}
+
+{% block content1 %}Companions & Reminders{% endblock %}
+{% block content2 %} 
+
+    {% if companion_obj_list %}
+        {% for companion_obj in companion_obj_list %}
+        <ul>
+            <li>Name: {{ companion_obj.name }}</li>
+            <li>User: {{ companion_obj.user_id }}</li>
+        </ul>
+        {% endfor %}
+    {% endif %}
+    
+    <a href="/new_companion">Add companion</a>
+
+
+{% endblock %}

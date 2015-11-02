@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}MedAlert (for non-human companions){% endblock %}
+
+{% block content1 %}{{ Heading }} companion{% endblock %}
+
+    {% if companion_obj is not defined %}
+        {% set add_or_update = "Add" %}
+        {% set Heading = "Add" %}
+    {% else %}
+        {% set add_or_update = "Update" %}
+        {% set old_name = companion_obj.name %}
+        {% set old_nickname = companion_obj.nickname %}
+        {% set old_species = companion_obj.species %}
+        {% set old_breed = companion_obj.breed %}
+        {% set old_gender = companion_obj.gender %}
+        {% set old_age = companion_obj.age %}
+        {% set Heading = "Update" %}
+    {% endif %}
+
+{% block content2 %}
+    <form action="{{ action_path }}" method="POST">
+
+        <div>
+            <label>
+                Name
+                <input type="text" name="name" placeholder="{{ old_name }}">
+            </label>
+        </div>
+
+
+        <div>
+            <label>
+                Primary nickname (if any)
+                <input type="text" name="primary_nickname" placeholder="{{ old_nickname }}">
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Species
+                <input type="text" name="species" placeholder="{{ old_species }}">
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Breed
+                <input type="text" name="breed" placeholder="{{ old_breed }}">
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Gender
+                <input type="text" name="gender" placeholder="{{ old_gender }}">
+            </label>
+        </div>
+
+        <div>
+            <label>
+                Age
+                <input type="text" name="age" placeholder="{{ old_age }}">
+            </label>
+        </div>
+<!-- ADD NETWORK ID HERE -->
+        <div>
+            <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
+        </div>
+
+        <div>
+            <a href="/medications">{{ add_or_update }} Medications</a>
+        </div>
+
+        <div>
+            <a href="/photos">{{ add_or_update }} Photos</a>
+        </div>
+
+        <div>
+            <input type="submit" value="{{ add_or_update }}">
+        </div>
+
+    </form>
+{% endblock %}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}MedAlert (for non-human companions){% endblock %}</title>
+<!--         <link rel="stylesheet" href="/static/css/styles.css">
+ -->    </head>
+    <body>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        
+        <h1>{% block content1 %}MedAlert (for non-human companions){% endblock %}</h1>
+        {% block content2 %} SAMPLE TEXT HERE{% endblock %}
+        
+        {% block loginlogout %}
+            {% if nologin == True %}
+                <p></p>
+            {% elif "user_id" in session %}
+                <form action="/logout">
+                    <input type="submit" value="Logout">
+                </form>
+            {% else %}
+                <form action="/" method="GET">
+                    <input type="submit" value="Login">
+                </form>
+            {% endif %}
+
+        {% endblock %}
+        <br><br>
+        <footer></footer>
+    </body>
+</html>

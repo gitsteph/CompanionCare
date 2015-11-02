@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}MedAlert (for non-human companions){% endblock %}
+
+
+{% block content1 %}Home Page{% endblock %}
+{% block content2 %}
+
+    <form action="/login", method='POST'>
+        </div>
+            <label>Email:
+                <input type="email" name="email">
+            </label>
+        </div>
+
+        </div>
+            <label>Password:
+                <input type="password" name="password">
+            </label>
+        </div>
+            <input type="submit" value="login">
+        </form>
+        <div>
+            <form action="/register">
+                <input type="submit" value="register">
+            </form>
+        </div>
+{% endblock %}
+
+{% set nologin = True %}  <!--Overrides login/logout buttons-->

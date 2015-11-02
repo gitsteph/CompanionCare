@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}MedAlert (for non-human companions){% endblock %}
+
+{% block content1 %}User Profile{% endblock %}
+{% block content2 %} 
+
+    <ul>
+        <li>Username (email): {{ user_obj.email }}</li>
+        <li>Name: {{ user_obj.first_name }} {{ user_obj.last_name }}</li>
+        <li>Password: {{ user_obj.password }}  <!-- REMOVE LATER --></li>
+        <li>Network: <!--INSERT IN--></li>
+        <li>Zipcode: {{ user_obj.zipcode}}</li>
+    </ul>
+
+{% endblock %}
