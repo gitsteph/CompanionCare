@@ -47,7 +47,13 @@ def register_user():
             flash('logged into account, already have account')
             return redirect("/")
         else:
-            return render_template("registration_form.html")
+            user_attributes_dict = {"logged_in": False,
+                                    "Email": ("email", "email"),
+                                    "Password": ("password", "password"),
+                                    "First Name": ("first_name", "text"),
+                                    "Last Name": ("last_name", "text"),
+                                    "Zipcode": ("zipcode", "text")}
+            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
     elif request.method == 'POST':
         """Processes new user registration."""
@@ -124,8 +130,14 @@ def edit_user_profile():
     else:
         if request.method == 'GET':
             """Enables user to update their profile information."""
-
-            return render_template("registration_form.html", user_obj=user_obj)
+            # NEED TO FIX: Dictionaries are unordered-- need to create a way to index and sort.
+            user_attributes_dict = {"logged_in": True,
+                                    "Email": ("email", "email", user_obj.email),
+                                    "Password": ("password", "password", user_obj.password),
+                                    "First Name": ("first_name", "text", user_obj.first_name),
+                                    "Last Name": ("last_name", "text", user_obj.last_name),
+                                    "Zipcode": ("zipcode", "text", user_obj.zipcode)}
+            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
         elif request.method == 'POST':
             """Processes updated information."""
@@ -201,9 +213,13 @@ def show_veterinarians():
 @app.route('/medications', methods=['GET','POST'])
 def show_medications():
     if request.method == 'GET':
-        medication_attributes = ["id", "med_name", "current", "notes", "frequency", "prescribing_veterinarian"]
+        medication_attributes_dict = {"name": "Medication Name",
+                                      "current": "Current",
+                                      "frequency": "Frequency",
+                                      "prescribing_vet": "Prescribing Veterinarian"}
+
         # Other attributes will be provided from scraped medication data.
-        return render_template("medications.html", medication_attributes=medication_attributes)
+        return render_template("medications.html", medication_attributes_dict=medication_attributes_dict)
 #     else:
 
 

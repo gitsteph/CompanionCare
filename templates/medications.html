@@ -6,13 +6,13 @@
 
 <!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
 -->
-    {% macro input(name, value='', type='text', size=20) -%}
-         {{ name }} <input type="{{ type }}" name="{{ name }}" value="{{
+    {% macro input(name, variable, value='', type='text', size=20) -%}
+         {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
             value|e }}" size="{{ size }}">
     {%- endmacro %}
 
-    {% for attribute in medication_attributes %}
-        {{ input(attribute) }}</p>
+    {% for variable, name in medication_attributes_dict.items() %}
+        {{ input(name, variable) }}</p>
     {% endfor %}
 
     <a href="/alerts">Add alert</a>
