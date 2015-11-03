@@ -4,6 +4,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
 from model import connect_to_db, db, User, Companion
 from sqlalchemy import update, delete
+from collections import OrderedDict
+
 
 import datetime
 
@@ -47,12 +49,12 @@ def register_user():
             flash('logged into account, already have account')
             return redirect("/")
         else:
-            user_attributes_dict = {"logged_in": False,
-                                    "Email": ("email", "email"),
-                                    "Password": ("password", "password"),
-                                    "First Name": ("first_name", "text"),
-                                    "Last Name": ("last_name", "text"),
-                                    "Zipcode": ("zipcode", "text")}
+            user_attributes_dict = OrderedDict([("logged_in", False),
+                                    ("Email", ("email", "email")),
+                                    ("Password", ("password", "password")),
+                                    ("First Name", ("first_name", "text")),
+                                    ("Last Name", ("last_name", "text")),
+                                    ("Zipcode", ("zipcode", "text"))])
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
     elif request.method == 'POST':
@@ -131,12 +133,14 @@ def edit_user_profile():
         if request.method == 'GET':
             """Enables user to update their profile information."""
             # NEED TO FIX: Dictionaries are unordered-- need to create a way to index and sort.
-            user_attributes_dict = {"logged_in": True,
-                                    "Email": ("email", "email", user_obj.email),
-                                    "Password": ("password", "password", user_obj.password),
-                                    "First Name": ("first_name", "text", user_obj.first_name),
-                                    "Last Name": ("last_name", "text", user_obj.last_name),
-                                    "Zipcode": ("zipcode", "text", user_obj.zipcode)}
+            user_attributes_dict = OrderedDict([("logged_in", True),
+                                    ("Email", ("email", "email", user_obj.email)),
+                                    ("Password", ("password", "password", user_obj.password)),
+                                    ("First Name", ("first_name", "text", user_obj.first_name)),
+                                    ("Last Name", ("last_name", "text", user_obj.last_name)),
+                                    ("Zipcode", ("zipcode", "text", user_obj.zipcode))])
+
+            print user_attributes_dict
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
         elif request.method == 'POST':

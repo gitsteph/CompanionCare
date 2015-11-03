@@ -16,7 +16,7 @@
 {% block content1 %}{{ heading }}{% endblock %}
 {% block content2 %}
 
-    <div>{{ text }}<br><br></div>
+    {{ text }}
 
     {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
          {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
