@@ -46,6 +46,119 @@ class Companion(db.Model):
 
     user = db.relationship('User')
 
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<Companion ID=%s Name=%s Species=%s>" % (self.id, self.name, self.species)
+
+
+class PetVet(db.Model):
+    """Facilitating the many-to-many relationship between companions and veterinarians."""
+
+    __tablename__ = "petvets"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey('companions.id'), nullable=False)
+    vet_id = db.Column(db.Integer, db.ForeignKey('veterinarians.id'), nullable=False)
+    first_visit = db.Column(db.DateTime, nullable=True)
+
+    veterinarian = db.relationship('Veterinarian')
+    companion = db.relationship('Companion')
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<PetVet ID=%s Pet ID=%s Vet ID=%s>" % (self.id, self.pet_id, self.vet_id)
+
+
+class Veterinarian(db.Model):
+    """Veterinary specialists."""
+
+    __tablename__ = "veterinarians"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
+    office_name = db.Column(db.String(20), nullable=True)
+    phone_number = db.Column(db.String(20), nullable=True)
+    email = db.Column(db.String(20), nullable=True)
+    address = db.Column(db.String(20), nullable=True)
+    specialties = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<Vet ID=%s Name=%s Office=%s>" % (self.id, self.name, self.office_name)
+
+
+class PetMedication(db.Model):
+    """Facilitating the many-to-many relationship between pets and medications."""
+
+    __tablename__ = "petmedications"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
+    current = db.Column(db.String(10), nullable=False)
+    notes = db.Column(db.String, nullable=True)
+    petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
+    frequency = db.Column(db.Integer)
+    frequency_unit = db.Column(db.String)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+    petvet = db.relationship('PetVet')
+    medication = db.relationship('Medication')
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<ID=%s Medication ID=%s Current? %s>" % (self.id, self.medication_id, self.current)
+
+
+class Medication(db.Model):
+    """Pet medications."""
+
+    __tablename__ = "medications"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.String, nullable=True)
+    link = db.Column(db.String(20), nullable=True)  # link type?
+    species = db.Column(db.String(20), nullable=True)  # may want to separate out to be searchable later.
+    # photo = db.Column(db.String(20), nullable=True)  # photo type?
+    uses = db.Column(db.String, nullable=True)  # may want to separate out to be searchable later.
+    side_effects = db.Column(db.String, nullable=True)
+    contraindications = db.Column(db.String, nullable=True)
+    instructions = db.Column(db.String, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<ID=%s Name=%s Description=%s>" % (self.id, self.name, self.description)
+
+
+class Alert(db.Model):
+    """Alerts!"""
+
+    __tablename__ = "alerts"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'))
+    alert_datetime = db.Column(db.DateTime, nullable=False)
+    current = db.Column(db.String(20))
+    action_taken = db.Column(db.String(20))
+    response_timestamp = db.Column(db.DateTime)
+
+    petmedication = db.relationship('PetMedication')
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<ID=%s PetMed ID=%s Alert DateTime=%s>" % (self.id, self.petmed_id, self.alert_datetime)
+
 
 ##############################################################################
 # Helper functions

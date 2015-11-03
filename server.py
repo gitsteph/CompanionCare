@@ -50,11 +50,11 @@ def register_user():
             return redirect("/")
         else:
             user_attributes_dict = OrderedDict([("logged_in", False),
-                                    ("Email", ("email", "email")),
-                                    ("Password", ("password", "password")),
-                                    ("First Name", ("first_name", "text")),
-                                    ("Last Name", ("last_name", "text")),
-                                    ("Zipcode", ("zipcode", "text"))])
+                                                ("Email", ("email", "email")),
+                                                ("Password", ("password", "password")),
+                                                ("First Name", ("first_name", "text")),
+                                                ("Last Name", ("last_name", "text")),
+                                                ("Zipcode", ("zipcode", "text"))])
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
     elif request.method == 'POST':
@@ -134,11 +134,11 @@ def edit_user_profile():
             """Enables user to update their profile information."""
             # NEED TO FIX: Dictionaries are unordered-- need to create a way to index and sort.
             user_attributes_dict = OrderedDict([("logged_in", True),
-                                    ("Email", ("email", "email", user_obj.email)),
-                                    ("Password", ("password", "password", user_obj.password)),
-                                    ("First Name", ("first_name", "text", user_obj.first_name)),
-                                    ("Last Name", ("last_name", "text", user_obj.last_name)),
-                                    ("Zipcode", ("zipcode", "text", user_obj.zipcode))])
+                                                ("Email", ("email", "email", user_obj.email)),
+                                                ("Password", ("password", "password", user_obj.password)),
+                                                ("First Name", ("first_name", "text", user_obj.first_name)),
+                                                ("Last Name", ("last_name", "text", user_obj.last_name)),
+                                                ("Zipcode", ("zipcode", "text", user_obj.zipcode))])
 
             print user_attributes_dict
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
@@ -181,14 +181,21 @@ def add_companion():
     else:
         if request.method == 'GET':
             """Shows form to add a companion."""
-            return render_template("pet_detail.html")
+            companion_attributes_dict = OrderedDict([("logged_in", True),
+                                                    ("new_companion", True),
+                                                    ("Name", ("name", "text")),
+                                                    ("Primary Nickname", ("primary_nickname", "text")),
+                                                    ("Species", ("species", "text")),
+                                                    ("Breed", ("breed", "text")),
+                                                    ("Gender", ("gender", "text")),
+                                                    ("Age", ("age", "text"))])
+
+            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict)
 
         elif request.method == 'POST':
             """Processes new companion information."""
 
             # Requests information about each companion.
-            email = request.form.get("email")
-
             value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
             values_dict = {val:request.form.get(val) for val in value_types}
             values_dict["user_id"] = session["user_id"]
@@ -205,16 +212,17 @@ def add_companion():
 @app.route('/vet_finder', methods=['GET'])
 def find_vet():
     pass
+    return redirect('/')
 
 
-@app.route('/veterinary_specialists', methods=['GET','POST'])
+@app.route('/veterinary_specialists', methods=['GET', 'POST'])
 def show_veterinarians():
     if request.method == 'GET':
         return render_template("veterinary_specialists.html")
 #     else:
 
 
-@app.route('/medications', methods=['GET','POST'])
+@app.route('/medications', methods=['GET', 'POST'])
 def show_medications():
     if request.method == 'GET':
         medication_attributes_dict = {"name": "Medication Name",
@@ -224,13 +232,24 @@ def show_medications():
 
         # Other attributes will be provided from scraped medication data.
         return render_template("medications.html", medication_attributes_dict=medication_attributes_dict)
-#     else:
+
+    # elif request.method == 'POST':
 
 
-@app.route('/photos', methods=['GET','POST'])
-def show_photos():
-    if request.method == 'GET':
-        return render_template("photos.html")
+            # value_types = ["name", "current", "frequency", "prescribing_vet"]
+            # values_dict = {val:request.form.get(val) for val in value_types}
+            # values_dict["user_id"] = session["user_id"]
+            # values_dict["created_at"] = datetime.datetime.now()
+            # values_dict["updated_at"] = None
+
+            # new_companion = Companion(**values_dict)
+            # db.session.add(new_companion)
+            # db.session.commit()
+
+# @app.route('/photos', methods=['GET'])
+# def show_photos():
+#     if request.method == 'GET':
+#         return render_template("photos.html")
 
 #     else:
 
@@ -242,17 +261,48 @@ def show_photos():
 #     else:
 
 
-@app.route('/companion/<int:companion_id>', methods=['POST'])  # get v post
-def edit_companion():
+@app.route('/companion/<int:companion_id>', methods=['GET', 'POST'])  # get v post
+def edit_companion(companion_id):
     """Edit companions individually."""
+    # NEED A WAY TO DELETE PET
+    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+    # To confirm if the logged-in user has access to view specific pet:
+    if session['user_id'] != companion_obj.user_id:
+        flash("this is not your pet")
+        return redirect('/')
+    # If user is allowed to view pet:
+    else:
+        if request.method == 'GET':
+            companion_attributes_dict = OrderedDict([("logged_in", True),
+                                    ("new_companion", False),
+                                    ("Name", ("name", "text", companion_obj.name)),
+                                    ("Primary Nickname", ("primary_nickname", "text", companion_obj.primary_nickname)),
+                                    ("Species", ("species", "text", companion_obj.species)),
+                                    ("Breed", ("breed", "text", companion_obj.breed)),
+                                    ("Gender", ("gender", "text", companion_obj.gender)),
+                                    ("Age", ("age", "text", companion_obj.age))])
+            companion_id=companion_id
+            print "companion_id: ", companion_id
+            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_id=companion_id)
+        elif request.method == 'POST':
+            if request.form.get("delete"):
+                # TODO: Notify all users of companion deletion.
+                # Delete companion!
+                db.session.delete(Companion.query.filter(Companion.id == companion_id).first())
+                db.session.commit()
+                flash('companion profile deleted')
+                return redirect("/")
 
-    # NEED A WAY TO DELETE PETS
-    # companion_obj = Companion.query.filter(Companion.name==values_dict["name"], Companion.user_id == session["user_id"]).first()
+            else:
+                value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
+                values_dict = {val:request.form.get(val) for val in value_types}
+                values_dict["updated_at"] = datetime.datetime.now()
+                values_dict = {k:v for k,v in values_dict.iteritems() if v}
 
-    # return render_template("/pet_detail.html", companion_obj=companion_obj)
-    pass
-    return redirect("/")
-
+                ind_update = update(Companion.__table__).where(Companion.id == companion_id).values(**values_dict)
+                db.session.execute(ind_update)
+                db.session.commit()
+                return redirect("/")  # maybe redirect back to pet detail.
 
 ##############################################################################
 # Helper functions

@@ -3,65 +3,28 @@
 
 {% block content1 %}{{ Heading }} companion{% endblock %}
 
-    {% if companion_obj is not defined %}
+    {% if companion_attributes_dict['new_companion'] %}
         {% set add_or_update = "Add" %}
         {% set Heading = "Add" %}
+        {% set action_path = "/new_companion" %}
     {% else %}
         {% set add_or_update = "Update" %}
-        {% set old_name = companion_obj.name %}
-        {% set old_nickname = companion_obj.nickname %}
-        {% set old_species = companion_obj.species %}
-        {% set old_breed = companion_obj.breed %}
-        {% set old_gender = companion_obj.gender %}
-        {% set old_age = companion_obj.age %}
         {% set Heading = "Update" %}
     {% endif %}
 
 {% block content2 %}
+
+   {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
+         {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
+            value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
+    {%- endmacro %}
+
     <form action="{{ action_path }}" method="POST">
-
-        <div>
-            <label>
-                Name
-                <input type="text" name="name" placeholder="{{ old_name }}">
-            </label>
-        </div>
-
-
-        <div>
-            <label>
-                Primary nickname (if any)
-                <input type="text" name="primary_nickname" placeholder="{{ old_nickname }}">
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Species
-                <input type="text" name="species" placeholder="{{ old_species }}">
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Breed
-                <input type="text" name="breed" placeholder="{{ old_breed }}">
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Gender
-                <input type="text" name="gender" placeholder="{{ old_gender }}">
-            </label>
-        </div>
-
-        <div>
-            <label>
-                Age
-                <input type="text" name="age" placeholder="{{ old_age }}">
-            </label>
-        </div>
+    {% for name, key in companion_attributes_dict.items() %}
+        {% if name != "logged_in" and name != "new_companion" %}
+            {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+        {% endif %}
+    {% endfor %}
 <!-- ADD NETWORK ID HERE -->
         <div>
             <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
@@ -78,6 +41,13 @@
         <div>
             <input type="submit" value="{{ add_or_update }}">
         </div>
-
     </form>
+    
+    <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
+    <form action="/companion/{{companion_id}}" method="POST">
+        <input type="hidden" name="delete" value="delete_companion_profile">
+        <input type="submit" value="delete companion profile">
+    </form>
+
+
 {% endblock %}
