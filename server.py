@@ -243,9 +243,13 @@ def show_medications(companion_id):
 
     elif request.method == 'POST':
         vet_name = request.form.get("prescribing_vet")
+        vet_obj = Veterinarian.query.filter(Veterinarian.name == vet_name).first()
 
         # If Veteranarian name is not yet in the database, add it.
-        if Veterinarian.query.filter(Veterinarian.name == vet_name).first() is not True:
+        if vet_obj:
+            print "Vet already in db."
+            print vet_obj
+        else:
             vet_dict = {}
             vet_dict = {"name":vet_name}
             vet_dict["created_at"] = datetime.datetime.now()
@@ -256,7 +260,12 @@ def show_medications(companion_id):
 
         # If PetVet relationship is not yet in the database, add it.
         vet_id = Veterinarian.query.filter(Veterinarian.name == vet_name).first().id
-        if PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id) is not True:
+        print "vet_id = ", vet_id
+        petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first()
+        if petvet_obj:
+            print "PetVet already in db."
+            print petvet_obj.id
+        else:
             petvet_dict = {}
             petvet_dict = {"pet_id": int(companion_id),
                            "vet_id": int(vet_id)}
@@ -276,20 +285,21 @@ def show_medications(companion_id):
         # retrieve values input by user from form and create a dictionary
         # that is then passed through via **kwargs to create an instance of
         # class_name db.Model class.  Add instance to db and commit transaction.
+        print "companion_id = ", companion_id
         for class_name, val_list in class_list_dict.iteritems():
             values_dict = {val:request.form.get(val) for val in val_list}
-            ### TODO: Confirm whether value has been added already to PetMed before adding. ###
             if class_name == Medication:
                 med_obj = Medication.query.filter(Medication.name == med_name).first()
-                if med_obj is True:
+                if med_obj:
                     # won't put in a new medication if medication exists.
                     continue
             elif class_name == PetMedication:
                 med_id = Medication.query.filter(Medication.name == med_name).first().id
+                # Will only create new petmed entry if none exists.
                 petvet_id = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first().id
-                if PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.med_id == med_id).first() is True:
+                if PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.medication_id == med_id).first():
                     continue
-                else:  ### STOPPED HERE! ###
+                else:
                     values_dict["medication_id"] = int(med_id)
                     values_dict["petvet_id"] = int(petvet_id)
                     values_dict["frequency"] = int(request.form.get("frequency", 0))
