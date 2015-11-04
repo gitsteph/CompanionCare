@@ -20,28 +20,30 @@
     {%- endmacro %}
 
     <form action="{{ action_path }}" method="POST">
-    {% for name, key in companion_attributes_dict.items() %}
-        {% if name != "logged_in" and name != "new_companion" %}
-            {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
-        {% endif %}
-    {% endfor %}
+        {% for name, key in companion_attributes_dict.items() %}
+            {% if name != "logged_in" and name != "new_companion" %}
+                {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+            {% endif %}
+        {% endfor %}
+
+        <div>
+            <input type="submit" value="{{ add_or_update }} Companion Profile">
+        </div>
+    </form>
+
 <!-- ADD NETWORK ID HERE -->
+
+    <form action="/medications/{{ companion_id }}" method="GET">
+        <input type="submit" value="{{ add_or_update }} medications">
+    </form>
+
         <div>
             <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
         </div>
 
         <div>
-            <a href="/medications">{{ add_or_update }} Medications</a>
-        </div>
-
-        <div>
             <a href="/photos">{{ add_or_update }} Photos</a>
         </div>
-
-        <div>
-            <input type="submit" value="{{ add_or_update }}">
-        </div>
-    </form>
     
     <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
     <form action="/companion/{{companion_id}}" method="POST">

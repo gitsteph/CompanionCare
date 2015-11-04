@@ -1,19 +1,31 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-{% block content1 %}Medications{% endblock %}
+{% block content1 %}Medications 
+    {% if companion_name is defined %}
+        for {{ companion_name }}
+    {% endif %}
+{% endblock %}
+
 {% block content2 %}
 
 <!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
 -->
-    {% macro input(name, variable, value='', type='text', size=20) -%}
-         {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
-            value|e }}" size="{{ size }}">
-    {%- endmacro %}
+    <form action="/medications/{{ companion_id }}" method="POST">
 
-    {% for variable, name in medication_attributes_dict.items() %}
-        {{ input(name, variable) }}</p>
-    {% endfor %}
+        {% macro input(name, variable, type='text', value='', size=20) -%}
+             {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
+                value|e }}" size="{{ size }}">
+        {%- endmacro %}
+
+        {% for variable, name in medication_attributes_dict.items() %}
+            {{ input(name, variable) }}</p>
+        {% endfor %}
+
+        <div>
+            <input type="submit" value="Add medication">
+        </div>
+    </form>
 
     <a href="/alerts">Add alert</a>
 <!--
