@@ -40,7 +40,7 @@ def get_petvet_id_list(companion_id):
     for petvet_tuple in companion_petvet_list:
         # petvet_tuple[0] is the petvet id.
         petvet_id_list.append(petvet_tuple[0])
-    print petvet_id_list, "<<< PETVET_ID_LIST"
+    print petvet_id_list, "<<< PETVET ID LIST"
     return petvet_id_list
 
 
@@ -155,7 +155,6 @@ def edit_user_profile():
     else:
         if request.method == 'GET':
             """Enables user to update their profile information."""
-            # NEED TO FIX: Dictionaries are unordered-- need to create a way to index and sort.
             user_attributes_dict = OrderedDict([("logged_in", True),
                                                 ("Email", ("email", "email", user_obj.email)),
                                                 ("Password", ("password", "password", user_obj.password)),
@@ -262,15 +261,8 @@ def show_medications(companion_id):
                                           ("prescribing_vet", "Prescribing Veterinarian")])
             companion_name = companion_obj.name
 
-            # try:
-                # CODE BELOW ONLY WORKS IF ONLY ONE MEDICATION ON EACH PET.  DO NOT USE UNLESS FIXED.
-                # companion_med_list = db.session.query(PetMedication.id).filter(PetMedication.petvet_id == db.session.query(PetVet.id).filter(PetVet.pet_id == companion_id)).all()
-                # print companion_med_list, "<<<< COMP MED LIST"
 
             # Queries for all medications for specific pet (companion_id), returning a list of petmed objects.
-            # companion_petmed_list = get_petvet_id_list(companion_id)
-            # print companion_petmed_list, "<<<< COMP!!!!"
-
             petmed_list = get_petmed_list(companion_id)
 
             # Creates a dictionary with PetMedication tied to Medication.
