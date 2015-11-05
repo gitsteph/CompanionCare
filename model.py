@@ -44,7 +44,7 @@ class Companion(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
-    user = db.relationship('User')
+    user = db.relationship('User', backref="companions")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -62,8 +62,8 @@ class PetVet(db.Model):
     vet_id = db.Column(db.Integer, db.ForeignKey('veterinarians.id'), nullable=False)
     first_visit = db.Column(db.DateTime, nullable=True)
 
-    veterinarian = db.relationship('Veterinarian')
-    companion = db.relationship('Companion')
+    veterinarian = db.relationship('Veterinarian', backref="petvets")
+    companion = db.relationship('Companion', backref="petvets")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -107,8 +107,8 @@ class PetMedication(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
-    petvet = db.relationship('PetVet')
-    medication = db.relationship('Medication')
+    petvet = db.relationship('PetVet', backref="petmedications")
+    medication = db.relationship('Medication', backref="petmedications")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -152,7 +152,7 @@ class Alert(db.Model):
     action_taken = db.Column(db.String(20))
     response_timestamp = db.Column(db.DateTime)
 
-    petmedication = db.relationship('PetMedication')
+    petmedication = db.relationship('PetMedication', backref="alerts")
 
     def __repr__(self):
         """Provide helpful representation when printed."""

@@ -3,7 +3,7 @@ from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
 from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, exc
 from collections import OrderedDict
 
 
@@ -226,89 +226,123 @@ def show_veterinarians():
 def show_medications(companion_id):
     """"Path to add/view medications for a specific companion.  GET will render
     form template, POST will request and process input."""
+    user_obj = confirm_loggedin()
+    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+    if not (user_obj and companion_obj):
+        return redirect("/")
+    else:
+        if request.method == 'GET':
+            medication_attributes_dict = OrderedDict([("name", "Medication Name"),
+                                          ("current", "Current"),
+                                          ("frequency", "Frequency"),
+                                          ("frequency_unit", "Frequency Unit"),
+                                          ("prescribing_vet", "Prescribing Veterinarian")])
+            companion_name = companion_obj.name
 
-    if request.method == 'GET':
-        medication_attributes_dict = OrderedDict([("name", "Medication Name"),
-                                      ("current", "Current"),
-                                      ("frequency", "Frequency"),
-                                      ("frequency_unit", "Frequency Unit"),
-                                      ("prescribing_vet", "Prescribing Veterinarian")])
-        companion_obj = Companion.query.filter(Companion.id == companion_id).first()
-        companion_name = companion_obj.name
-        # Other attributes will be provided from scraped medication data.
-        return render_template("medications.html",
-                               medication_attributes_dict=medication_attributes_dict,
-                               companion_name=companion_name,
-                               companion_id=companion_id)
+            # try:
+                # CODE BELOW ONLY WORKS IF ONLY ONE MEDICATION ON EACH PET.  DO NOT USE UNLESS FIXED.
+                # companion_med_list = db.session.query(PetMedication.id).filter(PetMedication.petvet_id == db.session.query(PetVet.id).filter(PetVet.pet_id == companion_id)).all()
+                # print companion_med_list, "<<<< COMP MED LIST"
 
-    elif request.method == 'POST':
-        vet_name = request.form.get("prescribing_vet")
-        vet_obj = Veterinarian.query.filter(Veterinarian.name == vet_name).first()
+            # Queries for all medications for specific pet (companion_id), returning a list of petmed objects.
+            companion_petvet_list = db.session.query(PetVet.id, PetVet.pet_id, PetVet.vet_id).filter(PetVet.pet_id==companion_id).all()
+            print companion_petvet_list, "<<< COMP PETVET LIST"
+            petvet_id_list = []
+            for petvet_tuple in companion_petvet_list:
+                # petvet_tuple[0] is the petvet id.
+                petvet_id_list.append(petvet_tuple[0])
+            print petvet_id_list, "<<< PETVET_ID_LIST"
+            companion_petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
+            print companion_petmed_list, "<<< COMP PETMED OBJECT LIST"
 
-        # If Veteranarian name is not yet in the database, add it.
-        if vet_obj:
-            print "Vet already in db."
-            print vet_obj
-        else:
-            vet_dict = {}
-            vet_dict = {"name":vet_name}
-            vet_dict["created_at"] = datetime.datetime.now()
-            vet_dict["updated_at"] = None
-            vet_entry = Veterinarian(**vet_dict)
-            db.session.add(vet_entry)
-            db.session.commit()
+            # Creates a dictionary with PetMedication tied to Medication.
+            petmed_dict = {}
+            for petmed_obj in companion_petmed_list:
+                medication_obj = Medication.query.filter(Medication.id == petmed_obj.medication_id).first()
+                petmed_dict[petmed_obj] = medication_obj
 
-        # If PetVet relationship is not yet in the database, add it.
-        vet_id = Veterinarian.query.filter(Veterinarian.name == vet_name).first().id
-        print "vet_id = ", vet_id
-        petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first()
-        if petvet_obj:
-            print "PetVet already in db."
-            print petvet_obj.id
-        else:
-            petvet_dict = {}
-            petvet_dict = {"pet_id": int(companion_id),
-                           "vet_id": int(vet_id)}
-            petvet_entry = PetVet(**petvet_dict)
-            db.session.add(petvet_entry)
-            db.session.commit()
+            # Other attributes will be provided from scraped medication data.
+            # TODO: enable user to click on medication ID link and see a modal window/display of medication data queried from Medication table.
+            return render_template("medications.html",
+                                   medication_attributes_dict=medication_attributes_dict,
+                                   companion_name=companion_name,
+                                   companion_id=companion_id,
+                                   petmed_dict=petmed_dict)
 
-        # List of values to pull from form.
-        petmed_values = ["current", "frequency", "frequency_unit"]
-        med_values = ["name"]
-        med_name = request.form.get("name")
-        # Dictionary of Model.py classes and their corresponding input attributes.
-        class_list_dict = OrderedDict([(Medication, med_values),
-                                       (PetMedication, petmed_values)])
+        elif request.method == 'POST':
+            vet_name = request.form.get("prescribing_vet")
+            vet_obj = Veterinarian.query.filter(Veterinarian.name == vet_name).first()
 
-        # For each db.Model class and its corresponding values list above,
-        # retrieve values input by user from form and create a dictionary
-        # that is then passed through via **kwargs to create an instance of
-        # class_name db.Model class.  Add instance to db and commit transaction.
-        print "companion_id = ", companion_id
-        for class_name, val_list in class_list_dict.iteritems():
-            values_dict = {val:request.form.get(val) for val in val_list}
-            if class_name == Medication:
-                med_obj = Medication.query.filter(Medication.name == med_name).first()
-                if med_obj:
-                    # won't put in a new medication if medication exists.
-                    continue
-            elif class_name == PetMedication:
-                med_id = Medication.query.filter(Medication.name == med_name).first().id
-                # Will only create new petmed entry if none exists.
-                petvet_id = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first().id
-                if PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.medication_id == med_id).first():
-                    continue
-                else:
-                    values_dict["medication_id"] = int(med_id)
-                    values_dict["petvet_id"] = int(petvet_id)
-                    values_dict["frequency"] = int(request.form.get("frequency", 0))
-            values_dict["created_at"] = datetime.datetime.now()
-            values_dict["updated_at"] = None
-            new_entry = class_name(**values_dict)
-            db.session.add(new_entry)
-            db.session.commit()
+            # If Veteranarian name is not yet in the database, add it.
+            if vet_obj:
+                print "Vet already in db."
+                print vet_obj
+            else:
+                vet_dict = {}
+                vet_dict = {"name":vet_name}
+                vet_dict["created_at"] = datetime.datetime.now()
+                vet_dict["updated_at"] = None
+                vet_entry = Veterinarian(**vet_dict)
+                db.session.add(vet_entry)
+                db.session.commit()
 
+            # If PetVet relationship is not yet in the database, add it.
+            vet_id = Veterinarian.query.filter(Veterinarian.name == vet_name).first().id
+            print "vet_id = ", vet_id
+            petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first()
+            if petvet_obj:
+                print "PetVet already in db."
+                print petvet_obj.id
+            else:
+                petvet_dict = {}
+                petvet_dict = {"pet_id": int(companion_id),
+                               "vet_id": int(vet_id)}
+                petvet_entry = PetVet(**petvet_dict)
+                db.session.add(petvet_entry)
+                db.session.commit()
+
+            # List of values to pull from form.
+            petmed_values = ["current", "frequency", "frequency_unit"]
+            med_values = ["name"]
+            med_name = request.form.get("name")
+            # Dictionary of Model.py classes and their corresponding input attributes.
+            class_list_dict = OrderedDict([(Medication, med_values),
+                                           (PetMedication, petmed_values)])
+
+            # For each db.Model class and its corresponding values list above,
+            # retrieve values input by user from form and create a dictionary
+            # that is then passed through via **kwargs to create an instance of
+            # class_name db.Model class.  Add instance to db and commit transaction.
+            print "companion_id = ", companion_id
+            for class_name, val_list in class_list_dict.iteritems():
+                values_dict = {val:request.form.get(val) for val in val_list}
+                if class_name == Medication:
+                    med_obj = Medication.query.filter(Medication.name == med_name).first()
+                    if med_obj:
+                        # won't put in a new medication if medication exists.
+                        continue
+                elif class_name == PetMedication:
+                    med_id = Medication.query.filter(Medication.name == med_name).first().id
+                    # Will only create new petmed entry if none exists.
+                    petvet_id = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first().id
+                    if PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.medication_id == med_id).first():
+                        continue
+                    else:
+                        values_dict["medication_id"] = int(med_id)
+                        values_dict["petvet_id"] = int(petvet_id)
+                        values_dict["frequency"] = int(request.form.get("frequency", 0))
+                values_dict["created_at"] = datetime.datetime.now()
+                values_dict["updated_at"] = None
+                new_entry = class_name(**values_dict)
+                db.session.add(new_entry)
+                db.session.commit()
+
+        return redirect('/')
+
+
+@app.route('/alerts/<int:companion_id>')
+def create_alerts(companion_id):
+    pass
     return redirect('/')
 
 
@@ -357,45 +391,48 @@ def show_medications(companion_id):
 @app.route('/companion/<int:companion_id>', methods=['GET', 'POST'])  # get v post
 def edit_companion(companion_id):
     """Edit companions individually."""
-    # NEED A WAY TO DELETE PET
+    user_obj = confirm_loggedin()
     companion_obj = Companion.query.filter(Companion.id == companion_id).first()
-    # To confirm if the logged-in user has access to view specific pet:
-    if session['user_id'] != companion_obj.user_id:
-        flash("this is not your pet")
-        return redirect('/')
-    # If user is allowed to view pet:
+    if not (user_obj and companion_obj):
+        return redirect("/")
     else:
-        if request.method == 'GET':
-            companion_attributes_dict = OrderedDict([("logged_in", True),
-                                    ("new_companion", False),
-                                    ("Name", ("name", "text", companion_obj.name)),
-                                    ("Primary Nickname", ("primary_nickname", "text", companion_obj.primary_nickname)),
-                                    ("Species", ("species", "text", companion_obj.species)),
-                                    ("Breed", ("breed", "text", companion_obj.breed)),
-                                    ("Gender", ("gender", "text", companion_obj.gender)),
-                                    ("Age", ("age", "text", companion_obj.age))])
-            print "companion_id: ", companion_id
-            companion_name = companion_obj.name
-            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_name=companion_name, companion_id=companion_id)
-        elif request.method == 'POST':
-            if request.form.get("delete"):
-                # TODO: Notify all users of companion deletion.
-                # Delete companion!
-                db.session.delete(Companion.query.filter(Companion.id == companion_id).first())
-                db.session.commit()
-                flash('companion profile deleted')
-                return redirect("/")
+        # To confirm if the logged-in user has access to view specific pet:
+        if session['user_id'] != companion_obj.user_id:
+            flash("this is not your pet")
+            return redirect('/')
+        # If user is allowed to view pet:
+        else:
+            if request.method == 'GET':
+                companion_attributes_dict = OrderedDict([("logged_in", True),
+                                        ("new_companion", False),
+                                        ("Name", ("name", "text", companion_obj.name)),
+                                        ("Primary Nickname", ("primary_nickname", "text", companion_obj.primary_nickname)),
+                                        ("Species", ("species", "text", companion_obj.species)),
+                                        ("Breed", ("breed", "text", companion_obj.breed)),
+                                        ("Gender", ("gender", "text", companion_obj.gender)),
+                                        ("Age", ("age", "text", companion_obj.age))])
+                print "companion_id: ", companion_id
+                companion_name = companion_obj.name
+                return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_name=companion_name, companion_id=companion_id)
+            elif request.method == 'POST':
+                if request.form.get("delete"):
+                    # TODO: Notify all users of companion deletion.
+                    # Delete companion!
+                    db.session.delete(Companion.query.filter(Companion.id == companion_id).first())
+                    db.session.commit()
+                    flash('companion profile deleted')
+                    return redirect("/")
 
-            else:
-                value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
-                values_dict = {val:request.form.get(val) for val in value_types}
-                values_dict["updated_at"] = datetime.datetime.now()
-                values_dict = {k:v for k,v in values_dict.iteritems() if v}
+                else:
+                    value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
+                    values_dict = {val:request.form.get(val) for val in value_types}
+                    values_dict["updated_at"] = datetime.datetime.now()
+                    values_dict = {k:v for k,v in values_dict.iteritems() if v}
 
-                ind_update = update(Companion.__table__).where(Companion.id == companion_id).values(**values_dict)
-                db.session.execute(ind_update)
-                db.session.commit()
-                return redirect("/")  # maybe redirect back to pet detail.
+                    ind_update = update(Companion.__table__).where(Companion.id == companion_id).values(**values_dict)
+                    db.session.execute(ind_update)
+                    db.session.commit()
+                    return redirect("/")  # maybe redirect back to pet detail.
 
 ##############################################################################
 # Helper functions

@@ -1,16 +1,35 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
+{% if companion_name is defined %}
+    for {{ companion_name }}
+{% endif %}
+
 {% block content1 %}Medications 
-    {% if companion_name is defined %}
-        for {{ companion_name }}
-    {% endif %}
+
 {% endblock %}
 
 {% block content2 %}
 
 <!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
 -->
+
+    {% macro checkbox_alert(name, variable, type='text', value='', size=20) -%}
+         {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
+            value|e }}" size="{{ size }}">
+    {%- endmacro %}
+
+    {% if petmed_dict is defined %}
+        {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
+            PetMed OBJ: {{ petmed_obj.id }} <br>
+            {{ checkbox_alert("alerts", ) }}
+            MED OBJ: {{ med_obj.id }} <br>
+            MED NAME: {{ med_obj.name }} <br>
+        {% endfor %}
+        <a href="/alerts/{{ companion_id }}">Add alert</a>
+
+    {% endif %}
+    <br>
     <form action="/medications/{{ companion_id }}" method="POST">
 
         {% macro input(name, variable, type='text', value='', size=20) -%}
@@ -27,7 +46,6 @@
         </div>
     </form>
 
-    <a href="/alerts">Add alert</a>
 <!--
 Enable button to add new medications.
  -->
