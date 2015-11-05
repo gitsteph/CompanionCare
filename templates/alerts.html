@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}MedAlert (for non-human companions){% endblock %}
+
+{% block content1 %}Alerts 
+    {% if companion_obj is defined %}
+        for {{ companion_obj.name }}
+    {% endif %}
+{% endblock %}
+
+{% block content2 %}
+        {% macro input(name, variable, type='text', value='', size=20) -%}
+             {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ size }}">
+        {%- endmacro %}
+
+        {% for variable, name in medication_attributes_dict.items() %}
+            {{ input(name, variable) }}</p>
+        {% endfor %}
+
+<!-- SEND TEST MESSAGE TO TEST IF IT WORKS -->
+
+{% endblock %}

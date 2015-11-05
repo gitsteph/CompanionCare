@@ -28,6 +28,29 @@ def confirm_loggedin():
     return user_obj
 
 
+def get_companion_obj(companion_id):
+    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+    return companion_obj
+
+
+def get_petvet_id_list(companion_id):
+    companion_petvet_list = db.session.query(PetVet.id, PetVet.pet_id, PetVet.vet_id).filter(PetVet.pet_id == companion_id).all()
+    print companion_petvet_list, "<<< COMP PETVET LIST"
+    petvet_id_list = []
+    for petvet_tuple in companion_petvet_list:
+        # petvet_tuple[0] is the petvet id.
+        petvet_id_list.append(petvet_tuple[0])
+    print petvet_id_list, "<<< PETVET_ID_LIST"
+    return petvet_id_list
+
+
+def get_petmed_list(companion_id):
+    petvet_id_list = get_petvet_id_list(companion_id)
+    petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
+    print petmed_list, "<<< COMP PETMED OBJECT LIST"
+    return petmed_list
+
+
 @app.route('/', methods=['GET'])
 def show_homedash():
     """If not logged in, will show homepage.  Else, will show dashboard."""
@@ -227,7 +250,7 @@ def show_medications(companion_id):
     """"Path to add/view medications for a specific companion.  GET will render
     form template, POST will request and process input."""
     user_obj = confirm_loggedin()
-    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+    companion_obj = get_companion_obj(companion_id)
     if not (user_obj and companion_obj):
         return redirect("/")
     else:
@@ -245,19 +268,14 @@ def show_medications(companion_id):
                 # print companion_med_list, "<<<< COMP MED LIST"
 
             # Queries for all medications for specific pet (companion_id), returning a list of petmed objects.
-            companion_petvet_list = db.session.query(PetVet.id, PetVet.pet_id, PetVet.vet_id).filter(PetVet.pet_id==companion_id).all()
-            print companion_petvet_list, "<<< COMP PETVET LIST"
-            petvet_id_list = []
-            for petvet_tuple in companion_petvet_list:
-                # petvet_tuple[0] is the petvet id.
-                petvet_id_list.append(petvet_tuple[0])
-            print petvet_id_list, "<<< PETVET_ID_LIST"
-            companion_petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
-            print companion_petmed_list, "<<< COMP PETMED OBJECT LIST"
+            # companion_petmed_list = get_petvet_id_list(companion_id)
+            # print companion_petmed_list, "<<<< COMP!!!!"
+
+            petmed_list = get_petmed_list(companion_id)
 
             # Creates a dictionary with PetMedication tied to Medication.
             petmed_dict = {}
-            for petmed_obj in companion_petmed_list:
+            for petmed_obj in petmed_list:
                 medication_obj = Medication.query.filter(Medication.id == petmed_obj.medication_id).first()
                 petmed_dict[petmed_obj] = medication_obj
 
@@ -340,10 +358,15 @@ def show_medications(companion_id):
         return redirect('/')
 
 
-@app.route('/alerts/<int:companion_id>')
+@app.route('/alerts/<int:companion_id>', methods=["GET", "POST"])
 def create_alerts(companion_id):
-    pass
-    return redirect('/')
+    # Will return a list of petmed_ids (unicode) that the user selects to add alert.
+    petmed_id_alerts = request.form.getlist("alerts")
+    companion_obj = get_companion_obj(companion_id)
+
+    # Renders new form with existing alerts, petmeds that have been selected, and
+    # fields to add alerts to selected petmeds.
+    return render_template('alerts.html', companion_obj=companion_obj)
 
 
 # @app.route('/medications', methods=['GET', 'POST'])
