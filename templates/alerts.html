@@ -11,10 +11,17 @@
         {% macro input(name, variable, type='text', value='', size=20) -%}
              {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ size }}">
         {%- endmacro %}
-
-        {% for variable, name in medication_attributes_dict.items() %}
-            {{ input(name, variable) }}</p>
-        {% endfor %}
+        {% if petmed_med_dict.items() is defined %}
+            {% for petmed_obj, med_obj in petmed_med_dict.items() %}
+                PetMed ID: {{ petmed_obj.id }} <br>
+                PetMed Freq: {{ petmed_obj.frequency }} {{ petmed_obj.frequency_unit }} <br>
+                Current: {{ petmed_obj.current }} <br>
+                PetVet ID: {{ petmed_obj.petvet_id }} <br>
+                Med ID: {{ med_obj.id }} <br>
+                Med Name: {{ med_obj.name }} <br>
+                <br>
+            {% endfor %}
+        {% endif %}
 
 <!-- SEND TEST MESSAGE TO TEST IF IT WORKS -->
 

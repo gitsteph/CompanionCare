@@ -44,11 +44,21 @@ def get_petvet_id_list(companion_id):
     return petvet_id_list
 
 
-def get_petmed_list(companion_id):
+def get_petmed_list_by_companion(companion_id):
     petvet_id_list = get_petvet_id_list(companion_id)
     petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
     print petmed_list, "<<< COMP PETMED OBJECT LIST"
     return petmed_list
+
+def get_petmed_medication_by_petmed_id_list(petmed_list):
+    petmed_med_dict = {}
+    for petmed_id in petmed_list:
+        print petmed_list, "<<< PETMED LIST BEING PASSED THROUGH"
+        petmed_obj = PetMedication.query.get(petmed_id)
+        med_obj = petmed_obj.medication
+        petmed_med_dict[petmed_obj] = med_obj
+        print petmed_med_dict, "<<< PETMED MED DICT"
+    return petmed_med_dict
 
 
 @app.route('/', methods=['GET'])
@@ -261,9 +271,8 @@ def show_medications(companion_id):
                                           ("prescribing_vet", "Prescribing Veterinarian")])
             companion_name = companion_obj.name
 
-
             # Queries for all medications for specific pet (companion_id), returning a list of petmed objects.
-            petmed_list = get_petmed_list(companion_id)
+            petmed_list = get_petmed_list_by_companion(companion_id)
 
             # Creates a dictionary with PetMedication tied to Medication.
             petmed_dict = {}
@@ -353,12 +362,13 @@ def show_medications(companion_id):
 @app.route('/alerts/<int:companion_id>', methods=["GET", "POST"])
 def create_alerts(companion_id):
     # Will return a list of petmed_ids (unicode) that the user selects to add alert.
-    petmed_id_alerts = request.form.getlist("alerts")
+    petmed_id_for_alerts = request.form.getlist("alerts")
     companion_obj = get_companion_obj(companion_id)
+    petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
 
-    # Renders new form with existing alerts, petmeds that have been selected, and
+        # Renders new form with existing alerts, petmeds that have been selected, and
     # fields to add alerts to selected petmeds.
-    return render_template('alerts.html', companion_obj=companion_obj)
+    return render_template('alerts.html', companion_obj=companion_obj, petmed_med_dict=petmed_med_dict)
 
 
 # @app.route('/medications', methods=['GET', 'POST'])

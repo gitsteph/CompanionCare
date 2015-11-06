@@ -19,7 +19,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
-    companion = db.relationship('Companion')
+    companion = db.relationship('Companion', cascade="all, delete-orphan")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -44,7 +44,7 @@ class Companion(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
-    user = db.relationship('User', backref="companions")
+    user = db.relationship('User', cascade="all,delete", backref="companions")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
