@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
 from sqlalchemy import update, delete, exc
 from collections import OrderedDict
-from multiprocessing import Process
+import multiprocessing
 import send_messages
 import datetime
 import time
@@ -19,44 +19,73 @@ app.secret_key = "###"
 
 
 def time_alerts():
+    counter=0
     while True:
+        counter+=1  # STILL DUPLICATES ENTRIES-- switch to Celery?
         current_datetime = datetime.datetime.now()
         # query for alerts with past datetimes that have not yet been issued.
-        # alerts = Alert.query.filter(Alert.alert_datetime < current_datetime, alert_issued.is_(None)).all()
-        alerts = Alert.query.filter(Alert.next_alert_datetime < current_datetime).all()
-        # ADD ABOVE IF ALERT WAS ALREADY ISSUED!
-        print alerts, "<<< ALERTS PENDING"
-        if alerts:
-            for alert in alerts:
-                # send_messages.send_sms_message(msg_body="Hi there!")
-                push_to_alertlog(alert.id)
-                print "sent text msg"
-        #### NEED TO DEBUG THIS-- DELETE IN QUEUE?  OR QUERY FOR ALREADY ISSUED?  ####
+        alertlogs = AlertLog.query.filter(AlertLog.scheduled_alert_datetime < current_datetime,
+                                          AlertLog.alert_issued.is_(None)).all()
+        print alertlogs, "<<< ALERTS PENDING", counter
+        if alertlogs:
+            for alertlog in alertlogs:
+                issue_alert_and_update_alertlog(alertlog.id)
 
         # TODO: if response is received, update_alertlog_with_user_response.
         # TODO: after alertlog updated, update_next_alert_based_on_user_response.
         # run every minute
-        time.sleep(60)
+        time.sleep(10)
 
 
-def push_to_alertlog(alert_id):
-    """ Takes an alert object and writes alert log info to database once the
-    scheduled alert is issued.  User response will be later recorded as
-    it is received. """
-    old_alert = {}
-    old_alert["alert_id"] = alert_id
-    old_alert["alert_issued"] = datetime.datetime.now()
-    old_alert["action_taken"] = None
-    old_alert["created_at"] = (datetime.datetime.now() + datetime.timedelta(hours=1))  # delete this
+def most_recent_alertlog_id_given_alert_id(alert_id):
+    alertlog_id = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first().id
+    return alertlog_id
 
-    old_alert = AlertLog(**old_alert)
-    db.session.add(old_alert)
+
+def schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact=None):
+    """Creates an alertlog entry given alert_id and scheduled_alert_datetime obj from form."""
+    scheduled_alert = {}
+    scheduled_alert["alert_id"] = alert_id
+    scheduled_alert["scheduled_alert_datetime"] = scheduled_alert_datetime
+    scheduled_alert["alert_issued"] = None
+    scheduled_alert["created_at"] = datetime.datetime.now()
+    scheduled_alert["updated_at"] = None
+
+    if secondary_contact:
+        scheduled_alert["recipient"] = "secondary"
+    else:
+        scheduled_alert["recipient"] = "primary"
+
+    scheduled_alert = AlertLog(**scheduled_alert)
+    db.session.add(scheduled_alert)
+    db.session.commit()
+
+    # Returns the alertlog_id of scheduled alert.
+    alertlog_id = most_recent_alertlog_id_given_alert_id(alert_id)
+    return alertlog_id
+
+
+def issue_alert_and_update_alertlog(alertlog_id):
+    alertlog_obj = db.session.query(AlertLog).get(alertlog_id)
+    recipient = alertlog_obj.recipient
+    if recipient is "primary":
+        recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).primary_alert_phone
+    else:
+        recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).secondary_alert_phone
+    send_messages.send_sms_message(msg_body="Hi there!", phone_number=recipient_contact)
+    # TODO: THIS NEEDS TO PULL INFO.
+    print "sent text msg for alertlog.id ", alertlog_id
+
+    update_alertlog_issued = update(AlertLog.__table__).where(AlertLog.id == alertlog_id).values({AlertLog.alert_issued: datetime.datetime.now(),
+                                                                                                  AlertLog.updated_at: datetime.datetime.now()})
+    db.session.execute(update_alertlog_issued)
     db.session.commit()
 
 
-def update_alertlog_with_user_response(alertlog_id, user_response):
+def update_alertlog_with_user_response(alert_id, user_response):
     """ User response will be recorded to the designated alertlog entry. """
     # Function will only be run when user responds.
+    alertlog_id = most_recent_alertlog_id_given_alert_id(alert_id)
     update_alertlog = update(AlertLog.__table__).where(AlertLog.id == alertlog_id).values({AlertLog.action_taken: user_response,
                                                                                            AlertLog.response_timestamp: datetime.datetime.now()})
     db.session.execute(update_alertlog)
@@ -64,20 +93,20 @@ def update_alertlog_with_user_response(alertlog_id, user_response):
     return alertlog_id, user_response
 
 
-def update_next_alert_based_on_user_response(alert_id, user_response):
+def create_alertlog_entry_based_on_user_response(alert_id, user_response):
     """ Based on user response, the next_alert_datetime in alerts will be generated. """
+    current_datetime = datetime.datetime.now()
     if user_response == ("1" or "given"):
         alert_frequency = Alert.query.get(alert_id).petmedication.frequency
-        update_alert = update(Alert.__table__).where(Alert.id=alert_id).values("next_alert_datetime"=(current_datetime + datetime.timedelta(hours=alert_frequency)))
+        scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=alert_frequency)
+        schedule_alert(alert_id, scheduled_alert_datetime)
     elif user_response == ("2" or "delay"):
-        update_alert = update(Alert.__table__).where(Alert.id == alert_id).values({Alert.next_alert_datetime:(current_datetime + datetime.timedelta(hours=1)),
-                                                                                   Alert.updated_at:datetime.datetime.now()})
-        db.session.execute(update_alert)
-        db.session.commit()
+        scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=1)
+        schedule(alert_id, scheduled_alert_datetime)
     elif user_response == ("3" or "forward"):
-        pass
-
-
+        scheduled_alert_datetime = current_datetime
+        secondary_contact = db.session.query(Alert).get(alert_id).secondary_alert_phone
+        schedule(alert_id, scheduled_alert_datetime, secondary_contact)
 
 
 # Helper function to check whether user is logged in.
@@ -103,25 +132,25 @@ def get_petvet_id_list(companion_id):
     for petvet_tuple in companion_petvet_list:
         # petvet_tuple[0] is the petvet id.
         petvet_id_list.append(petvet_tuple[0])
-    print petvet_id_list, "<<< PETVET ID LIST"
+    # print petvet_id_list, "<<< PETVET ID LIST"
     return petvet_id_list
 
 
 def get_petmed_list_by_companion(companion_id):
     petvet_id_list = get_petvet_id_list(companion_id)
     petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
-    print petmed_list, "<<< COMP PETMED OBJECT LIST"
+    # print petmed_list, "<<< COMP PETMED OBJECT LIST"
     return petmed_list
 
 
 def get_petmed_medication_by_petmed_id_list(petmed_list):
     petmed_med_dict = {}
     for petmed_id in petmed_list:
-        print petmed_list, "<<< PETMED LIST BEING PASSED THROUGH"
+        # print petmed_list, "<<< PETMED LIST BEING PASSED THROUGH"
         petmed_obj = PetMedication.query.get(petmed_id)
         med_obj = petmed_obj.medication
         petmed_med_dict[petmed_obj] = med_obj
-        print petmed_med_dict, "<<< PETMED MED DICT"
+        # print petmed_med_dict, "<<< PETMED MED DICT"
     return petmed_med_dict
 
 
@@ -448,16 +477,22 @@ def show_alerts_and_form(companion_id):
 @app.route('/alerts/<int:companion_id>/add', methods=["POST"])
 def add_alerts(companion_id):
     # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
-    value_types = ["next_alert_datetime", "primary_alert_phone", "secondary_alert_phone",
+    value_types = ["primary_alert_phone", "secondary_alert_phone",
                    "alert_frequency", "alert_frequency_unit", "petmed_id"]
     values_dict = {val:request.form.get(val) for val in value_types}
     values_dict["alert_options"] = request.form.getlist("alert_options")
     values_dict["created_at"] = datetime.datetime.now()
-    values_dict["updated_at"] = None
+    values_dict["updated_at"] = datetime.datetime.now()  # Only true for creation.
 
     new_alert = Alert(**values_dict)
     db.session.add(new_alert)
     db.session.commit()
+
+    # Schedule alert in alertlog (set to not-issued).
+    alert_id = db.session.query(Alert).filter(Alert.petmed_id == values_dict["petmed_id"]).order_by(Alert.updated_at.desc()).first().id
+    scheduled_alert_datetime = request.form.get("scheduled_alert_datetime")
+    schedule_alert(alert_id, scheduled_alert_datetime)
+
     return redirect('/')
 
 
@@ -557,6 +592,17 @@ if __name__ == "__main__":
 
     connect_to_db(app)
 
+    p = multiprocessing.Process(target=time_alerts)
+    # Daemonic processes will only continue running so long as there are non-daemons.
+    # Quit when there are no non-daemons left.
+    p.daemon = True
+    p.start()
+    # Join: parent waits for child program to exit before joining.
+    # p.join()
+
+    app.run()
+
+
     # SOME TESTER THINGS TO DELETE LATER BELOW
     # push_to_alertlog(alert_id=4)
     # update_alertlog_with_user_response(32, "yes this works resp2")
@@ -566,8 +612,3 @@ if __name__ == "__main__":
 
     # To use the DebugToolbar, uncomment below:
     # DebugToolbarExtension(app)
-
-    # p = Process(target=time_alerts)
-    # p.start()
-
-    app.run()

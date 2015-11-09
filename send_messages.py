@@ -8,9 +8,14 @@ twilio_number = os.environ['TWILIO_NUMBER']
 client = TwilioRestClient(account_sid, auth_token)
 
 
-def send_sms_message(msg_body):
+def send_sms_message(msg_body, phone_number):
     # Running this will send a text message.
-    sms_message = client.messages.create(to="+12168323813", from_="+12163507084",
+    phone_number = phone_number.strip()
+    if phone_number[0] != "+":
+        phone_number = "+" + str(phone_number)
+    if phone_number[1] != "1":
+        phone_number = phone_number[:1] + "1" + phone_number[1:]
+    sms_message = client.messages.create(to=phone_number, from_="+12163507084",
                                          body=str(msg_body))
 
 def send_mms_message(msg_body, media_url1="", media_url2=""):

@@ -22,7 +22,7 @@
                     Med ID: {{ med_obj.id }} <br>
                     Med Name: {{ med_obj.name }} <br>
                     <br>
-                        {{ input("First alert", "next_alert_datetime", "datetime-local") }}<br>
+                        {{ input("First alert", "scheduled_alert_datetime", "datetime-local") }}<br>
                         {{ input("Frequency", "alert_frequency", "text", petmed_obj.frequency) }}<br>
                         {{ input("Frequency Unit", "alert_frequency_unit", "text", petmed_obj.frequency_unit) }}<br>
 

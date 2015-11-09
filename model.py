@@ -155,7 +155,6 @@ class Alert(db.Model):
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'), nullable=True)
     petfood_id = db.Column(db.Integer, nullable=True)
-    next_alert_datetime = db.Column(db.DateTime, nullable=False)
     primary_alert_phone = db.Column(db.String)
     secondary_alert_phone = db.Column(db.String)
     alert_frequency = db.Column(db.String)  # may want to remove this
@@ -179,12 +178,14 @@ class AlertLog(db.Model):
     __tablename__ = "alertlogs"
 
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    scheduled_alert_datetime = db.Column(db.DateTime, nullable=False)
     alert_id = db.Column(db.Integer, db.ForeignKey('alerts.id'), nullable=False)
     alert_issued = db.Column(db.DateTime)
+    recipient = db.Column(db.String, nullable=False)
     action_taken = db.Column(db.String(20))
     response_timestamp = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, nullable=False)
-    # updated_at = db.Column(db.DateTime, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=True)
 
 
 ##############################################################################
