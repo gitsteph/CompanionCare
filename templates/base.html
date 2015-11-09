@@ -2,9 +2,11 @@
 <html>
     <head>
         <title>{% block title %}MedAlert (for non-human companions){% endblock %}</title>
-<!--         <link rel="stylesheet" href="/static/css/styles.css">
+          <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+<!--           <link href="/static/project.css" rel="stylesheet">
  -->    </head>
     <body>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -17,22 +19,25 @@
         {% endwith %}
         
         <h1>{% block content1 %}MedAlert (for non-human companions){% endblock %}</h1>
-        {% block content2 %} SAMPLE TEXT HERE{% endblock %}
-        
-        {% block loginlogout %}
-            {% if nologin == True %}
-                <p></p>
-            {% elif "user_id" in session %}
-                <form action="/logout">
-                    <input type="submit" value="Logout">
-                </form>
-            {% else %}
-                <form action="/" method="GET">
-                    <input type="submit" value="Login">
-                </form>
-            {% endif %}
+        <div class="container fluid">
+            {% block content2 %} SAMPLE TEXT HERE{% endblock %}
+            
+            {% block loginlogout %}
+                {% if nologin == True %}
+                    <p></p>
+                {% elif "user_id" in session %}
+                    <form action="/logout">
+                        <input type="submit" value="Logout" button type="button" class="btn btn-primary"></button>
+                    </form>
+                {% else %}
+                    <form action="/" method="GET">
+                        <input type="submit" value="Login" button type="button" class="btn btn-primary">
+                    </form>
+                {% endif %}
 
-        {% endblock %}
+            {% endblock %}
+        </div>
+
         <br><br>
         <footer></footer>
     </body>

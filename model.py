@@ -15,16 +15,17 @@ class User(db.Model):
     last_name = db.Column(db.String(20), nullable=False)
     password = db.Column(db.String(20), nullable=False)
     # network_id = db.Column(db.Integer, nullable=False)
+    phone = db.Column(db.String, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
-
-    companion = db.relationship('Companion', cascade="all, delete-orphan")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<User id=%s Name=%s %s>" % (self.id, self.first_name, self.last_name)
+
+    companions = db.relationship('Companion', cascade="all,delete", backref="user")
 
 
 class Companion(db.Model):
@@ -44,7 +45,7 @@ class Companion(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
-    user = db.relationship('User', cascade="all,delete", backref="companions")
+    petvets = db.relationship('PetVet', cascade="all,delete", backref="companion")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -62,13 +63,13 @@ class PetVet(db.Model):
     vet_id = db.Column(db.Integer, db.ForeignKey('veterinarians.id'), nullable=False)
     first_visit = db.Column(db.DateTime, nullable=True)
 
-    veterinarian = db.relationship('Veterinarian', backref="petvets")
-    companion = db.relationship('Companion', backref="petvets")
-
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<PetVet ID=%s Pet ID=%s Vet ID=%s>" % (self.id, self.pet_id, self.vet_id)
+
+    petmeds = db.relationship('PetMedication', backref="petvet")
+
 
 
 class Veterinarian(db.Model):
@@ -91,29 +92,8 @@ class Veterinarian(db.Model):
 
         return "<Vet ID=%s Name=%s Office=%s>" % (self.id, self.name, self.office_name)
 
+    petvets = db.relationship('PetVet', cascade="all,delete", backref="veterinarian")
 
-class PetMedication(db.Model):
-    """Facilitating the many-to-many relationship between pets and medications."""
-
-    __tablename__ = "petmedications"
-
-    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
-    medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
-    current = db.Column(db.String(10), nullable=False)
-    notes = db.Column(db.String, nullable=True)
-    petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
-    frequency = db.Column(db.Integer)
-    frequency_unit = db.Column(db.String)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=True)
-
-    petvet = db.relationship('PetVet', backref="petmedications")
-    medication = db.relationship('Medication', backref="petmedications")
-
-    def __repr__(self):
-        """Provide helpful representation when printed."""
-
-        return "<ID=%s Medication ID=%s Current? %s>" % (self.id, self.medication_id, self.current)
 
 
 class Medication(db.Model):
@@ -134,10 +114,37 @@ class Medication(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
+    petmeds = db.relationship('PetMedication', cascade="all,delete", backref="medication")
+    # petmedications backref will return a list, like an attribute
+
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<ID=%s Name=%s Description=%s>" % (self.id, self.name, self.description)
+
+
+class PetMedication(db.Model):
+    """Facilitating the many-to-many relationship between pets and medications."""
+
+    __tablename__ = "petmedications"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
+    current = db.Column(db.String(10), nullable=False)
+    notes = db.Column(db.String, nullable=True)
+    petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
+    frequency = db.Column(db.Integer)  # every X hours
+    frequency_unit = db.Column(db.String)  # delete this later
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+    # medication attribute exists via relationship
+
+    alerts = db.relationship('Alert', cascade="all,delete", backref="petmedication")
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return "<ID=%s Medication ID=%s Current? %s>" % (self.id, self.medication_id, self.current)
 
 
 class Alert(db.Model):
@@ -146,18 +153,38 @@ class Alert(db.Model):
     __tablename__ = "alerts"
 
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
-    petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'))
-    alert_datetime = db.Column(db.DateTime, nullable=False)
+    petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'), nullable=True)
+    petfood_id = db.Column(db.Integer, nullable=True)
+    next_alert_datetime = db.Column(db.DateTime, nullable=False)
+    primary_alert_phone = db.Column(db.String)
+    secondary_alert_phone = db.Column(db.String)
+    alert_frequency = db.Column(db.String)  # may want to remove this
+    alert_frequency_unit = db.Column(db.String)  # may want to remove this
     current = db.Column(db.String(20))
-    action_taken = db.Column(db.String(20))
-    response_timestamp = db.Column(db.DateTime)
+    alert_options = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
 
-    petmedication = db.relationship('PetMedication', backref="alerts")
+    alertlogs = db.relationship('AlertLog', cascade="all,delete", backref="alert")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<ID=%s PetMed ID=%s Alert DateTime=%s>" % (self.id, self.petmed_id, self.alert_datetime)
+        return "<ID=%s PetMed ID=%s Alert DateTime=%s>" % (self.id, self.petmed_id, self.next_alert_datetime)
+
+
+class AlertLog(db.Model):
+    """Alert log."""
+
+    __tablename__ = "alertlogs"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    alert_id = db.Column(db.Integer, db.ForeignKey('alerts.id'), nullable=False)
+    alert_issued = db.Column(db.DateTime)
+    action_taken = db.Column(db.String(20))
+    response_timestamp = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, nullable=False)
+    # updated_at = db.Column(db.DateTime, nullable=True)
 
 
 ##############################################################################

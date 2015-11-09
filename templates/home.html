@@ -3,27 +3,32 @@
 
 
 {% block content1 %}Home Page{% endblock %}
-{% block content2 %}
-
-    <form action="/login", method='POST'>
-        </div>
-            <label>Email:
-                <input type="email" name="email">
-            </label>
-        </div>
-
-        </div>
-            <label>Password:
-                <input type="password" name="password">
-            </label>
-        </div>
-            <input type="submit" value="login">
+<div class="container fluid">
+    {% block content2 %}
+    <div class="row">
+        <form action="/login", method='POST'>
+            </div>
+                <label>Email:
+                    <input type="email" name="email">
+                </label>
+            </div>
+            <br>
+            </div>
+                <label>Password:
+                    <input type="password" name="password">
+                </label>
+            </div>
+            <br>
+                <input type="submit" value="login" button type="button" class="btn btn-primary">
         </form>
-        <div>
-            <form action="/register">
-                <input type="submit" value="register">
-            </form>
-        </div>
-{% endblock %}
+
+            <div><br>
+                <form action="/register">
+                    <input type="submit" value="register" button type="button" class="btn btn-primary">
+                </form>
+            </div>
+    </div>
+    {% endblock %}
+</div>
 
 {% set nologin = True %}  <!--Overrides login/logout buttons-->

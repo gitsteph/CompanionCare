@@ -2,12 +2,13 @@ from flask import Flask, request, render_template, redirect, flash, jsonify
 from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
-from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert
+from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
 from sqlalchemy import update, delete, exc
 from collections import OrderedDict
-
-
+from multiprocessing import Process
+import send_messages
 import datetime
+import time
 
 
 app = Flask(__name__)
@@ -15,6 +16,68 @@ app = Flask(__name__)
 app.secret_key = "###"
 
 # app.jinja_env.undefined = StrictUndefined
+
+
+def time_alerts():
+    while True:
+        current_datetime = datetime.datetime.now()
+        # query for alerts with past datetimes that have not yet been issued.
+        # alerts = Alert.query.filter(Alert.alert_datetime < current_datetime, alert_issued.is_(None)).all()
+        alerts = Alert.query.filter(Alert.next_alert_datetime < current_datetime).all()
+        # ADD ABOVE IF ALERT WAS ALREADY ISSUED!
+        print alerts, "<<< ALERTS PENDING"
+        if alerts:
+            for alert in alerts:
+                # send_messages.send_sms_message(msg_body="Hi there!")
+                push_to_alertlog(alert.id)
+                print "sent text msg"
+        #### NEED TO DEBUG THIS-- DELETE IN QUEUE?  OR QUERY FOR ALREADY ISSUED?  ####
+
+        # TODO: if response is received, update_alertlog_with_user_response.
+        # TODO: after alertlog updated, update_next_alert_based_on_user_response.
+        # run every minute
+        time.sleep(60)
+
+
+def push_to_alertlog(alert_id):
+    """ Takes an alert object and writes alert log info to database once the
+    scheduled alert is issued.  User response will be later recorded as
+    it is received. """
+    old_alert = {}
+    old_alert["alert_id"] = alert_id
+    old_alert["alert_issued"] = datetime.datetime.now()
+    old_alert["action_taken"] = None
+    old_alert["created_at"] = (datetime.datetime.now() + datetime.timedelta(hours=1))  # delete this
+
+    old_alert = AlertLog(**old_alert)
+    db.session.add(old_alert)
+    db.session.commit()
+
+
+def update_alertlog_with_user_response(alertlog_id, user_response):
+    """ User response will be recorded to the designated alertlog entry. """
+    # Function will only be run when user responds.
+    update_alertlog = update(AlertLog.__table__).where(AlertLog.id == alertlog_id).values({AlertLog.action_taken: user_response,
+                                                                                           AlertLog.response_timestamp: datetime.datetime.now()})
+    db.session.execute(update_alertlog)
+    db.session.commit()
+    return alertlog_id, user_response
+
+
+def update_next_alert_based_on_user_response(alert_id, user_response):
+    """ Based on user response, the next_alert_datetime in alerts will be generated. """
+    if user_response == ("1" or "given"):
+        alert_frequency = Alert.query.get(alert_id).petmedication.frequency
+        update_alert = update(Alert.__table__).where(Alert.id=alert_id).values("next_alert_datetime"=(current_datetime + datetime.timedelta(hours=alert_frequency)))
+    elif user_response == ("2" or "delay"):
+        update_alert = update(Alert.__table__).where(Alert.id == alert_id).values({Alert.next_alert_datetime:(current_datetime + datetime.timedelta(hours=1)),
+                                                                                   Alert.updated_at:datetime.datetime.now()})
+        db.session.execute(update_alert)
+        db.session.commit()
+    elif user_response == ("3" or "forward"):
+        pass
+
+
 
 
 # Helper function to check whether user is logged in.
@@ -49,6 +112,7 @@ def get_petmed_list_by_companion(companion_id):
     petmed_list = PetMedication.query.filter(PetMedication.petvet_id.in_(petvet_id_list)).all()
     print petmed_list, "<<< COMP PETMED OBJECT LIST"
     return petmed_list
+
 
 def get_petmed_medication_by_petmed_id_list(petmed_list):
     petmed_med_dict = {}
@@ -87,6 +151,7 @@ def register_user():
                                                 ("Password", ("password", "password")),
                                                 ("First Name", ("first_name", "text")),
                                                 ("Last Name", ("last_name", "text")),
+                                                ("Phone Number", ("phone", "text")),
                                                 ("Zipcode", ("zipcode", "text"))])
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
@@ -94,7 +159,7 @@ def register_user():
         """Processes new user registration."""
 
         # Requests information provided by the user from registration form.
-        value_types = ["email", "password", "first_name", "last_name", "zipcode"]
+        value_types = ["email", "password", "first_name", "last_name", "phone", "zipcode"]
         values_dict = {val:request.form.get(val) for val in value_types}
         values_dict["created_at"] = datetime.datetime.now()
 
@@ -360,15 +425,40 @@ def show_medications(companion_id):
 
 
 @app.route('/alerts/<int:companion_id>', methods=["GET", "POST"])
-def create_alerts(companion_id):
+def show_alerts_and_form(companion_id):
     # Will return a list of petmed_ids (unicode) that the user selects to add alert.
-    petmed_id_for_alerts = request.form.getlist("alerts")
+    user_obj = confirm_loggedin()
     companion_obj = get_companion_obj(companion_id)
-    petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
+    if not (user_obj and companion_obj):
+        return redirect("/")
+    else:
+        if request.method == "POST":
+            petmed_id_for_alerts = request.form.getlist("alerts")
+            companion_obj = get_companion_obj(companion_id)
+            petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
 
-        # Renders new form with existing alerts, petmeds that have been selected, and
-    # fields to add alerts to selected petmeds.
-    return render_template('alerts.html', companion_obj=companion_obj, petmed_med_dict=petmed_med_dict)
+            # Renders new form with existing alerts, petmeds that have been selected, and
+            # fields to add alerts to selected petmeds.
+            return render_template('alerts.html',
+                                    companion_obj=companion_obj,
+                                    petmed_med_dict=petmed_med_dict,
+                                    user_obj=user_obj)
+
+
+@app.route('/alerts/<int:companion_id>/add', methods=["POST"])
+def add_alerts(companion_id):
+    # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
+    value_types = ["next_alert_datetime", "primary_alert_phone", "secondary_alert_phone",
+                   "alert_frequency", "alert_frequency_unit", "petmed_id"]
+    values_dict = {val:request.form.get(val) for val in value_types}
+    values_dict["alert_options"] = request.form.getlist("alert_options")
+    values_dict["created_at"] = datetime.datetime.now()
+    values_dict["updated_at"] = None
+
+    new_alert = Alert(**values_dict)
+    db.session.add(new_alert)
+    db.session.commit()
+    return redirect('/')
 
 
 # @app.route('/medications', methods=['GET', 'POST'])
@@ -467,7 +557,17 @@ if __name__ == "__main__":
 
     connect_to_db(app)
 
+    # SOME TESTER THINGS TO DELETE LATER BELOW
+    # push_to_alertlog(alert_id=4)
+    # update_alertlog_with_user_response(32, "yes this works resp2")
+    # alert_frequency = Alert.query.get(4).petmedication.frequency
+    # print alert_frequency, "<<< ALERTFREQ"
+
+
     # To use the DebugToolbar, uncomment below:
     # DebugToolbarExtension(app)
+
+    # p = Process(target=time_alerts)
+    # p.start()
 
     app.run()

@@ -17,41 +17,43 @@
             value|e }}" size="{{ size }}">
     {%- endmacro %}
 
-    {% if petmed_dict is defined %}
-        <form action="/alerts/{{ companion_id }}" method="POST">
-            {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
-                {{ checkbox_alert("alerts", petmed_obj.id) }}
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <form action="/medications/{{ companion_id }}" method="POST">
 
-                PetMed OBJ: {{ petmed_obj.id }} <br>
-                MED OBJ: {{ med_obj.id }} <br>
-                MED NAME: {{ med_obj.name }} <br>
-                <br>
-            {% endfor %}
-            <div>
-                <input type="submit" value="Add alert">
-            </div>
-        </form>
-    {% endif %}
-    <br>
-    <form action="/medications/{{ companion_id }}" method="POST">
+                {% macro input(name, variable, type='text', value='', size=20) -%}
+                     {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
+                        value|e }}" size="{{ size }}">
+                {%- endmacro %}
 
-        {% macro input(name, variable, type='text', value='', size=20) -%}
-             {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
-                value|e }}" size="{{ size }}">
-        {%- endmacro %}
+                {% for variable, name in medication_attributes_dict.items() %}
+                    {{ input(name, variable) }}</p>
+                {% endfor %}
 
-        {% for variable, name in medication_attributes_dict.items() %}
-            {{ input(name, variable) }}</p>
-        {% endfor %}
-
-        <div>
-            <input type="submit" value="Add medication">
+                <div>
+                    <input type="submit" value="Add medication">
+                </div>
+            </form>
+            <br>
         </div>
-    </form>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            {% if petmed_dict is defined %}
+                <form action="/alerts/{{ companion_id }}" method="POST">
+                    {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
+                        {{ checkbox_alert("alerts", petmed_obj.id) }}
 
-<!--
-Enable button to add new medications.
- -->
-
+                        PetMed OBJ: {{ petmed_obj.id }} <br>
+                        MED OBJ: {{ med_obj.id }} <br>
+                        MED NAME: {{ med_obj.name }} <br>
+                        <br>
+                    {% endfor %}
+                    <div>
+                        <input type="submit" value="Add alert">
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <br>
 
 {% endblock %}
