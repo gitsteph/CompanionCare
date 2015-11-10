@@ -20,15 +20,30 @@ app.secret_key = "###"
 # app.jinja_env.undefined = StrictUndefined
 
 
+@app.route('/sms', methods=["POST"])
+def retrieve_user_response_and_reply():
+    user_from = request.values.get('From', None)
+    user_response = request.values.get('Body', None)
+    user_from = user_from.strip('+1')
+    user_name = db.session.query(User).filter(User.phone == user_from).first().first_name
+
+    # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
+    # and saves the desired action.  This will then trigger setting the next alert.
+    user_response = user_response.split()
+    alert_id = user_response[0]
+    action_taken = user_response[1]
+    process_user_response(alert_id, action_taken)
+
+    return send_messages.reply_to_user(user_name)
+
+
 def time_alerts():
-    counter=0
     while True:
-        counter+=1  # STILL DUPLICATES ENTRIES-- switch to Celery?
         current_datetime = datetime.datetime.now()
         # query for alerts with past datetimes that have not yet been issued.
         alertlogs = AlertLog.query.filter(AlertLog.scheduled_alert_datetime < current_datetime,
                                           AlertLog.alert_issued.is_(None)).all()
-        print alertlogs, "<<< ALERTS PENDING", counter, os.getpid(), os.getppid()
+        print alertlogs, "<<< ALERTS PENDING", os.getpid(), os.getppid()
         if alertlogs:
             for alertlog in alertlogs:
                 issue_alert_and_update_alertlog(alertlog.id)
@@ -74,7 +89,7 @@ def issue_alert_and_update_alertlog(alertlog_id):
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).primary_alert_phone
     else:
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).secondary_alert_phone
-    send_messages.send_sms_message(msg_body="Hi there!", phone_number=recipient_contact)
+    send_messages.send_sms_message(msg_body="Item is due!", phone_number=recipient_contact)
     # TODO: THIS NEEDS TO PULL INFO.
     print "sent text msg for alertlog.id ", alertlog_id
 
@@ -84,12 +99,18 @@ def issue_alert_and_update_alertlog(alertlog_id):
     db.session.commit()
 
 
+def process_user_response(alert_id, user_response):
+    update_alertlog_with_user_response(alert_id, user_response)
+    create_alertlog_entry_based_on_user_response(alert_id, user_response)
+
+
 def update_alertlog_with_user_response(alert_id, user_response):
     """ User response will be recorded to the designated alertlog entry. """
     # Function will only be run when user responds.
     alertlog_id = most_recent_alertlog_id_given_alert_id(alert_id)
     update_alertlog = update(AlertLog.__table__).where(AlertLog.id == alertlog_id).values({AlertLog.action_taken: user_response,
-                                                                                           AlertLog.response_timestamp: datetime.datetime.now()})
+                                                                                           AlertLog.response_timestamp: datetime.datetime.now(),
+                                                                                           AlertLog.updated_at: datetime.datetime.now()})
     db.session.execute(update_alertlog)
     db.session.commit()
     return alertlog_id, user_response
@@ -98,17 +119,17 @@ def update_alertlog_with_user_response(alert_id, user_response):
 def create_alertlog_entry_based_on_user_response(alert_id, user_response):
     """ Based on user response, the next_alert_datetime in alerts will be generated. """
     current_datetime = datetime.datetime.now()
-    if user_response == ("1" or "given"):
+    if user_response == "given":
         alert_frequency = Alert.query.get(alert_id).petmedication.frequency
         scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=alert_frequency)
         schedule_alert(alert_id, scheduled_alert_datetime)
-    elif user_response == ("2" or "delay"):
+    elif user_response == "delay":
         scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=1)
-        schedule(alert_id, scheduled_alert_datetime)
-    elif user_response == ("3" or "forward"):
+        schedule_alert(alert_id, scheduled_alert_datetime)
+    elif user_response == "forward":
         scheduled_alert_datetime = current_datetime
         secondary_contact = db.session.query(Alert).get(alert_id).secondary_alert_phone
-        schedule(alert_id, scheduled_alert_datetime, secondary_contact)
+        schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact)
 
 
 # Helper function to check whether user is logged in.
@@ -266,7 +287,8 @@ def edit_user_profile():
                                                 ("Password", ("password", "password", user_obj.password)),
                                                 ("First Name", ("first_name", "text", user_obj.first_name)),
                                                 ("Last Name", ("last_name", "text", user_obj.last_name)),
-                                                ("Zipcode", ("zipcode", "text", user_obj.zipcode))])
+                                                ("Zipcode", ("zipcode", "text", user_obj.zipcode)),
+                                                ("Phone", ("phone", "text", user_obj.phone))])
 
             print user_attributes_dict
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
@@ -288,7 +310,7 @@ def edit_user_profile():
                 return redirect("/logout")
 
             else:
-                value_types = ["email", "password", "first_name", "last_name", "zipcode"]
+                value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
                 values_dict = {val:request.form.get(val) for val in value_types}
                 values_dict["updated_at"] = datetime.datetime.now()
                 values_dict = {k:v for k,v in values_dict.iteritems() if v}
