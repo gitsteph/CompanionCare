@@ -6,9 +6,11 @@ from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetM
 from sqlalchemy import update, delete, exc
 from collections import OrderedDict
 import multiprocessing
+# from celery import Celery
 import send_messages
 import datetime
 import time
+import os
 
 
 app = Flask(__name__)
@@ -26,7 +28,7 @@ def time_alerts():
         # query for alerts with past datetimes that have not yet been issued.
         alertlogs = AlertLog.query.filter(AlertLog.scheduled_alert_datetime < current_datetime,
                                           AlertLog.alert_issued.is_(None)).all()
-        print alertlogs, "<<< ALERTS PENDING", counter
+        print alertlogs, "<<< ALERTS PENDING", counter, os.getpid(), os.getppid()
         if alertlogs:
             for alertlog in alertlogs:
                 issue_alert_and_update_alertlog(alertlog.id)
@@ -587,20 +589,25 @@ def edit_companion(companion_id):
 ##############################################################################
 # Helper functions
 
-if __name__ == "__main__":
-    app.debug = True
-
-    connect_to_db(app)
-
+def install_alerts_daemon(*args, **kwargs):
     p = multiprocessing.Process(target=time_alerts)
     # Daemonic processes will only continue running so long as there are non-daemons.
     # Quit when there are no non-daemons left.
     p.daemon = True
     p.start()
-    # Join: parent waits for child program to exit before joining.
-    # p.join()
+    print "installed alerts daemon", p
+
+if __name__ == "__main__":
+    app.debug = True
+
+    connect_to_db(app)
+
+    # only run this once (on reload if in debug, or normal load if not debug)
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        install_alerts_daemon()
 
     app.run()
+
 
 
     # SOME TESTER THINGS TO DELETE LATER BELOW
