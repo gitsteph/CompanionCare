@@ -35,9 +35,13 @@ def schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact=None):
 def issue_alert_and_update_alertlog(alertlog_id):
     alertlog_obj = db.session.query(AlertLog).get(alertlog_id)
     recipient = alertlog_obj.recipient
-    if recipient is "primary":
+    print recipient, "<<< RECIP"
+    if recipient == "primary":
+        print type(recipient), "<<< TYPE"
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).primary_alert_phone
+        print recipient_contact
     else:
+        print "else printed here"
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).secondary_alert_phone
     send_messages.send_sms_message(msg_body="Item is due!", phone_number=recipient_contact)
     # TODO: THIS NEEDS TO PULL INFO.
