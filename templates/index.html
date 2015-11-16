@@ -1,19 +1,36 @@
 {% extends 'base.html' %}
-{% block title %}MedAlert (for non-human companions){% endblock %}
+{% block title %}CompanionCare: Dashboard{% endblock %}
 
 {% block content1 %}Companions & Reminders{% endblock %}
 {% block content2 %} 
-
     {% if companion_obj_list %}
         {% for companion_obj in companion_obj_list %}
-        <ul>
-            <li>Name: <a href='/companion/{{ companion_obj.id }}'>{{ companion_obj.name }}</a></li>
-            <li>User: {{ companion_obj.user_id }}</li>
-        </ul>
+            <div class="rounded-companions">
+                <ul>
+                    <li>Name: <a href='/companion/{{ companion_obj.id }}'>{{ companion_obj.name }}</a></li>
+                    <li>User: {{ companion_obj.user_id }}</li>
+                    <li>Species: {{ companion_obj.species }}</li>
+                    <li>Gender: {{ companion_obj.gender }}</li>
+                    <li>Age: {{ companion_obj.age }} </li>
+                </ul>
+            </div>
         {% endfor %}
     {% endif %}
     
-    <a href="/new_companion">Add companion</a>
+    <div class="row">
+        <div class="col-xs-6 col-md-6 col-lg-6">TEST</div>
+        <div class="col-xs-6 col-md-6 col-lg-6"><a href="/new_companion">Add companion</a></div>
+    </div>
 
+<div class="col-xs-6 col-md-6 col-lg-6">
+    <div class="row">hihi</div>
+    <div class="row">hihi</div>
+    <div class="row">hihi</div>
+</div>
 
+<div class="col-xs-6 col-md-6 col-lg-6">
+    <div class="row">hihi</div>
+    <div class="row">hihi</div>
+    <div class="row">hihi</div>
+</div>
 {% endblock %}

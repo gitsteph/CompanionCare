@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}MedAlert (for non-human companions){% endblock %}
+{% block title %}CompanionCare{% endblock %}
 
 
 {% block content1 %}Home Page{% endblock %}
-<div class="container fluid">
     {% block content2 %}
-    <div class="row">
         <form action="/login", method='POST'>
             </div>
                 <label>Email:
@@ -31,4 +29,4 @@
     {% endblock %}
 </div>
 
-{% set nologin = True %}  <!--Overrides login/logout buttons-->
+<!-- {% set nologin = True %}  Overrides login/logout buttons -->
