@@ -14,9 +14,8 @@ class User(db.Model):
     first_name = db.Column(db.String(20), nullable=False)
     last_name = db.Column(db.String(20), nullable=False)
     password = db.Column(db.String(20), nullable=False)
-    # network_id = db.Column(db.Integer, nullable=False)
     phone = db.Column(db.String, nullable=True)
-    zipcode = db.Column(db.String(15), nullable=True)
+    zipcode = db.Column(db.String(15), nullable=True)  # DELETE THIS LATER
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
@@ -26,6 +25,49 @@ class User(db.Model):
         return "<User id=%s Name=%s %s>" % (self.id, self.first_name, self.last_name)
 
     companions = db.relationship('Companion', cascade="all,delete", backref="user")
+    # usernetworks = db.relationship('UserNetwork', backref="user")
+
+
+# class UserNetwork(db.Model):
+#     """Users may belong to many networks, and networks may have many users with different access."""
+
+#     __tablename__ = "usernetworks"
+
+#     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+#     network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))
+#     permissions = db.Column(db.Integer, db.ForeignKey('permissions.id'))
+#     created_at = db.Column(db.DateTime, nullable=False)
+#     updated_at = db.Column(db.DateTime, nullable=True)
+
+
+# class Network(db.Model):
+#     """Companion networks-- most likely households."""
+
+#     __tablename__ = "networks"
+
+#     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+#     network_name = db.Column(db.String(40), nullable=False, unique=True)
+#     primary_location = db.Column(db.String)  # THIS SHOULD BE AN ADDRESS
+#     created_at = db.Column(db.DateTime, nullable=False)
+#     updated_at = db.Column(db.DateTime, nullable=True)
+
+#     usernetworks = db.relationship('UserNetwork', backref="network")
+#     companions = db.relationship('Companion', backref="network")
+
+
+
+# class Permission(db.Model):
+#     """User access for UserNetworks."""
+
+#     __tablename__ = "permissions"
+
+#     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+#     permission_type = (db.String)
+#     created_at = db.Column(db.DateTime, nullable=False)
+#     updated_at = db.Column(db.DateTime, nullable=True)
+
+#     usernetworks = db.relationship('UserNetwork', backref="permission")
 
 
 class Companion(db.Model):
@@ -40,17 +82,31 @@ class Companion(db.Model):
     gender = db.Column(db.String(20))
     breed = db.Column(db.String(20))
     age = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # network_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  ## DELETE THIS LATER
+    # network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
     petvets = db.relationship('PetVet', cascade="all,delete", backref="companion")
+    petfoods = db.relationship('PetFood', cascade="all,delete", backref="companion")
+    weightlogs = db.relationship('WeightLog', cascade="all,delete", backref="companion")
+
 
     def __repr__(self):
         """Provide helpful representation when printed."""
 
         return "<Companion ID=%s Name=%s Species=%s>" % (self.id, self.name, self.species)
+
+
+class WeightLog(db.Model):
+    """Logged weight for individual companions."""
+
+    __tablename__ = "weightlogs"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey('companions.id'), nullable=False)
+    weight = db.Column(db.Numeric)  # in lbs
+    created_at = db.Column(db.DateTime, nullable=False)
 
 
 class PetVet(db.Model):
@@ -69,7 +125,6 @@ class PetVet(db.Model):
         return "<PetVet ID=%s Pet ID=%s Vet ID=%s>" % (self.id, self.pet_id, self.vet_id)
 
     petmeds = db.relationship('PetMedication', backref="petvet")
-
 
 
 class Veterinarian(db.Model):
@@ -95,7 +150,6 @@ class Veterinarian(db.Model):
     petvets = db.relationship('PetVet', cascade="all,delete", backref="veterinarian")
 
 
-
 class Medication(db.Model):
     """Pet medications."""
 
@@ -103,14 +157,13 @@ class Medication(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     name = db.Column(db.String(20), nullable=False)
-    description = db.Column(db.String, nullable=True)
+    general_description = db.Column(db.String, nullable=True)
     link = db.Column(db.String(20), nullable=True)  # link type?
     species = db.Column(db.String(20), nullable=True)  # may want to separate out to be searchable later.
-    # photo = db.Column(db.String(20), nullable=True)  # photo type?
-    uses = db.Column(db.String, nullable=True)  # may want to separate out to be searchable later.
-    side_effects = db.Column(db.String, nullable=True)
-    contraindications = db.Column(db.String, nullable=True)
-    instructions = db.Column(db.String, nullable=True)
+    how_it_works = db.Column(db.String, nullable=True)
+    missed_dose = db.Column(db.String, nullable=True)
+    storage_information = db.Column(db.String, nullable=True)
+    side_effects_and_drug_interactions = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
@@ -134,7 +187,6 @@ class PetMedication(db.Model):
     notes = db.Column(db.String, nullable=True)
     petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
     frequency = db.Column(db.Integer)  # every X hours
-    frequency_unit = db.Column(db.String)  # delete this later
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
     # medication attribute exists via relationship
@@ -157,8 +209,6 @@ class Alert(db.Model):
     petfood_id = db.Column(db.Integer, nullable=True)
     primary_alert_phone = db.Column(db.String)
     secondary_alert_phone = db.Column(db.String)
-    alert_frequency = db.Column(db.String)  # may want to remove this
-    alert_frequency_unit = db.Column(db.String)  # may want to remove this
     current = db.Column(db.String(20))
     alert_options = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, nullable=False)
@@ -186,6 +236,37 @@ class AlertLog(db.Model):
     response_timestamp = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
+
+
+class PetFood(db.Model):
+    """Foods for specific pets."""
+
+    __tablename__ = "petfoods"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey('companions.id'), nullable=False)
+    food_id = db.Column(db.Integer, db.ForeignKey('foodtypes.id'), nullable=False)
+    frequency = db.Column(db.Integer)  # every X hours
+    quantity = db.Column(db.Numeric)  # in lbs
+    notes = db.Column(db.String, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+
+class FoodType(db.Model):
+    """Food types for pets."""
+
+    __tablename__ = "foodtypes"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    species = db.Column(db.String)
+    food_type = db.Column(db.String)  # wet/dry/mix
+    brand = db.Column(db.String)
+    name = db.Column(db.String)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+    petfoods = db.relationship('PetFood', cascade="all,delete", backref="foodtype")
 
 
 ##############################################################################

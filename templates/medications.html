@@ -39,14 +39,24 @@
         <div class="col-sm-6 col-md-6 col-lg-6">
             {% if petmed_dict is defined %}
                 <form action="/alerts/{{ companion_id }}" method="POST">
-                    {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
-                        {{ checkbox_alert("alerts", petmed_obj.id) }}
 
-                        PetMed OBJ: {{ petmed_obj.id }} <br>
-                        MED OBJ: {{ med_obj.id }} <br>
-                        MED NAME: {{ med_obj.name }} <br>
-                        <br>
-                    {% endfor %}
+                    <table>
+                        {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
+                            <tr>
+                                <td>
+                                {{ checkbox_alert("alerts", petmed_obj.id) }}
+                                </td>
+                                <td>
+                                    Medication Name: {{ med_obj.name }} <br>
+                                    Medication ID: {{ med_obj.id }} <br>
+                                    General Description: {{ med_obj.uses }} <br>
+                                    Frequency: Every {{ petmed_obj.frequency }} hours <br>
+                                    Prescribing Veterinarian ID: {{ petmed_obj.petvet_id }} <br>
+                                    <br>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
                     <div>
                         <input type="submit" value="Add alert">
                     </div>

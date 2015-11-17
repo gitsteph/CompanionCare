@@ -3,9 +3,12 @@ from model import db, User, Companion, PetVet, Veterinarian, PetMedication, Medi
 import send_messages
 from sqlalchemy import update, delete, exc
 
+def most_recent_alertlog_given_alert_id(alert_id):
+    alertlog = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first()
+
 
 def most_recent_alertlog_id_given_alert_id(alert_id):
-    alertlog_id = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first().id
+    alertlog_id = most_recent_alertlog_given_alert_id(alert_id).id
     return alertlog_id
 
 
@@ -56,6 +59,8 @@ def issue_alert_and_update_alertlog(alertlog_id):
 def process_user_response(alert_id, user_response):
     update_alertlog_with_user_response(alert_id, user_response)
     create_alertlog_entry_based_on_user_response(alert_id, user_response)
+    new_alertlog_datetime = most_recent_alertlog_given_alert_id(alert_id).scheduled_alert_datetime
+    return new_alertlog_datetime
 
 
 def update_alertlog_with_user_response(alert_id, user_response):
@@ -78,9 +83,12 @@ def create_alertlog_entry_based_on_user_response(alert_id, user_response):
         scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=alert_frequency)
         schedule_alert(alert_id, scheduled_alert_datetime)
     elif user_response == "delay":
-        scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=1)
+        scheduled_alert_datetime = current_datetime + datetime.timedelta(hours=2)
         schedule_alert(alert_id, scheduled_alert_datetime)
     elif user_response == "forward":
         scheduled_alert_datetime = current_datetime
         secondary_contact = db.session.query(Alert).get(alert_id).secondary_alert_phone
         schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact)
+    elif user_response == "cancel":
+        update(Alert.__table__).where(Alert.id == alert_id).values({Alert.current: "No",
+                                                                    AlertLog.updated_at: datetime.datetime.now()})

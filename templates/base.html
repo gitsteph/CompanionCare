@@ -7,8 +7,7 @@
           <link href="../static/css/dashboard.css" rel="stylesheet" type="text/css" />
 
 
-<!--           <link href="/static/project.css" rel="stylesheet">
- -->      <link href="../static/css/sidebar.css" rel="stylesheet" type="text/css" />
+        <link href="../static/css/sidebar.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
         <script src="http://code.jquery.com/jquery.js"></script>
@@ -43,59 +42,15 @@
                 </div>
             </div>
         </div>
-
         <div id="wrapper" style="padding-top:50px">
             <!-- Sidebar -->
+        {% if session.get('user_id') %}
+
             <div id="sidebar-wrapper">
                 <ul class="sidebar-nav">
-                    <!-- <li class="sidebar-brand">
-                        <a href="#">
-                            Start Bootstrap
-                        </a>
-                    </li> -->
-                    <div class="panel-group" id="accordion">
-
-                        <div class="panel panel-default">
-                            <div class="panel-heading" id="petheader">
-                                <h4 class="panel-title">
-                                    <li>
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                                        Companions
-                                    </a>
-                                    </li>
-                                </h4>
-                           </div>
-                               <div id="collapseOne" class="panel-collapse collapse in">
-                                   <div class="panel-body" id="petlist">
-                                        <li>
-                                            <a href="#">Fluffy</a>
-                                        </li>
-                                        <li>
-                                            <a href="#">Scruffy</a>
-                                        </li>
-                                   </div>
-                               </div> 
-                         </div>
-
-                     </div>
-                    <!-- <div class="list-group panel">
-                        <a href="#demo3" class="list-group-item list-group-item-success" data-toggle="collapse" data-parent="#MainMenu">Item 3</a>
-                        <div class="collapse" id="demo3">
-                          <a href="#SubMenu1" class="list-group-item" data-toggle="collapse" data-parent="#SubMenu1">Subitem 1 <i class="fa fa-caret-down"></i></a>
-                          <div class="collapse list-group-submenu" id="SubMenu1">
-                            <a href="#" class="list-group-item" data-parent="#SubMenu1">Subitem 1 a</a>
-                            <a href="#" class="list-group-item" data-parent="#SubMenu1">Subitem 2 b</a>
-                            <a href="#SubSubMenu1" class="list-group-item" data-toggle="collapse" data-parent="#SubSubMenu1">Subitem 3 c <i class="fa fa-caret-down"></i></a>
-                            <div class="collapse list-group-submenu list-group-submenu-1" id="SubSubMenu1">
-                              <a href="#" class="list-group-item" data-parent="#SubSubMenu1">Sub sub item 1</a>
-                              <a href="#" class="list-group-item" data-parent="#SubSubMenu1">Sub sub item 2</a>
-                            </div>
-                            <a href="#" class="list-group-item" data-parent="#SubMenu1">Subitem 4 d</a>
-                          </div>
-                          <a href="javascript:;" class="list-group-item">Subitem 2</a>
-                          <a href="javascript:;" class="list-group-item">Subitem 3</a>
-                        </div>
-                    </div> -->
+                    <li>
+                        <a href="/">Companions</a>
+                    </li>
                     <li>
                         <a href="#">Alerts</a>
                     </li>
@@ -112,27 +67,12 @@
                         <a href="#">Photos</a>
                     </li>
                 </ul>
+        {% endif %}
             </div>
             <!-- /#sidebar-wrapper -->
 
-
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-xs-6 col-md-4">
-
-
-                </div>
-                <div class="row">
-                    <div class
-
-
-                </div>
-
-            </div><!-- Closing out container.-->
-
             <script>
             $('.dropdown-toggle').dropdown()
-
             </script>
 
             {% with messages = get_flashed_messages() %}
@@ -145,7 +85,9 @@
                 {% endif %}
             {% endwith %}
             
-            <div class="container fluid"><h1>{% block content1 %}CompanionCare{% endblock %}</h1></div>
+            <div class="container fluid">
+                <center><h1>{% block content1 %}CompanionCare{% endblock %}</h1></center>
+            </div>
             <div class="container fluid">
                 {% block content2 %} SAMPLE TEXT HERE{% endblock %}
             </div>
@@ -154,5 +96,7 @@
 
         <br><br>
         <footer></footer>
+        </div><!-- Closing out container.-->
+
     </body>
 </html>
