@@ -8,7 +8,11 @@
         <li>Username (email): {{ user_obj.email }}</li>
         <li>Name: {{ user_obj.first_name }} {{ user_obj.last_name }}</li>
         <li>Password: {{ user_obj.password }}  <!-- REMOVE LATER --></li>
-        <li>Network: <!--INSERT IN--></li>
+<!--         <li>Network: 
+            {% for network in networks_list %}
+                {{ network.network_name }}
+            {% endfor %}
+        </li> -->
         <li>Phone: {{ user_obj.phone }}</li>
         <li>Zipcode: {{ user_obj.zipcode}}</li>
     </ul>

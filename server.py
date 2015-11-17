@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, flash, jsonify
 from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
-from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog, Network, UserNetwork, PetFood, FoodType
 from sqlalchemy import update, delete, exc
 from alerts import *
 from queries import *
@@ -21,6 +21,10 @@ app.secret_key = "###"
 
 # app.jinja_env.undefined = StrictUndefined
 
+# NETWORK CODE TO REFACTOR FOR FUTURE RELEASE
+# def check_network_name_exists(network_name):
+#     network_name = db.session.query(Network).filter(Network.network_name == network_name).first()
+#     return network_name or False
 
 @app.route('/sms', methods=["POST"])
 def retrieve_user_response_and_reply():
@@ -34,9 +38,12 @@ def retrieve_user_response_and_reply():
     user_response = user_response.split()
     alert_id = user_response[0]
     action_taken = user_response[1]
-    process_user_response(alert_id, action_taken)
 
-    return send_messages.reply_to_user(user_name)
+    # Processes user_response and returns the datetime of next scheduled alert.
+    new_scheduled_alert = process_user_response(alert_id, action_taken)
+    new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
+
+    return send_messages.reply_to_user(new_scheduled_alert, user_name)
 
 
 def time_alerts():
@@ -64,6 +71,7 @@ def confirm_loggedin():
         return None
     else:
         user_obj = User.query.filter(User.id == user_id).first()
+
     return user_obj
 
 
@@ -94,30 +102,71 @@ def register_user():
                                                 ("First Name", ("first_name", "text")),
                                                 ("Last Name", ("last_name", "text")),
                                                 ("Phone Number", ("phone", "text")),
-                                                ("Zipcode", ("zipcode", "text"))])
-            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
+                                                ("User Zipcode", ("zipcode", "text"))])
+
+            network_attributes_dict = OrderedDict([("Network Name", ("network_name", "text")),
+                                                    ("Network Address", ("primary_location", "text"))])
+
+            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict,
+                                    network_attributes_dict=network_attributes_dict)
 
     elif request.method == 'POST':
         """Processes new user registration."""
 
         # Requests information provided by the user from registration form.
-        value_types = ["email", "password", "first_name", "last_name", "phone", "zipcode"]
-        values_dict = {val:request.form.get(val) for val in value_types}
-        values_dict["created_at"] = datetime.datetime.now()
+        user_value_types = ["email", "password", "first_name", "last_name", "phone", "zipcode"]
+        user_values_dict = {val:request.form.get(val) for val in user_value_types}
+        user_values_dict["created_at"] = datetime.datetime.now()
 
         # Queries "users" table in database to determine whether user already has an account.
         # If the user has an account, the user is redirected to login page.
         # Otherwise, a new account is created and the user is logged in via the session.
-        user_object = User.query.filter(User.email == values_dict["email"]).first()
+        user_object = User.query.filter(User.email == user_values_dict["email"]).first()
         if user_object:
             flash('account exists')
             return redirect("/")
         else:
-            new_user = User(**values_dict)
+            new_user = User(**user_values_dict)
             db.session.add(new_user)
             db.session.commit()
-            user_object = User.query.filter(User.email == values_dict["email"]).first()
+            user_object = User.query.filter(User.email == user_values_dict["email"]).first()
             session['user_id'] = user_object.id
+
+        # NETWORK CODE: NEED TO REFACTOR FOR FUTURE RELEASE
+        # new_or_existing_network = request.form.get("new_or_existing_network")
+        # network_values_dict = {}
+        # network_value_types = ["network_name", "primary_location"]
+        # network_values_dict = {val:request.form.get(val) for val in network_value_types}
+
+        # user_network_dict = {}
+        # network_status = None
+        # if new_or_existing_network == "existing_network":
+        #     network = check_network_name_exists(network_values_dict["network_name"])
+        #     if network:
+        #         user_network_dict["network_id"] = network.id
+        #     else:
+        #         flash("network does not exist, adding new network")
+        #         network_status = "new"
+        # if new_or_existing_network == "new_network" or network_status == "new":
+        #     network_values_dict["created_at"] = datetime.datetime.now()
+        #     network = check_network_name_exists(network_values_dict["network_name"])
+
+        #     if network:  # check if network new
+        #         user_network_dict["network_id"] = network.id
+        #         print user_network_dict["network_id"], "<<< user_network_id"
+        #     else:
+        #         new_network = Network(**network_values_dict)
+        #         db.session.add(new_network)
+        #         db.session.commit()
+        #         network = check_network_name_exists(network_values_dict["network_name"])
+        #         user_network_dict["network_id"] = network.id
+
+
+        # user_network_dict["user_id"] = session['user_id']
+        # user_network_dict["created_at"] = datetime.datetime.now()
+        # new_usernetwork = UserNetwork(**user_network_dict)
+        # db.session.add(new_usernetwork)
+        # db.session.commit()
 
         return redirect("/")
 
@@ -180,8 +229,10 @@ def edit_user_profile():
                                                 ("Zipcode", ("zipcode", "text", user_obj.zipcode)),
                                                 ("Phone", ("phone", "text", user_obj.phone))])
 
-            print user_attributes_dict
-            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
+            network_attributes_dict = OrderedDict([("Network Name", ("network_name", "text")),
+                                                    ("Network Address", ("primary_location", "text"))])
+
+            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict, network_attributes_dict=network_attributes_dict)
 
         elif request.method == 'POST':
             """Processes updated information."""
@@ -236,7 +287,7 @@ def add_companion():
             """Processes new companion information."""
 
             # Requests information about each companion.
-            value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
+            value_types = ["name", "primary_nickname", "species", "breed", "gender", "age", "network_id"]
             values_dict = {val:request.form.get(val) for val in value_types}
             values_dict["user_id"] = session["user_id"]
             values_dict["created_at"] = datetime.datetime.now()
@@ -273,10 +324,10 @@ def show_medications(companion_id):
     else:
         if request.method == 'GET':
             medication_attributes_dict = OrderedDict([("name", "Medication Name"),
+                                          ("prescribing_vet", "Prescribing Veterinarian"),
                                           ("current", "Current"),
-                                          ("frequency", "Frequency"),
-                                          ("frequency_unit", "Frequency Unit"),
-                                          ("prescribing_vet", "Prescribing Veterinarian")])
+                                          ("frequency", "Frequency") # by hour, need to convert if by day (e.g. every 4 hrs)
+                                          ])
             companion_name = companion_obj.name
 
             # Queries for all medications for specific pet (companion_id), returning a list of petmed objects.
@@ -329,7 +380,7 @@ def show_medications(companion_id):
                 db.session.commit()
 
             # List of values to pull from form.
-            petmed_values = ["current", "frequency", "frequency_unit"]
+            petmed_values = ["current", "frequency"]
             med_values = ["name"]
             med_name = request.form.get("name")
             # Dictionary of Model.py classes and their corresponding input attributes.
@@ -392,7 +443,7 @@ def show_alerts_and_form(companion_id):
 def add_alerts(companion_id):
     # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
     value_types = ["primary_alert_phone", "secondary_alert_phone",
-                   "alert_frequency", "alert_frequency_unit", "petmed_id"]
+                   "petmed_id"]
     values_dict = {val:request.form.get(val) for val in value_types}
     values_dict["alert_options"] = request.form.getlist("alert_options")
     values_dict["created_at"] = datetime.datetime.now()

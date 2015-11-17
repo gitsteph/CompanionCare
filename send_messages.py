@@ -33,10 +33,10 @@ def send_mms_message(msg_body, media_url1="", media_url2=""):
                                          body=msg_body,
                                          media_url=[str(media_url1), str(media_url2)])
 
-def reply_to_user(user_name=""):
+def reply_to_user(new_alert_time, user_name=""):
     # Will reply to messages received.
     # Users.query.filter(phone=)
     resp = twiml.Response()
-    message = user_name + ", your response has been received."
+    message = user_name + ", your response has been logged and a new alert has been set for" + new_alert_time + "."
     resp.message(message)
     return str(resp)

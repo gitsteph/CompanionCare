@@ -19,15 +19,51 @@
     {{ text }}
 
     {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
-         {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
+    <tr>
+        <td>{{ name }}</td>
+        <td><input type="{{ type }}" name="{{ variable }}" value="{{
             value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
+        </td>
+    </tr>
     {%- endmacro %}
     <form action="{{ action_path }}" method="POST">
-    {% for name, key in user_attributes_dict.items() %}
-        {% if name != "logged_in" %}
-            {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
-        {% endif %}
-    {% endfor %}
+    <table>
+        <tr>
+            <th>
+                User Information:
+            </th>
+        </tr>
+        {% for name, key in user_attributes_dict.items() %}
+            {% if name != "logged_in" %}
+                {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+            {% endif %}
+        {% endfor %}
+        <!-- Network Code to Refactor For Future Release -->
+        <!-- 
+        <tr><th><br><br></th></tr>
+        <tr>
+            <th>
+                Companion Care Network Information:
+            </th>
+        </tr>
+        {% for name, key in network_attributes_dict.items() %}
+            {% if name != "logged_in" %}
+                {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+            {% endif %}
+        {% endfor %}
+        <div>
+            <tr><td>Is this a new or existing companion network?</td></tr>
+            <tr>
+                <td>
+                    <input type="radio" name="new_or_existing_network" value="new_network">New 
+                </td>
+                <td>
+                    <input type="radio" name="new_or_existing_network" value="existing_network">Existing
+                </td>
+            </tr>
+        </div> -->
+    </table>
+        <br><br>
         <div>
             <input type="submit" value="{{ register_or_update }}">
         </div>
