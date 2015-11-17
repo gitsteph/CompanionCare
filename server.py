@@ -34,9 +34,12 @@ def retrieve_user_response_and_reply():
     user_response = user_response.split()
     alert_id = user_response[0]
     action_taken = user_response[1]
-    process_user_response(alert_id, action_taken)
 
-    return send_messages.reply_to_user(user_name)
+    # Processes user_response and returns the datetime of next scheduled alert.
+    new_scheduled_alert = process_user_response(alert_id, action_taken)
+    new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
+
+    return send_messages.reply_to_user(new_scheduled_alert, user_name)
 
 
 def time_alerts():
