@@ -14,6 +14,8 @@ with open('./medications.json', 'r') as fp:
 
 all_meds_list = sorted(all_meds_dict.items())
 
+## TODO: Need to refactor how side_effects... is stored/parsed.
+
 def strip_and_stringify_med_vals(med_values_list):
     med_val_str = ('\n').join(med_values_list)
     for unicode_str in [u'\xa0', u'\u2019', u'\u2014', u'\xc2', u'\xae']:

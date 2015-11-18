@@ -6,12 +6,13 @@
     {% if companion_obj_list %}
         {% for companion_obj in companion_obj_list %}
             <div class="rounded-companions">
+                <strong>Name: <a href='/companion/{{ companion_obj.id }}'>{{ companion_obj.name }}</a></strong>
                 <ul>
-                    <li>Name: <a href='/companion/{{ companion_obj.id }}'>{{ companion_obj.name }}</a></li>
                     <li>User: {{ companion_obj.user_id }}</li>
                     <li>Species: {{ companion_obj.species }}</li>
                     <li>Gender: {{ companion_obj.gender }}</li>
                     <li>Age: {{ companion_obj.age }} </li>
+                    <!-- If meds or alerts, render icon. -->
                 </ul>
             </div>
             <br><br>

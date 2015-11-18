@@ -173,7 +173,7 @@ class Medication(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<ID=%s Name=%s Description=%s>" % (self.id, self.name, self.description)
+        return "<ID=%s Name=%s Description=%s>" % (self.id, self.name, self.general_description)
 
 
 class PetMedication(db.Model):

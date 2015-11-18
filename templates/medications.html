@@ -1,69 +1,29 @@
 {% extends 'base.html' %}
-{% block title %}CompanionCare{% endblock %}
 
-{% block content1 %}Medications 
-{% if companion_name is defined %}
-    for {{ companion_name }}
-{% endif %}
-{% endblock %}
+{% block content1 %}Pet Medications{% endblock %}
 
 {% block content2 %}
-
-<!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
--->
-
-    {% macro checkbox_alert(name, value='') -%}
-        <input type="checkbox" name="{{ name }}" value="{{ 
-            value|e }}" size="{{ size }}">
-    {%- endmacro %}
-
     <div class="row">
-        <div class="col-sm-6 col-md-6 col-lg-6">
-            <form action="/medications/{{ companion_id }}" method="POST">
-
-                {% macro input(name, variable, type='text', value='', size=20) -%}
-                     {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{
-                        value|e }}" size="{{ size }}">
-                {%- endmacro %}
-
-                {% for variable, name in medication_attributes_dict.items() %}
-                    {{ input(name, variable) }}</p>
-                {% endfor %}
-
-                <div>
-                    <input type="submit" value="Add medication">
-                </div>
-            </form>
-            <br>
-        </div>
-        <div class="col-sm-6 col-md-6 col-lg-6">
-            {% if petmed_dict is defined %}
-                <form action="/alerts/{{ companion_id }}" method="POST">
-
-                    <table>
-                        {% for petmed_obj, med_obj in petmed_dict.iteritems() %}
-                            <tr>
-                                <td>
-                                {{ checkbox_alert("alerts", petmed_obj.id) }}
-                                </td>
-                                <td>
-                                    Medication Name: {{ med_obj.name }} <br>
-                                    Medication ID: {{ med_obj.id }} <br>
-                                    General Description: {{ med_obj.uses }} <br>
-                                    Frequency: Every {{ petmed_obj.frequency }} hours <br>
-                                    Prescribing Veterinarian ID: {{ petmed_obj.petvet_id }} <br>
-                                    <br>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                    <div>
-                        <input type="submit" value="Add alert">
-                    </div>
-                </form>
-            {% endif %}
+        <div class="col-xs-8 col-xs-offset-2 col-md-8 col-md-offset-2 col-lg-8 col-lg-offset-2">Click on the links below to view detailed information about pet medications or add prescriptions that the companions in your own care network are taking.</div>
+    </div><br>
+    <div class="row">
+        <div class="col-xs-4 col-md-4 col-lg-4">
+            <a href="/">+ Add new medication to directory</a>
         </div>
     </div>
-    <br>
-
+    <div class="row">
+        {% for mini_meds_list in list_med_list %} <!-- To split all meds into three columns. -->
+            <div class="col-xs-4 col-md-4 col-lg-4">
+                <table>
+                    {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
+                            <tr>
+                                <td>
+                                    <a href="/medications/{{ med.name }}">{{ med.name }}</a><!-- displays med name & corresponding link-->
+                                </td>
+                            </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

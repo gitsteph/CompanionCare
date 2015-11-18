@@ -412,7 +412,26 @@ def add_alerts(companion_id):
     return redirect('/')
 
 
-# @app.route('/medications', methods=['GET', 'POST'])
+@app.route('/medications', methods=['GET', 'POST'])
+def show_all_medications():
+    medications = Medication.query.all()
+
+    # Splitting the med_name_list into three mini-lists to enable easy display in columns on the front-end.
+    third_med_list = len(medications)/3
+    first_third_med_list = medications[:third_med_list]
+    second_third_med_list = medications[third_med_list:2*third_med_list]
+    last_third_med_list = medications[2*third_med_list:]
+    list_med_list = [first_third_med_list, second_third_med_list, last_third_med_list]
+    return render_template("medications.html", list_med_list=list_med_list)
+
+
+@app.route('/medications/<med_name>', methods=['GET', 'POST'])
+def view_individual_medication(med_name):
+    print med_name
+    return redirect('/')
+
+
+
 # def show_medications():
 #     if request.method == 'GET':
 #         medication_attributes_dict = OrderedDict([("name", "Medication Name"),
@@ -439,12 +458,12 @@ def add_alerts(companion_id):
 #             # db.session.add(new_companion)
 #             # db.session.commit()
 
-# # @app.route('/photos', methods=['GET'])
-# # def show_photos():
-# #     if request.method == 'GET':
-# #         return render_template("photos.html")
+# @app.route('/photos', methods=['GET'])
+# def show_photos():
+#     if request.method == 'GET':
+#         return render_template("photos.html")
 
-# #     else:
+#     else:
 
 
 # # @app.route('/photos', methods=['GET','POST'])
