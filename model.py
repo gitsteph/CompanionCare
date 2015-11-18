@@ -156,10 +156,10 @@ class Medication(db.Model):
     __tablename__ = "medications"
 
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
-    name = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String, nullable=False)
     general_description = db.Column(db.String, nullable=True)
-    link = db.Column(db.String(20), nullable=True)  # link type?
-    species = db.Column(db.String(20), nullable=True)  # may want to separate out to be searchable later.
+    link = db.Column(db.String, nullable=True)  # link type?
+    species = db.Column(db.String, nullable=True)  # may want to separate out to be searchable later.
     how_it_works = db.Column(db.String, nullable=True)
     missed_dose = db.Column(db.String, nullable=True)
     storage_information = db.Column(db.String, nullable=True)
@@ -184,6 +184,7 @@ class PetMedication(db.Model):
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
     current = db.Column(db.String(10), nullable=False)
+    # NEED TO PUT IN DOSE!
     notes = db.Column(db.String, nullable=True)
     petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
     frequency = db.Column(db.Integer)  # every X hours

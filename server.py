@@ -26,6 +26,7 @@ app.secret_key = "###"
 def retrieve_user_response_and_reply():
     user_from = request.values.get('From', None)
     user_response = request.values.get('Body', None)
+    user_response = user_response.lower()
     user_from = user_from.strip('+1')
     user_name = db.session.query(User).filter(User.phone == user_from).first().first_name
 
@@ -36,10 +37,11 @@ def retrieve_user_response_and_reply():
     action_taken = user_response[1]
 
     # Processes user_response and returns the datetime of next scheduled alert.
-    new_scheduled_alert = process_user_response(alert_id, action_taken)
+    new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
     new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
+    companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
 
-    return send_messages.reply_to_user(new_scheduled_alert, user_name)
+    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, user_name)
 
 
 def time_alerts():
@@ -277,8 +279,6 @@ def show_medications(companion_id):
         if request.method == 'GET':
             medication_attributes_dict = OrderedDict([("name", "Medication Name"),
                                           ("current", "Current"),
-                                          ("frequency", "Frequency"),
-                                          ("frequency_unit", "Frequency Unit"),
                                           ("prescribing_vet", "Prescribing Veterinarian")])
             companion_name = companion_obj.name
 
@@ -332,7 +332,7 @@ def show_medications(companion_id):
                 db.session.commit()
 
             # List of values to pull from form.
-            petmed_values = ["current", "frequency", "frequency_unit"]
+            petmed_values = ["current"]
             med_values = ["name"]
             med_name = request.form.get("name")
             # Dictionary of Model.py classes and their corresponding input attributes.
@@ -394,8 +394,7 @@ def show_alerts_and_form(companion_id):
 @app.route('/alerts/<int:companion_id>/add', methods=["POST"])
 def add_alerts(companion_id):
     # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
-    value_types = ["primary_alert_phone", "secondary_alert_phone",
-                   "alert_frequency", "alert_frequency_unit", "petmed_id"]
+    value_types = ["primary_alert_phone", "secondary_alert_phone", "petmed_id"]
     values_dict = {val:request.form.get(val) for val in value_types}
     values_dict["alert_options"] = request.form.getlist("alert_options")
     values_dict["created_at"] = datetime.datetime.now()

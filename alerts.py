@@ -5,7 +5,7 @@ from sqlalchemy import update, delete, exc
 
 def most_recent_alertlog_given_alert_id(alert_id):
     alertlog = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first()
-
+    return alertlog
 
 def most_recent_alertlog_id_given_alert_id(alert_id):
     alertlog_id = most_recent_alertlog_given_alert_id(alert_id).id
@@ -38,16 +38,26 @@ def schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact=None):
 def issue_alert_and_update_alertlog(alertlog_id):
     alertlog_obj = db.session.query(AlertLog).get(alertlog_id)
     recipient = alertlog_obj.recipient
-    print recipient, "<<< RECIP"
+
+    if alertlog_obj.alert.petmed_id:
+        alert_id = alertlog_obj.alert.id
+        petmed = alertlog_obj.alert.petmedication
+        medication = petmed.medication
+        medication_name = medication.name
+        companion_name = petmed.petvet.companion.name
+        med_or_food_msg_str = " needs to take " + medication_name
+
     if recipient == "primary":
-        print type(recipient), "<<< TYPE"
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).primary_alert_phone
-        print recipient_contact
+        options_str = "' and one of the following: 'given', 'delay' (+2 hrs), or 'forward' (to secondary contact)."
+
     else:
-        print "else printed here"
         recipient_contact = db.session.query(Alert).get(alertlog_obj.alert_id).secondary_alert_phone
-    send_messages.send_sms_message(msg_body="Item is due!", phone_number=recipient_contact)
-    # TODO: THIS NEEDS TO PULL INFO.
+        options_str = "' and one of the following: 'given' or 'delay' (+2 hrs)."
+
+    msg_body = companion_name + med_or_food_msg_str + ". Please reply with the number '" + str(alert_id) + options_str
+
+    send_messages.send_sms_message(msg_body=msg_body, phone_number=recipient_contact)
     print "sent text msg for alertlog.id ", alertlog_id
 
     update_alertlog_issued = update(AlertLog.__table__).where(AlertLog.id == alertlog_id).values({AlertLog.alert_issued: datetime.datetime.now(),
@@ -59,8 +69,10 @@ def issue_alert_and_update_alertlog(alertlog_id):
 def process_user_response(alert_id, user_response):
     update_alertlog_with_user_response(alert_id, user_response)
     create_alertlog_entry_based_on_user_response(alert_id, user_response)
-    new_alertlog_datetime = most_recent_alertlog_given_alert_id(alert_id).scheduled_alert_datetime
-    return new_alertlog_datetime
+    new_alertlog_obj = most_recent_alertlog_given_alert_id(alert_id)
+    new_alertlog_datetime = new_alertlog_obj.scheduled_alert_datetime
+    # TODO: if user_response for alertlog_id that has not yet been issued, update response for previous alertlog entry and resulting new_alert_scheduled.
+    return new_alertlog_datetime, new_alertlog_obj, user_response
 
 
 def update_alertlog_with_user_response(alert_id, user_response):

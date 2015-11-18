@@ -16,16 +16,13 @@
             <form action="/alerts/{{ companion_obj.id }}/add" method="POST">
                 {% for petmed_obj, med_obj in petmed_med_dict.items() %}
                     PetMed ID: {{ petmed_obj.id }} <br>
-                    PetMed Freq: {{ petmed_obj.frequency }} {{ petmed_obj.frequency_unit }} <br>
+                    PetMed Freq: Every {{ petmed_obj.frequency }} hours<br>
                     Current: {{ petmed_obj.current }} <br>
                     PetVet ID: {{ petmed_obj.petvet_id }} <br>
                     Med ID: {{ med_obj.id }} <br>
                     Med Name: {{ med_obj.name }} <br>
                     <br>
                         {{ input("First alert", "scheduled_alert_datetime", "datetime-local") }}<br>
-                        {{ input("Frequency", "alert_frequency", "text", petmed_obj.frequency) }}<br>
-                        {{ input("Frequency Unit", "alert_frequency_unit", "text", petmed_obj.frequency_unit) }}<br>
-
                         <select multiple class="alert_type">
                             <option value="Email">Email</option>
                             <option value="SMS">Text(SMS)</option>
