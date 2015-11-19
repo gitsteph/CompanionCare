@@ -1,18 +1,41 @@
 {% extends 'base.html' %}
 {% block title %}CompanionCare: Medication Detail{% endblock %}
 
-{% block content1 %}<div class="row"><div class="col-xs-6 col-md-6 col-lg-6 col-offset-3">
+{% block content1 %}<div class="row"><div class="col-xs-10 col-md-10 col-lg-10">
 Medication: {{ medication_obj.name }}</div></div>{% endblock %}
 {% block content2 %} 
     <div class="row">
-        <div class="col-xs-6 col-md-6 col-lg-6"> <!-- Need to figure out formatting to ensure it's proportional to screensize.-->
+        <div class="col-xs-10 col-md-10 col-lg-10" id="med_info" style="display: block">
             <strong>General Description:</strong> {{ medication_obj.general_description }}<br>
             <strong>How It Works:</strong> {{ medication_obj.how_it_works }}<br>
             <strong>Storage Information:</strong> {{ medication_obj.storage_information }}<br>
             <strong>Missed Dose?</strong> {{ medication_obj.missed_dose }}<br>
             <strong>Side Effects & Drug Interactions:</strong> {{ medication_obj.side_effects_and_drug_interactions }}<br>
             <br>
-            <a href="/medication/{{ medication_obj.name }}/edit" value="register" button type="button" class="btn btn-primary">Edit this medication</a>
+            <button id="editMedDisplay" value="register" button type="button" class="btn btn-primary">Edit this medication</a>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xs-10 col-md-10 col-lg-10" id="med_form1">
+            <form action="/medications/{{ medication_obj.name }}/update" id="med_form2" style="display: none" method="POST">
+                <h4>Name</h4><input type="text" name="name" value="{{ medication_obj.name }}"></input>
+                <h4>General Description</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.general_description }}</textarea><br>
+                <h4>How It Works</h4><textarea rows="4" cols="100" name="how_it_works" form="med_form2">{{ medication_obj.how_it_works }}</textarea><br>
+                <h4>Storage Information</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.storage_information }}</textarea><br>
+                <h4>Missed Dose?</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.missed_dose }}</textarea><br>
+                <h4>Side Effects & Drug Interactions</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.side_effects_and_drug_interactions }}</textarea><br>
+                <input type="submit" id="updateMedButton" class="btn btn-primary" value="Update Medication Information">
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+    $('#editMedDisplay').on('click', function(evt) {
+        $('#med_info').hide();
+        $('#med_form2').show();
+    })
+
+    $('#medform2').on('submit', updateMedication);
+    </script>
 {% endblock %}

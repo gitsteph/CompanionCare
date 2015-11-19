@@ -74,6 +74,7 @@ $('#edit').on('click', function(e) {
     // var medName = $(e.relatedTarget).data('med-name');
     // var generalDescription = $(e.relatedTarget).data('general-description');
     var storageInfo = $(e.relatedTarget).data('storage-information');
+    console.log(storageInfo)
     // $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
     // $(e.currentTarget).find('p[id="description"]').html(generalDescription);
     $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');

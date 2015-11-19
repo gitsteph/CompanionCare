@@ -448,12 +448,26 @@ def view_single_med(med_name):
     return jsonify(medication_dict)
 
 
-@app.route('/medications/<med_name>/edit', methods=['GET', 'POST'])
+@app.route('/medications/<med_name>', methods=['GET', 'POST'])
 def edit_medication(med_name):
     medication_obj = view_individual_medication(med_name)
     return render_template('medication_detail.html', medication_obj=medication_obj)
 
 
+@app.route('/medications/<med_name>/update', methods=['POST'])
+def update_medication_indb(med_name):
+    """Route specifically for AJAX call to update medication."""
+    medication_object = view_individual_medication(med_name)
+    medication_attributes_list = ['name', 'general_description', 'how_it_works', 'missed_dose', 'storage_information', 'side_effects_and_drug_interactions']
+    updated_med_dict = {val:request.form.get(val) for val in value_types}
+    updated_med_dict["updated_at"] = datetime.datetime.now()
+    updated_med_dict = {k:v for k,v in values_dict.iteritems() if v}
+
+    update_dict = update(Medication.__table__).where(Medication.name == med_name).values(**values_dict)
+    db.session.execute(update_dict)
+    db.session.commit()
+
+    return redirect('/')
 
 
 # def show_medications():
