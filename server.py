@@ -13,8 +13,11 @@ import send_messages
 import datetime
 import time
 import os
+# from flask.ext.httpauth import HTTPBasicAuth
 
+# NEED TO FIX AUTH STUFF
 
+# auth = HTTPBasicAuth()
 app = Flask(__name__)
 
 app.secret_key = "###"
@@ -422,13 +425,34 @@ def show_all_medications():
     second_third_med_list = medications[third_med_list:2*third_med_list]
     last_third_med_list = medications[2*third_med_list:]
     list_med_list = [first_third_med_list, second_third_med_list, last_third_med_list]
+
     return render_template("medications.html", list_med_list=list_med_list)
 
 
-@app.route('/medications/<med_name>', methods=['GET', 'POST'])
 def view_individual_medication(med_name):
-    print med_name
-    return redirect('/')
+    medication_obj = Medication.query.filter(Medication.name == med_name).first()
+    return medication_obj
+
+
+@app.route('/medications/api/<med_name>', methods=['GET'])
+# @auth.login_required
+def view_single_med(med_name):
+    medication_obj = view_individual_medication(med_name)
+    med_cols = [("Name", medication_obj.name), ("General Description", medication_obj.general_description), ("How It Works", medication_obj.how_it_works),
+                ("Missed Dose?", medication_obj.missed_dose), ("Storage Information", medication_obj.storage_information), ("Side Effects & Contraindications", medication_obj.side_effects_and_drug_interactions)]
+    medication_dict = {}
+    for col in med_cols:
+        medication_dict[col[0]] = str(col[1]).replace('\n', " ")
+    medication_dict["uri"] = "/medications/api/" + med_name
+
+    return jsonify(medication_dict)
+
+
+@app.route('/medications/<med_name>/edit', methods=['GET', 'POST'])
+def edit_medication(med_name):
+    medication_obj = view_individual_medication(med_name)
+    return render_template('medication_detail.html', medication_obj=medication_obj)
+
 
 
 
@@ -466,7 +490,7 @@ def view_individual_medication(med_name):
 #     else:
 
 
-# # @app.route('/photos', methods=['GET','POST'])
+# # @app.route('/alerts', methods=['GET','POST'])
 # # def show_veterinarians():
 # #     if request.method == 'GET':
 

@@ -2,16 +2,15 @@
 <html>
     <head>
         <title>{% block title %}CompanionCare{% endblock %}</title>
-          <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-          <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-          <link href="../static/css/dashboard.css" rel="stylesheet" type="text/css" />
-
-
-        <link href="../static/css/sidebar.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
         <script src="http://code.jquery.com/jquery.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        <link href="../static/css/sidebar.css" rel="stylesheet" type="text/css"/>
+        <link href="../static/css/dashboard.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+
         <div class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
 
@@ -45,14 +44,13 @@
         <div id="wrapper" style="padding-top:50px">
             <!-- Sidebar -->
         {% if session.get('user_id') %}
-
             <div id="sidebar-wrapper">
                 <ul class="sidebar-nav">
                     <li>
                         <a href="/">Companions</a>
                     </li>
                     <li>
-                        <a href="#">Alerts</a>
+                        <a href="/alerts">Alerts</a>
                     </li>
                     <li>
                         <a href="/medications">Medications</a>
@@ -77,11 +75,11 @@
 
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <ul class=flashes>
                     {% for message in messages %}
-                        <li>{{ message }}</li>
+                        <div class="alert alert-info">
+                            {{ message }}
+                        </div>
                     {% endfor %}
-                    </ul>
                 {% endif %}
             {% endwith %}
             
@@ -89,13 +87,13 @@
                 <center><h1>{% block content1 %}CompanionCare{% endblock %}</h1></center>
             </div>
             <div class="container fluid">
-                {% block content2 %} SAMPLE TEXT HERE{% endblock %}
+                {% block content2 %} TEXT HERE {% endblock %}
             </div>
 
         </div>
 
-        <br><br>
-        <footer></footer>
+            <br><br>
+            <footer></footer>
         </div><!-- Closing out container.-->
 
     </body>

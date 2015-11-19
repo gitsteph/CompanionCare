@@ -38,8 +38,8 @@ def get_med(med_url='/pet-medication/acepromazine'):
     article_tags_list = article_body.find_all(h23_but_not_crap)
 
     # special cases removed for now; they take some extra work to generalize across drug pages
-    # # special handling to find drug reaction tag
-    # interactions_str = re.compile(".* may react with these drugs:")
+    # # special handling to find re.compile(".* may react with these drugs:")drug reaction tag
+    # interactions_str = 
     # interactions_tag = article_body.find("p", string=interactions_str)
     # # special handling to find drug cautions tag
     # cautions_str = re.compile("USE CAUTION WHEN ADMINISTERING.*")

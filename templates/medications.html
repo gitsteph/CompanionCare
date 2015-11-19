@@ -3,27 +3,106 @@
 {% block content1 %}Pet Medications{% endblock %}
 
 {% block content2 %}
-    <div class="row">
-        <div class="col-xs-8 col-xs-offset-2 col-md-8 col-md-offset-2 col-lg-8 col-lg-offset-2">Click on the links below to view detailed information about pet medications or add prescriptions that the companions in your own care network are taking.</div>
-    </div><br>
-    <div class="row">
-        <div class="col-xs-4 col-md-4 col-lg-4">
-            <a href="/">+ Add new medication to directory</a>
+    <div id="main_body">
+        <div class="row">
+            <div class="col-xs-8 col-xs-offset-2 col-md-8 col-md-offset-2 col-lg-8 col-lg-offset-2">Click on the links below to view detailed information about pet medications or add prescriptions that the companions in your own care network are taking.</div>
+        </div><br>
+        <div class="row">
+            <div class="col-xs-4 col-md-4 col-lg-4">
+                <a href="/">+ Add new medication to directory</a>
+            </div>
+        </div>
+        <div class="row">
+            {% for mini_meds_list in list_med_list %} <!-- To split all meds into three columns. -->
+                <div class="col-xs-4 col-md-4 col-lg-4">
+                    <table>
+                        {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
+                                <tr>
+                                    <td> <!-- Clicking will trigger the modal(route). -->
+                                        <!-- displays med name & corresponding link-->
+                                        <a href="#my_modal" data-toggle="modal" data-med-name="{{ med.name }}" 
+                                                data-general-description="{{ med.general_description }}"
+                                                data-storage-information="{{ med.storage_information }}"
+                                                >{{ med.name }}</a>
+                                    </td>
+                                </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
         </div>
     </div>
-    <div class="row">
-        {% for mini_meds_list in list_med_list %} <!-- To split all meds into three columns. -->
-            <div class="col-xs-4 col-md-4 col-lg-4">
-                <table>
-                    {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
-                            <tr>
-                                <td>
-                                    <a href="/medications/{{ med.name }}">{{ med.name }}</a><!-- displays med name & corresponding link-->
-                                </td>
-                            </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        {% endfor %}
+    <script>
+    // $("#main_body").slideUp();
+    </script>
+
+<!-- Modal -->
+<div class="modal" id="my_modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title">Modal header</h4>
+      </div>
+      <div class="modal-body">
+        <h4>General Description</h4>
+        <p id="description">content</p>
+        <h4>Storage Information</h4>
+        <p id="storageInfo">content</p>
+        <!-- <input type="text" name="bookId" value=""/> -->
+      
+      </div>
+      <div class="modal-footer">
+        <button id="edit" type="button" class="btn btn-default" data-edit="edit">Edit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<script>
+$('#my_modal').on('show.bs.modal', function(e) {
+    var medName = $(e.relatedTarget).data('med-name');
+    var generalDescription = $(e.relatedTarget).data('general-description');
+    var storageInfo = $(e.relatedTarget).data('storage-information');
+    $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
+    $(e.currentTarget).find('p[id="description"]').html(generalDescription);
+    $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
+});
+
+$('#edit').on('click', function(e) {
+    // var medName = $(e.relatedTarget).data('med-name');
+    // var generalDescription = $(e.relatedTarget).data('general-description');
+    var storageInfo = $(e.relatedTarget).data('storage-information');
+    // $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
+    // $(e.currentTarget).find('p[id="description"]').html(generalDescription);
+    $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
+    console.log('butts');
+});
+</script>
+
+<div id="medModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Modal Header</h4>
+      </div>
+      <div class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+
+
 {% endblock %}
