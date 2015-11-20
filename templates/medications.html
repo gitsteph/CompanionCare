@@ -34,10 +34,7 @@
             {% endfor %}
         </div>
     </div>
-    <script>
-    // $("#main_body").slideUp();
-    </script>
-
+    
 <!-- MedList Modal -->
 <div class="modal" id="my_modal">
   <div class="modal-dialog">
@@ -55,7 +52,7 @@
       </div>
       <div class="modal-footer">
         <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
-        <button id="deleteMedBtn" button type="button" class="btn btn-default">Delete</button>
+        <button id="deleteMedBtn" button type="button" data-dismiss="modal" class="btn btn-default">Delete</button>
         <button id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
@@ -97,23 +94,44 @@
 
 <script>
 $('#my_modal').on('show.bs.modal', function(e) {
-    var medName = $(e.relatedTarget).data('med-name');
-    var generalDescription = $(e.relatedTarget).data('general-description');
-    var storageInfo = $(e.relatedTarget).data('storage-information');
-    $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
-    $(e.currentTarget).find('p[id="description"]').html(generalDescription);
-    $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
-});
+  var medName = $(e.relatedTarget).data('med-name');
+  var generalDescription = $(e.relatedTarget).data('general-description');
+  var storageInfo = $(e.relatedTarget).data('storage-information');
+  $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
+  $(e.currentTarget).find('p[id="description"]').html(generalDescription);
+  $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
 
-$('#moreDetailsBtn').on('click', function(evt) {
-  var medName = $('#medModal').data('med-name'); // ALWAYS ADVANTAGE BIG BUG HERE!!!  (Need to re-seed db later).
-  var medURL = "/medications/" + medName;
-  window.location.href= medURL;
+  $('#moreDetailsBtn').on('click', function(evt) {
+    window.location.href= "/medications/" + medName;
   });
 
-$('#addForCompanionBtn').on('click', function(e) {
+  $('#addForCompanionBtn').on('click', function(e) {
     var storageInfo = $(e.relatedTarget).data('storage-information');
     $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
+  });
+
+  // DELETE MEDICATION AND REFRESH DIRECTORY
+  function refreshDirectory(result) {
+    alert(result);
+    window.location.href= "/medications";
+  }
+
+  function deleteMedFromDb() {
+    $.post("/medications/directory_delete/" + medName, refreshDirectory);
+  }
+
+  function confirmDeletion(evt) {
+    var confirmationResp = prompt("Are you sure you'd like to delete this medication? (y/n)")
+    if (confirmationResp.toLowerCase() === "y") {
+      deleteMedFromDb();
+    }
+    else {
+      alert("No changes have been made.");
+    }
+  }
+
+  $('#deleteMedBtn').on('click', confirmDeletion);
+
 });
 
 // ADD NEW MEDICATION AND AJAX ADD TO DIRECTORY
@@ -148,32 +166,6 @@ $('#addNewMedBtn').on('click', function(evt) {
     addNewMedToDb(evt);        
     }
 );
-
-// DELETE MEDICATION AND REFRESH DIRECTORY
-function refreshDirectory(result) {
-  alert(result);
-  window.location.href= "/medications";
-}
-
-function deleteMedFromDb() {
-  var medName = $('#medModal').data('med-name');
-  console.log(medName);
-
-  $.post("/medications/directory_delete/" + medName, refreshDirectory);
-}
-
-function confirmDeletion(evt) {
-  var confirmationResp = prompt("Are you sure you'd like to delete this medication? (y/n)")
-  if (confirmationResp === "y") {
-    deleteMedFromDb(); // APPEARS TO NOT BE GOING THROUGH ROUTE AT ALL
-    console.log("HERE2"); // THIS LOGS FINE
-  }
-  else {
-    alert("No changes have been made."); // THIS LOGS FINE
-  }
-}
-
-$('#deleteMedBtn').on('click', confirmDeletion);
 
 </script>
 
