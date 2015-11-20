@@ -417,7 +417,9 @@ def add_alerts(companion_id):
 
 @app.route('/medications', methods=['GET', 'POST'])
 def show_all_medications():
-    medications = Medication.query.all()
+    medications = Medication.query.order_by(Medication.name).all()
+
+    ### TODO: MAY WANT TO SORT BASED ON name.lower() b/c ascii alpha is weird.
 
     # Splitting the med_name_list into three mini-lists to enable easy display in columns on the front-end.
     third_med_list = len(medications)/3
@@ -457,7 +459,6 @@ def edit_medication(med_name):
 @app.route('/medications/<med_name>/update', methods=['POST'])
 def update_medication_indb(med_name):
     """Route specifically for AJAX call to update medication."""
-    medication_object = view_individual_medication(med_name)
     medication_attributes_list = ['name', 'general_description', 'how_it_works', 'missed_dose', 'storage_information', 'side_effects_and_drug_interactions']
     updated_med_dict = {val:request.form.get(val) for val in medication_attributes_list}
     updated_med_dict["updated_at"] = datetime.datetime.now()
@@ -468,6 +469,31 @@ def update_medication_indb(med_name):
     db.session.commit()
 
     return "Your update has been submitted."
+
+
+@app.route('/medications/directory_add', methods=['POST'])
+def add_medication_todb():
+    """Route specifically for AJAX call to add new medication."""
+
+    medication_attributes_list = ['name', 'general_description', 'how_it_works', 'missed_dose', 'storage_information', 'side_effects_and_drug_interactions']
+    new_med_dict = {val:request.form.get(val) for val in medication_attributes_list}
+    new_med_dict["created_at"] = datetime.datetime.now()
+
+    new_med = Medication(**new_med_dict)
+    db.session.add(new_med)
+    db.session.commit()
+
+    return "The medication has been added to our directory."
+
+
+@app.route('/medications/directory_delete/<med_name>', methods=['POST'])
+def delete_medication_fromdb(med_name):
+    print "made it!"
+    db.session.delete(Medication.query.filter(Medication.name == med_name).first())
+    db.session.commit()
+
+    return "The medication entry has been deleted."
+
 
 
 # def show_medications():

@@ -9,12 +9,12 @@
         </div><br>
         <div class="row">
             <div class="col-xs-4 col-md-4 col-lg-4">
-                <a href="/">+ Add new medication to directory</a>
+                <a href="#my_modal2" id="addMedLink" data-toggle="modal" data-target="#my_modal2">+ Add new medication to directory</a>
             </div>
         </div>
         <div class="row">
             {% for mini_meds_list in list_med_list %} <!-- To split all meds into three columns. -->
-                <div class="col-xs-4 col-md-4 col-lg-4">
+                <div class="col-xs-4 col-md-4 col-lg-4" id="full_med_list">
                     <table>
                         {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
                                 <tr>
@@ -38,7 +38,7 @@
     // $("#main_body").slideUp();
     </script>
 
-<!-- Modal -->
+<!-- MedList Modal -->
 <div class="modal" id="my_modal">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -55,9 +55,42 @@
       </div>
       <div class="modal-footer">
         <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
-        <a href="#" id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</a>
+        <button id="deleteMedBtn" button type="button" class="btn btn-default">Delete</button>
+        <button id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Med Modal -->
+<div class="modal" id="my_modal2">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title"><span id="newMedName">New Medication</span></h4> <!-- TODO: Medication name changes on type into medname-field. -->
+      </div>
+      <form action="/medications/directory_add" id="new_medform" method="POST">
+        <div class="modal-body">
+            <h4>Medication Name</h4>
+            <textarea rows="2" cols="70" name="name" id="medname-field" form="new_medform"></textarea><br>
+            <h4>General Description</h4>
+            <textarea rows="4" cols="70" name="general_description" id="general_description-field" form="new_medform"></textarea><br>
+            <h4>How It Works</h4>
+            <textarea rows="4" cols="70" name="how_it_works" id="how_it_works-field" form="new_medform"></textarea><br>
+            <h4>Storage Information</h4>
+            <textarea rows="4" cols="70" name="general_description" id="storage_information-field" form="new_medform"></textarea><br>
+            <h4>Missed Dose?</h4>
+            <textarea rows="4" cols="70" name="missed_dose" id="missed_dose-field" form="new_medform"></textarea><br>
+            <h4>Side Effects & Drug Interactions</h4>
+            <textarea rows="4" cols="70" name="side_effects_and_drug_interactions" id="side_effects_and_drug_interactions-field" form="new_medform"></textarea><br>
+        </div>
+        <div class="modal-footer">
+          <input type="submit" id="addNewMedBtn" class="btn btn-primary" data-dismiss="modal" value="Add Medication to Directory">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -72,16 +105,75 @@ $('#my_modal').on('show.bs.modal', function(e) {
     $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
 });
 
-$('#moreDetailsBtn').on('click', function(e) {
-  var medName = $('#medModal').data('med-name');
+$('#moreDetailsBtn').on('click', function(evt) {
+  var medName = $('#medModal').data('med-name'); // ALWAYS ADVANTAGE BIG BUG HERE!!!  (Need to re-seed db later).
   var medURL = "/medications/" + medName;
-  $('#moreDetailsBtn').attr('href', medURL);
-});
+  window.location.href= medURL;
+  });
 
 $('#addForCompanionBtn').on('click', function(e) {
     var storageInfo = $(e.relatedTarget).data('storage-information');
     $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
 });
+
+// ADD NEW MEDICATION AND AJAX ADD TO DIRECTORY
+
+function showNewMedication(result) {
+  alert(result);
+  var newMedName = $('#medname-field').val();
+  var newGenDesc = $('#general_description-field').val();
+  var newStorageInfo = $('#storage_information-field').val();
+  var newMedLink = "<a href='#my_modal' id='medModal' data-toggle='modal' data-med-name='"+newMedName+"' data-general-description='"+ newGenDesc+"' data-storage-information='"+ newStorageInfo +"''>"+newMedName+ "</a>"
+  $('#full_med_list').prepend(newMedLink);
+}
+
+function addNewMedToDb(evt) {
+    var formInputs = {
+        "name": $('#medname-field').val(),
+        "general_description": $('#general_description-field').val(),
+        "how_it_works": $('#how_it_works-field').val(),
+        "missed_dose": $('#missed_dose-field').val(),
+        "storage_information": $('#storage_information-field').val(),
+        "side_effects_and_drug_interactions": $('#side_effects_and_drug_interactions-field').val()
+    };
+    console.log(formInputs);
+    console.log("hihi");
+    $.post("/medications/directory_add", formInputs, showNewMedication);  // BUG HERE!!!
+    // This is an alternate way to submit the form data.
+    // $.post("/medications/directory_add", $("#new_medform").serialize()); 
+}
+
+$('#addNewMedBtn').on('click', function(evt) {
+    evt.preventDefault();
+    addNewMedToDb(evt);        
+    }
+);
+
+// DELETE MEDICATION AND REFRESH DIRECTORY
+function refreshDirectory(result) {
+  alert(result);
+  window.location.href= "/medications";
+}
+
+function deleteMedFromDb() {
+  var medName = $('#medModal').data('med-name');
+  console.log(medName);
+
+  $.post("/medications/directory_delete/" + medName, refreshDirectory);
+}
+
+function confirmDeletion(evt) {
+  var confirmationResp = prompt("Are you sure you'd like to delete this medication? (y/n)")
+  if (confirmationResp === "y") {
+    deleteMedFromDb(); // APPEARS TO NOT BE GOING THROUGH ROUTE AT ALL
+    console.log("HERE2"); // THIS LOGS FINE
+  }
+  else {
+    alert("No changes have been made."); // THIS LOGS FINE
+  }
+}
+
+$('#deleteMedBtn').on('click', confirmDeletion);
 
 </script>
 
