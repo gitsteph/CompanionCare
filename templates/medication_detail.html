@@ -2,15 +2,30 @@
 {% block title %}CompanionCare: Medication Detail{% endblock %}
 
 {% block content1 %}<div class="row"><div class="col-xs-10 col-md-10 col-lg-10">
-Medication: {{ medication_obj.name }}</div></div>{% endblock %}
+Medication: <span id="medname_title">{{ medication_obj.name }}</span></div></div>{% endblock %}
 {% block content2 %} 
     <div class="row">
         <div class="col-xs-10 col-md-10 col-lg-10" id="med_info" style="display: block">
-            <strong>General Description:</strong> {{ medication_obj.general_description }}<br>
-            <strong>How It Works:</strong> {{ medication_obj.how_it_works }}<br>
-            <strong>Storage Information:</strong> {{ medication_obj.storage_information }}<br>
-            <strong>Missed Dose?</strong> {{ medication_obj.missed_dose }}<br>
-            <strong>Side Effects & Drug Interactions:</strong> {{ medication_obj.side_effects_and_drug_interactions }}<br>
+            <strong>General Description:</strong>
+            <div id="main_GenDesc">
+                {{ medication_obj.general_description }}
+            </div>
+            <strong>How It Works:</strong>
+            <div id="main_HowItWorks">
+                {{ medication_obj.how_it_works }}<br>
+            </div>
+            <strong>Storage Information:</strong> 
+            <div id="main_StorageInfo">
+                {{ medication_obj.storage_information }}<br>
+            </div>
+            <strong>Missed Dose?</strong> 
+            <div id="main_MissedDose">
+                {{ medication_obj.missed_dose }}<br>
+            </div>
+            <strong>Side Effects & Drug Interactions:</strong> 
+            <div id="main_SEDI">
+                {{ medication_obj.side_effects_and_drug_interactions }}<br>
+            </div>
             <br>
             <button id="editMedDisplay" value="register" button type="button" class="btn btn-primary">Edit this medication</a>
         </div>
@@ -18,24 +33,62 @@ Medication: {{ medication_obj.name }}</div></div>{% endblock %}
     <div class="row">
         <div class="col-xs-10 col-md-10 col-lg-10" id="med_form1">
             <form action="/medications/{{ medication_obj.name }}/update" id="med_form2" style="display: none" method="POST">
-                <h4>Name</h4><input type="text" name="name" value="{{ medication_obj.name }}"></input>
-                <h4>General Description</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.general_description }}</textarea><br>
-                <h4>How It Works</h4><textarea rows="4" cols="100" name="how_it_works" form="med_form2">{{ medication_obj.how_it_works }}</textarea><br>
-                <h4>Storage Information</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.storage_information }}</textarea><br>
-                <h4>Missed Dose?</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.missed_dose }}</textarea><br>
-                <h4>Side Effects & Drug Interactions</h4><textarea rows="4" cols="100" name="general_description" form="med_form2">{{ medication_obj.side_effects_and_drug_interactions }}</textarea><br>
+                <input id="medname_hidden" value="{{ medication_obj.name }}" class="hidden"></input>
+                <h4>Name</h4><input type="text" name="name" id="medname-field" value="{{ medication_obj.name }}"></input>
+                <h4>General Description</h4><textarea rows="4" cols="100" name="general_description" id="general_description-field" form="med_form2">{{ medication_obj.general_description }}</textarea><br>
+                <h4>How It Works</h4><textarea rows="4" cols="100" name="how_it_works" id="how_it_works-field" form="med_form2">{{ medication_obj.how_it_works }}</textarea><br>
+                <h4>Storage Information</h4><textarea rows="4" cols="100" name="general_description" id="storage_information-field" form="med_form2">{{ medication_obj.storage_information }}</textarea><br>
+                <h4>Missed Dose?</h4><textarea rows="4" cols="100" name="missed_dose" id="missed_dose-field" form="med_form2">{{ medication_obj.missed_dose }}</textarea><br>
+                <h4>Side Effects & Drug Interactions</h4><textarea rows="4" cols="100" name="side_effects_and_drug_interactions" id="side_effects_and_drug_interactions-field" form="med_form2">{{ medication_obj.side_effects_and_drug_interactions }}</textarea><br>
                 <input type="submit" id="updateMedButton" class="btn btn-primary" value="Update Medication Information">
+                <button id="cancelEdit" value="cancel" button type="button" class="btn btn-primary">Cancel Edit</button>
             </form>
         </div>
     </div>
-
     <script>
+    "use strict"; 
 
     $('#editMedDisplay').on('click', function(evt) {
         $('#med_info').hide();
         $('#med_form2').show();
     })
 
-    $('#medform2').on('submit', updateMedication);
+    $('#cancelEdit').on('click', function(evt) {
+        $('#med_info').show();
+        $('#med_form2').hide();
+    })
+
+    function showUpdatedMedication(result) {
+        // alert(result);
+        $('#med_info').show();
+        $('#med_form2').hide();
+        $('#main_GenDesc').text($('#general_description-field').val());
+        $('#main_HowItWorks').text($('#how_it_works-field').val());
+        $('#main_MissedDose').text($('#missed_dose-field').val());
+        $('#main_StorageInfo').text($('#storage_information-field').val());
+        $('#main_SEDI').text($('#side_effects_and_drug_interactions-field').val());
+        $('#medname_title').text($('#medname-field').val());
+    }
+
+    function updateMedication(evt) {
+        var formInputs = {
+            "name": $('#medname-field').val(),
+            "general_description": $('#general_description-field').val(),
+            "how_it_works": $('#how_it_works-field').val(),
+            "missed_dose": $('#missed_dose-field').val(),
+            "side_effects_and_drug_interactions": $('#side_effects_and_drug_interactions-field').val()
+        };
+        var medications_name = $('#medname_hidden').val();
+        $.post("/medications/" + medications_name + "/update", formInputs, showUpdatedMedication);
+        // This is an alternate way to submit the form data.
+        // $.post("/medications/" + medications_name + "/update", $("#med_form2").serialize()); 
+    }
+
+    $('#updateMedButton').on('click', function(evt) {
+        evt.preventDefault();
+        updateMedication(evt);        
+        }
+    );
+
     </script>
 {% endblock %}

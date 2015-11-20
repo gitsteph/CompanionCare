@@ -20,10 +20,12 @@
                                 <tr>
                                     <td> <!-- Clicking will trigger the modal(route). -->
                                         <!-- displays med name & corresponding link-->
-                                        <a href="#my_modal" data-toggle="modal" data-med-name="{{ med.name }}" 
-                                                data-general-description="{{ med.general_description }}"
-                                                data-storage-information="{{ med.storage_information }}"
-                                                >{{ med.name }}</a>
+                                      <a href="#my_modal" id="medModal" data-toggle="modal" 
+                                        data-med-name="{{ med.name }}" 
+                                        data-general-description="{{ med.general_description }}"
+                                        data-storage-information="{{ med.storage_information }}">
+                                        {{ med.name }}
+                                      </a>
                                     </td>
                                 </tr>
                         {% endfor %}
@@ -49,11 +51,11 @@
         <p id="description">content</p>
         <h4>Storage Information</h4>
         <p id="storageInfo">content</p>
-        <!-- <input type="text" name="bookId" value=""/> -->
-      
+     
       </div>
       <div class="modal-footer">
-        <button id="edit" type="button" class="btn btn-default" data-edit="edit">Edit</button>
+        <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
+        <a href="#" id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</a>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
@@ -70,40 +72,17 @@ $('#my_modal').on('show.bs.modal', function(e) {
     $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
 });
 
-$('#edit').on('click', function(e) {
-    // var medName = $(e.relatedTarget).data('med-name');
-    // var generalDescription = $(e.relatedTarget).data('general-description');
-    var storageInfo = $(e.relatedTarget).data('storage-information');
-    console.log(storageInfo)
-    // $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
-    // $(e.currentTarget).find('p[id="description"]').html(generalDescription);
-    $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
-    console.log('butts');
+$('#moreDetailsBtn').on('click', function(e) {
+  var medName = $('#medModal').data('med-name');
+  var medURL = "/medications/" + medName;
+  $('#moreDetailsBtn').attr('href', medURL);
 });
+
+$('#addForCompanionBtn').on('click', function(e) {
+    var storageInfo = $(e.relatedTarget).data('storage-information');
+    $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
+});
+
 </script>
-
-<div id="medModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Modal Header</h4>
-      </div>
-      <div class="modal-body">
-        <p>Some text in the modal.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-
-
 
 {% endblock %}

@@ -459,15 +459,15 @@ def update_medication_indb(med_name):
     """Route specifically for AJAX call to update medication."""
     medication_object = view_individual_medication(med_name)
     medication_attributes_list = ['name', 'general_description', 'how_it_works', 'missed_dose', 'storage_information', 'side_effects_and_drug_interactions']
-    updated_med_dict = {val:request.form.get(val) for val in value_types}
+    updated_med_dict = {val:request.form.get(val) for val in medication_attributes_list}
     updated_med_dict["updated_at"] = datetime.datetime.now()
-    updated_med_dict = {k:v for k,v in values_dict.iteritems() if v}
+    updated_med_dict = {k:v for k,v in updated_med_dict.iteritems() if v}
 
-    update_dict = update(Medication.__table__).where(Medication.name == med_name).values(**values_dict)
+    update_dict = update(Medication.__table__).where(Medication.name == med_name).values(**updated_med_dict)
     db.session.execute(update_dict)
     db.session.commit()
 
-    return redirect('/')
+    return "Your update has been submitted."
 
 
 # def show_medications():
@@ -578,15 +578,6 @@ if __name__ == "__main__":
         install_alerts_daemon()
 
     app.run()
-
-
-
-    # SOME TESTER THINGS TO DELETE LATER BELOW
-    # push_to_alertlog(alert_id=4)
-    # update_alertlog_with_user_response(32, "yes this works resp2")
-    # alert_frequency = Alert.query.get(4).petmedication.frequency
-    # print alert_frequency, "<<< ALERTFREQ"
-
 
     # To use the DebugToolbar, uncomment below:
     # DebugToolbarExtension(app)
