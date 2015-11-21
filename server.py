@@ -172,7 +172,42 @@ def user_profile():
         return render_template("user_profile.html", user_obj=user_obj)
 
 
-@app.route('/user_profile/edit', methods=['GET', 'POST'])
+@app.route('/user_profile/delete', methods=['POST'])
+def delete_user_profile():
+    """Deletes user profile and returns to home page, logged out."""
+    # Queries all companions cared for by primary user.
+                # If user is sole primary user, will delete all pets.
+                # companion_list = Companion.query.filter(Companion.user_id == session["user_id"]).all()
+                # for companion in companion_list:
+                # GO BACK TO THIS LATER
+
+    # To delete a user:
+    db.session.delete(User.query.filter(User.id == session["user_id"]).first())
+    db.session.commit()
+    flash('account deleted')
+    return redirect("/logout")
+
+
+@app.route('/user_profile/update', methods=['POST'])
+def update_user_profile():
+    """AJAX route to update user profile from modal."""
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
+        values_dict = {val:request.form.get(val) for val in value_types}
+        print values_dict
+        values_dict["updated_at"] = datetime.datetime.now()
+        values_dict = {k:v for k,v in values_dict.iteritems() if v}
+
+        ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
+        db.session.execute(ind_update)
+        db.session.commit()
+    return "Your user profile has been updated."
+
+
+@app.route('/user_profile/edit', methods=['GET', 'POST']) ## MAYBE DELETE OR REFACTOR THIS ROUTE
 def edit_user_profile():
     user_obj = confirm_loggedin()
     if not user_obj:
@@ -193,31 +228,16 @@ def edit_user_profile():
 
         elif request.method == 'POST':
             """Processes updated information."""
+            value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
+            values_dict = {val:request.form.get(val) for val in value_types}
+            values_dict["updated_at"] = datetime.datetime.now()
+            values_dict = {k:v for k,v in values_dict.iteritems() if v}
 
-            # To delete a user:
-            if request.form.get("delete"):
-                # Queries all companions cared for by primary user.
-                # If user is sole primary user, will delete all pets.
-                # companion_list = Companion.query.filter(Companion.user_id == session["user_id"]).all()
-                # for companion in companion_list:
-                # GO BACK TO THIS LATER
+            ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
+            db.session.execute(ind_update)
+            db.session.commit()
 
-                db.session.delete(User.query.filter(User.id == session["user_id"]).first())
-                db.session.commit()
-                flash('account deleted')
-                return redirect("/logout")
-
-            else:
-                value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
-                values_dict = {val:request.form.get(val) for val in value_types}
-                values_dict["updated_at"] = datetime.datetime.now()
-                values_dict = {k:v for k,v in values_dict.iteritems() if v}
-
-                ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
-                db.session.execute(ind_update)
-                db.session.commit()
-
-                return redirect("/user_profile")
+            return redirect("/user_profile")
 
 
 @app.route('/new_companion', methods=['GET', 'POST'])

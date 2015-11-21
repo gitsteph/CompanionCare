@@ -4,15 +4,111 @@
 {% block content1 %}User Profile{% endblock %}
 {% block content2 %} 
 
-    <ul>
-        <li>Username (email): {{ user_obj.email }}</li>
-        <li>Name: {{ user_obj.first_name }} {{ user_obj.last_name }}</li>
-        <li>Password: {{ user_obj.password }}  <!-- REMOVE LATER --></li>
-        <li>Network: <!--INSERT IN--></li>
-        <li>Phone: {{ user_obj.phone }}</li>
-        <li>Zipcode: {{ user_obj.zipcode}}</li>
-    </ul>
-    <div>
-        <a href="/user_profile/edit">Edit profile</a>
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#user_modal">Open Modal</button>
+
+
+
+<!-- Add New Med Modal -->
+<div class="modal" id="user_modal">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title"><span id="profile_title">User Profile</span></h4> <!-- TODO: Medication name changes on type into medname-field. -->
+      </div>
+      <form action="/user_profile/update" id="rev_UserForm" method="POST">
+        <div class="modal-body" id="profile" style="display: block">
+            <h4>Username (email)</h4>
+            <span id="user_email">{{ user_obj.email }}</span>
+            <h4>Name</h4>
+            <span id="user_firstname">{{ user_obj.first_name }}</span> <span id="user_lastname">{{ user_obj.last_name }}</span>
+            <h4>Password</h4>
+            <i>hidden</i>
+            <h4>Phone</h4>
+            <span id="user_phone">{{ user_obj.phone }}</span>
+            <h4>Zipcode</h4>
+            <span id="user_zipcode">{{ user_obj.zipcode}}</span>
+        </div>
+        <div class="modal-body" id="profileForm" style="display: none">
+            <h4>Username (email)</h4>
+            <input type="text" name="username" id="username-field" value="{{ user_obj.email }}"></input><br>
+            <h4>First Name</h4>
+            <input type="text" name="first_name" id="firstname-field" value="{{ user_obj.first_name }}"></input><br>
+            <h4>Last Name</h4>
+            <input type="text" name="last_name" id="lastname-field" value="{{ user_obj.last_name }}"></input><br>
+            <h4>Password</h4>
+            <input type="text" name="password" id="password-field"></input><br>
+            <h4>Phone</h4>
+            <input type="text" name="phone" id="phone-field" value="{{ user_obj.phone }}"></input><br>
+            <h4>Zipcode</h4>
+            <input type="text" name="zipcode" id="zipcode-field" value="{{ user_obj.zipcode }}"></input><br>
+        </div>
+        <div class="modal-footer" id="profileFormModalFooter">
+            <button type="button" id="editProfileBtn" class="btn btn-default">Edit Profile</button>
+            <button type="button" id="closeProfileModalBtn" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
     </div>
+  </div>
+</div>
+
+<script>
+    var updateProfileBtn = "<input type='submit' id='updateProfileBtn' class='btn btn-default' value='Update'></input>";
+    var deleteProfileBtn = "<button type='button' id='deleteProfileBtn' class='btn btn-default'>Delete</button>";
+
+    $('#editProfileBtn').on('click', function(evt) {
+        $('#profile').attr("style", "display: none");
+        $('#profileForm').attr("style", "display: block");
+        $('#editProfileBtn').hide();
+        $('#profileFormModalFooter').prepend(deleteProfileBtn);
+        $('#profileFormModalFooter').prepend(updateProfileBtn); 
+        $('#updateProfileBtn').on('click', function(evt) {
+            evt.preventDefault();
+            updateProfile(evt);
+        });
+    });
+
+    function cleanUpModalClose() {
+        $('#profile').attr("style", "display: block");
+        $('#profileForm').attr("style", "display: none");
+        $('#editProfileBtn').show();
+        $('#updateProfileBtn').remove();
+        $('#deleteProfileBtn').remove();
+    }
+    // Returns modal display to previous view so user will see view rather than update if clicked again.
+    $('#closeProfileModalBtn').on('click', function(evt) {
+        cleanUpModalClose();
+    })
+
+    // Deletes user profile by navigating through app.route and redirecting user to homepage, logged out.
+    // Will first request confirmation.
+    // NEED TO DO DELETE ROUTE
+
+    function updatedProfile(results) {
+        alert(results);
+        $('#user_email').text($('#username-field').val());
+        $('#user_firstname').text($('#firstname-field').val());
+        $('#user_lastname').text($('#lastname-field').val());
+        $('#user_phone').text($('#phone-field').val());
+        $('#user_zipcode').text($('#zipcode-field').val());
+        cleanUpModalClose();
+    }
+
+    function updateProfile(evt) {
+        var formInputs = {
+            "email": $('#username-field').val(),
+            "first_name": $('#firstname-field').val(),
+            "last_name": $('#lastname-field').val(),
+            "phone": $('#phone-field').val(),
+            "zipcode": $('#zipcode-field').val()
+        };
+        $.post("/user_profile/update", formInputs, updatedProfile);
+    }
+
+</script>
+<!--         <a href="/user_profile/edit">Edit profile</a>
+ -->
+
+
+
 {% endblock %}
