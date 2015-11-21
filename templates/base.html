@@ -26,17 +26,10 @@
                 <div class="navbar-collapse collapse" id="myNavbar">
                     <ul class="nav navbar-nav navbar-right">
                         {% if session.get('user_id') %}
-                        <li><a href="#" class="glyphicon glyphicon-search" aria-haspop="true" aria-expanded="false"></a></li> <!-- This should open a modal window to enable search. -->
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="/user_profile">View/Edit User Profile</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a href="/logout">Log Out</a></li>
-                            </li>
-                        </ul>
-          
-                            {% endif %}
+                            <li><a href="#" class="glyphicon glyphicon-search" aria-haspop="true" aria-expanded="false"></a></li> <!-- This should open a modal window to enable search. -->
+                            <li><a href="/user_profile" class="glyphicon glyphicon-user" aria-haspop="true" aria-expanded="false"></a></li> <!-- This should open a modal window to enable search. -->
+                            <li><a href="/logout/1" class="glyphicon glyphicon-log-out" aria-haspop="true" aria-expanded="false"></a></li> <!-- This should open a modal window to enable search. -->
+                        {% endif %}
                     </ul>
                 </div>
             </div>

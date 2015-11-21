@@ -8,7 +8,7 @@
 
 
 
-<!-- Add New Med Modal -->
+<!-- User Modal -->
 <div class="modal" id="user_modal">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
@@ -54,13 +54,17 @@
 
 <script>
     var updateProfileBtn = "<input type='submit' id='updateProfileBtn' class='btn btn-default' value='Update'></input>";
-    var deleteProfileBtn = "<button type='button' id='deleteProfileBtn' class='btn btn-default'>Delete</button>";
+    var deleteProfileBtn = "<button type='button' id='deleteProfileBtn' class='btn btn-default'><form action='user_profile/delete' id='deleteProfileForm' method='POST'>Delete</form></button>";
 
     $('#editProfileBtn').on('click', function(evt) {
         $('#profile').attr("style", "display: none");
         $('#profileForm').attr("style", "display: block");
         $('#editProfileBtn').hide();
         $('#profileFormModalFooter').prepend(deleteProfileBtn);
+        $('#deleteProfileBtn').on('click', function(evt) {
+            evt.preventDefault();
+            deleteProfile(evt);
+        });
         $('#profileFormModalFooter').prepend(updateProfileBtn); 
         $('#updateProfileBtn').on('click', function(evt) {
             evt.preventDefault();
@@ -82,7 +86,19 @@
 
     // Deletes user profile by navigating through app.route and redirecting user to homepage, logged out.
     // Will first request confirmation.
-    // NEED TO DO DELETE ROUTE
+
+    function deleteProfile(evt) {
+        var userConfirmation = prompt("Are you sure you'd like to delete your profile?");
+        if (userConfirmation.toLowerCase() === "y") {
+            console.log("hi");
+            $('#deleteProfileForm').submit();
+        }
+        else {
+            alert("No changes have been made.");
+        }
+    }    
+
+    // Updates user profile using AJAX and returns to previous modal view, displaying updated user information.
 
     function updatedProfile(results) {
         alert(results);

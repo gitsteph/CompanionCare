@@ -153,12 +153,13 @@ def process_login():
         return redirect("/")
 
 
-@app.route('/logout')
-def logout():
+@app.route('/logout/<int:deleted>')
+def logout(deleted):
     """Log out."""
 
     del session["user_id"]
-    flash("Logged Out.")
+    if deleted != 2:
+        flash("Logged Out.")
     return redirect("/")
 
 
@@ -184,8 +185,8 @@ def delete_user_profile():
     # To delete a user:
     db.session.delete(User.query.filter(User.id == session["user_id"]).first())
     db.session.commit()
-    flash('account deleted')
-    return redirect("/logout")
+    flash('Your account has been deleted.')
+    return redirect("/logout/2")
 
 
 @app.route('/user_profile/update', methods=['POST'])
@@ -205,39 +206,6 @@ def update_user_profile():
         db.session.execute(ind_update)
         db.session.commit()
     return "Your user profile has been updated."
-
-
-@app.route('/user_profile/edit', methods=['GET', 'POST']) ## MAYBE DELETE OR REFACTOR THIS ROUTE
-def edit_user_profile():
-    user_obj = confirm_loggedin()
-    if not user_obj:
-        return redirect("/")
-    else:
-        if request.method == 'GET':
-            """Enables user to update their profile information."""
-            user_attributes_dict = OrderedDict([("logged_in", True),
-                                                ("Email", ("email", "email", user_obj.email)),
-                                                ("Password", ("password", "password", user_obj.password)),
-                                                ("First Name", ("first_name", "text", user_obj.first_name)),
-                                                ("Last Name", ("last_name", "text", user_obj.last_name)),
-                                                ("Zipcode", ("zipcode", "text", user_obj.zipcode)),
-                                                ("Phone", ("phone", "text", user_obj.phone))])
-
-            print user_attributes_dict
-            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
-
-        elif request.method == 'POST':
-            """Processes updated information."""
-            value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
-            values_dict = {val:request.form.get(val) for val in value_types}
-            values_dict["updated_at"] = datetime.datetime.now()
-            values_dict = {k:v for k,v in values_dict.iteritems() if v}
-
-            ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
-            db.session.execute(ind_update)
-            db.session.commit()
-
-            return redirect("/user_profile")
 
 
 @app.route('/new_companion', methods=['GET', 'POST'])
