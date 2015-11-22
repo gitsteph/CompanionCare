@@ -37,25 +37,53 @@
     
 <!-- MedList Modal -->
 <div class="modal" id="my_modal">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-          <h4 class="modal-title">Modal header</h4>
+          <h4 class="modal-title" id="medtitle">Modal header</h4>
       </div>
-      <div class="modal-body">
-        <h4>General Description</h4>
-        <p id="description">content</p>
-        <h4>Storage Information</h4>
-        <p id="storageInfo">content</p>
-     
-      </div>
-      <div class="modal-footer">
-        <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
-        <button id="deleteMedBtn" button type="button" data-dismiss="modal" class="btn btn-default">Delete</button>
-        <button id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
+      <div id="GenDescriptionHolder">
+        <div class="modal-body">
+          <h4>General Description</h4>
+          <p id="description">content</p>
+          <h4>Storage Information</h4>
+          <p id="storageInfo">content</p>
+        </div>
+        <div class="modal-footer">
+          <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
+          <button id="deleteMedBtn" button type="button" data-dismiss="modal" class="btn btn-default">Delete</button>
+          <button id="moreDetailsBtn" button type="button" class="btn btn-default">More Details</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div> <!-- closes GenDescriptionHolder-->
+      <div id="companionMedFormHolder" style="display: none">
+        <form action="###" id="companionMedForm" method="POST">
+          <div class="modal-body" id="addForCompanionModal">
+            <input id="medname_hidden" name="medname" value="#" class="hidden"></input>
+            <h4>Companion Name</h4><input type="text" name="name" id="companion_name-field"></input> <!-- TODO: Dropdown first, jquery to text if new companion. -->
+            <h4>Companion Species</h4><input type="text" name="species" id="species-field"></input> <!-- TODO: Dropdown first, jquery to text if new companion. -->
+            <h4>Dosage</h4><input type="text" name="dosage" id="dosage-field"></input>
+            <h4>Current Prescription?</h4>
+            <select name="current" id="current-field">
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+            <h4>Frequency: Every </h4><input type="text" name="frequency" id="frequency-field"></input>
+            <select name="frequency_units" id="frequency_units-field">
+              <option value="hours">hour(s)</option>
+              <option value="days">day(s)</option>
+            </select>
+            <h4>Prescribing Veterinarian</h4><input type="text" name="prescribing_vet" id="prescribing_vet-field"></input>
+            <h4>Notes</h4><textarea rows="4" cols="60" name="notes" id="notes-field" form="companionMedForm"></textarea><br>
+          </div>
+
+            <div class="modal-footer">
+              <input type="submit" id="addMedForCompanionSubmitBtn" class="btn btn-primary" value="Add for Companion">
+              <button id="cancelAddForCompBtn" value="cancel" button type="button" class="btn btn-primary">Cancel</button>
+            </div>
+        </form>
+      </div> <!-- Closes out companionMedFormHolder!-->
     </div>
   </div>
 </div>
@@ -69,7 +97,7 @@
           <h4 class="modal-title"><span id="newMedName">New Medication</span></h4> <!-- TODO: Medication name changes on type into medname-field. -->
       </div>
       <form action="/medications/directory_add" id="new_medform" method="POST">
-        <div class="modal-body">
+        <div class="modal-body" id="medDescription">
             <h4>Medication Name</h4>
             <textarea rows="2" cols="70" name="name" id="medname-field" form="new_medform"></textarea><br>
             <h4>General Description</h4>
@@ -100,14 +128,57 @@ $('#my_modal').on('show.bs.modal', function(e) {
   $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
   $(e.currentTarget).find('p[id="description"]').html(generalDescription);
   $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
+  console.log(medName);
 
   $('#moreDetailsBtn').on('click', function(evt) {
     window.location.href= "/medications/" + medName;
   });
 
-  $('#addForCompanionBtn').on('click', function(e) {
-    var storageInfo = $(e.relatedTarget).data('storage-information');
-    $('#my_modal').find('p[id="storageInfo"]').html('<input type="text" value="'+storageInfo+'"></input>');
+  $('#addForCompanionBtn').on('click', function(evt) {
+    console.log("hi");
+    $('#GenDescriptionHolder').hide();
+    $('#medNameForcomp').html("hi");
+    $('#companionMedFormHolder').show();
+    $('#cancelAddForCompBtn').on('click', function(evt) {
+      $('#GenDescriptionHolder').show();
+      $('#companionMedFormHolder').hide();
+    });
+
+    // WHEN adding for companion, will first check if companion exists via AJAX/jQuery, create new companion if not, then add med on companion.
+    // Will do the same for prescribing vets.
+
+    function addedCompMed(result) {
+      alert(result);
+      $('#GenDescriptionHolder').show();
+      $('#companionMedFormHolder').hide();
+    }
+
+    $('#addMedForCompanionSubmitBtn').on('click', function(evt) {
+      evt.preventDefault();
+      $('#medname_hidden').val(medName);
+      console.log($('#medname_hidden').val());
+      companion_name = $('#companion_name-field').val();
+      addMedForCompURI = "/add_companion_medication/" + companion_name;
+      console.log(addMedForCompURI);
+      $('#companionMedForm').attr('action', addMedForCompURI);
+
+      var medForCompInputs = {
+        "name": $('#companion_name-field').val(),
+        "species": $('#species-field').val(),
+        "prescribing_vet": $('#prescribing_vet-field').val(),
+        "current": $('#current-field').val(),
+        "dosage": $('#dosage-field').val(),
+        "notes": $('#notes-field').val(),
+        "frequency": $('#frequency-field').val(),
+        "frequency_units": $('#frequency_units-field').val(),
+        "medname": $('#medname_hidden').val()
+      }
+
+
+      $.post("/add_companion_medication/" + companion_name, medForCompInputs, addedCompMed);
+
+    });
+
   });
 
   // DELETE MEDICATION AND REFRESH DIRECTORY

@@ -184,7 +184,7 @@ class PetMedication(db.Model):
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
     current = db.Column(db.String(10), nullable=False)
-    # NEED TO PUT IN DOSE!
+    dosage = db.Column(db.String, nullable=False)
     notes = db.Column(db.String, nullable=True)
     petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
     frequency = db.Column(db.Integer)  # every X hours

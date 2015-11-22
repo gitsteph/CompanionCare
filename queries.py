@@ -1,7 +1,8 @@
 from model import db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from flask import session
 
-def get_companion_obj(companion_id):
-    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+def get_companion_obj(companion_name):
+    companion_obj = Companion.query.filter(Companion.name == companion_name, Companion.user_id == session.get("user_id")).first()
     return companion_obj
 
 

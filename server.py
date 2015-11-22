@@ -208,8 +208,20 @@ def update_user_profile():
     return "Your user profile has been updated."
 
 
+def process_add_new_companion(value_types):
+    # Requests information about each companion.
+    values_dict = {val:request.form.get(val) for val in value_types}
+    values_dict["user_id"] = session["user_id"]
+    values_dict["created_at"] = datetime.datetime.now()
+    values_dict["updated_at"] = None
+
+    new_companion = Companion(**values_dict)
+    db.session.add(new_companion)
+    db.session.commit()
+
+
 @app.route('/new_companion', methods=['GET', 'POST'])
-def add_companion():
+def add_new_companion():
     """Add companions individually."""
     user_obj = confirm_loggedin()
     if not user_obj:
@@ -217,31 +229,25 @@ def add_companion():
     else:
         if request.method == 'GET':
             """Shows form to add a companion."""
-            companion_attributes_dict = OrderedDict([("logged_in", True),
-                                                    ("new_companion", True),
-                                                    ("Name", ("name", "text")),
-                                                    ("Primary Nickname", ("primary_nickname", "text")),
-                                                    ("Species", ("species", "text")),
-                                                    ("Breed", ("breed", "text")),
-                                                    ("Gender", ("gender", "text")),
-                                                    ("Age", ("age", "text"))])
+            def add_new_companion_form():
+                companion_attributes_dict = OrderedDict([("logged_in", True),
+                                                        ("new_companion", True),
+                                                        ("Name", ("name", "text")),
+                                                        ("Primary Nickname", ("primary_nickname", "text")),
+                                                        ("Species", ("species", "text")),
+                                                        ("Breed", ("breed", "text")),
+                                                        ("Gender", ("gender", "text")),
+                                                        ("Age", ("age", "text"))])
+                return companion_attributes_dict
 
+            companion_attributes_dict = add_new_companion_form()
             return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict)
 
         elif request.method == 'POST':
             """Processes new companion information."""
 
-            # Requests information about each companion.
             value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
-            values_dict = {val:request.form.get(val) for val in value_types}
-            values_dict["user_id"] = session["user_id"]
-            values_dict["created_at"] = datetime.datetime.now()
-            values_dict["updated_at"] = None
-
-            new_companion = Companion(**values_dict)
-            db.session.add(new_companion)
-            db.session.commit()
-
+            process_add_new_companion(value_types)
             return redirect("/")
 
 
@@ -258,15 +264,94 @@ def show_veterinarians():
 #     else:
 
 
-@app.route('/medications/<int:companion_id>', methods=['GET', 'POST'])
-def show_medications(companion_id):
+@app.route('/add_companion_medication/<companion_name>', methods=['POST'])  ### NEW PATH TO ADD FOR COMPANION
+def add_medications_for_companion(companion_name):
+    """AJAX path from medications to add a specific medication for an individual companion."""
+    user_obj = confirm_loggedin()
+    companion_obj = get_companion_obj(companion_name)
+    if not user_obj:
+        return redirect("/")
+    else:
+        if not companion_obj:
+            process_add_new_companion(["name", "species"])
+            companion_obj = get_companion_obj(companion_name)
+
+    companion_id = companion_obj.id
+    vet_name = request.form.get("prescribing_vet")
+    vet_obj = Veterinarian.query.filter(Veterinarian.name == vet_name).first()
+
+    # If Veteranarian name is not yet in the database, add it.
+    if vet_obj:
+        print "Vet already in db."
+        print vet_obj
+    else:
+        vet_dict = {}
+        vet_dict = {"name":vet_name}
+        vet_dict["created_at"] = datetime.datetime.now()
+        vet_dict["updated_at"] = None
+        vet_entry = Veterinarian(**vet_dict)
+        db.session.add(vet_entry)
+        db.session.commit()
+
+    # If PetVet relationship is not yet in the database, add it.
+    vet_id = Veterinarian.query.filter(Veterinarian.name == vet_name).first().id
+    print "vet_id = ", vet_id
+    petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first()
+    if petvet_obj:
+        print "PetVet already in db."
+        print petvet_obj.id
+    else:
+        petvet_dict = {}
+        petvet_dict = {"pet_id": int(companion_id),
+                       "vet_id": int(vet_id)}
+        petvet_entry = PetVet(**petvet_dict)
+        db.session.add(petvet_entry)
+        db.session.commit()
+
+    # List of other medication-related values to pull from form.
+    petmed_values = ["current", "dosage", "notes"]
+    med_name = request.form.get("medname")
+    print med_name
+
+    # Retrieves values input by user from form and create a dictionary
+    # that is then passed through via **kwargs to create an instance of
+    # class_name db.Model class.  Add instance to db and commit transaction.
+    values_dict = {val:request.form.get(val) for val in petmed_values}
+    med_id = Medication.query.filter(Medication.name == med_name).first().id
+    # Will only create new petmed entry if none exists.
+    petvet_id = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first().id
+    if not PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.medication_id == med_id).first():
+        # Converts frequency into hours from whatever user unit was input.
+        frequency = int(request.form.get("frequency"))
+        frequency_unit = request.form.get("frequency_unit")
+        if frequency_unit == "days":
+            frequency = frequency * 24
+        values_dict["medication_id"] = int(med_id)
+        values_dict["petvet_id"] = int(petvet_id)
+        values_dict["frequency"] = frequency
+        values_dict["created_at"] = datetime.datetime.now()
+        values_dict["updated_at"] = None
+        new_entry = PetMedication(**values_dict)
+        db.session.add(new_entry)
+        db.session.commit()
+
+        return "This medication has been added for your companion."
+
+
+@app.route('/medications/<companion_name>', methods=['GET', 'POST'])
+def show_medications(companion_name):
     """"Path to add/view medications for a specific companion.  GET will render
     form template, POST will request and process input."""
     user_obj = confirm_loggedin()
-    companion_obj = get_companion_obj(companion_id)
-    if not (user_obj and companion_obj):
-        return redirect("/")
+    companion_obj = get_companion_obj(companion_name)
+    if not companion_obj:
+        if not user_obj:
+            return redirect("/")
+        else:
+            flash("You have no companions listed with that name.")
     else:
+        companion_id = companion_obj.id
+
         if request.method == 'GET':
             medication_attributes_dict = OrderedDict([("name", "Medication Name"),
                                           ("current", "Current"),
@@ -324,7 +409,7 @@ def show_medications(companion_id):
 
             # List of values to pull from form.
             petmed_values = ["current"]
-            med_values = ["name"]
+            med_values = ["medname"]
             med_name = request.form.get("name")
             # Dictionary of Model.py classes and their corresponding input attributes.
             class_list_dict = OrderedDict([(Medication, med_values),
@@ -361,17 +446,17 @@ def show_medications(companion_id):
         return redirect('/')
 
 
-@app.route('/alerts/<int:companion_id>', methods=["GET", "POST"])
-def show_alerts_and_form(companion_id):
+@app.route('/alerts/<companion_name>', methods=["GET", "POST"])
+def show_alerts_and_form(companion_name):
     # Will return a list of petmed_ids (unicode) that the user selects to add alert.
     user_obj = confirm_loggedin()
-    companion_obj = get_companion_obj(companion_id)
+    companion_obj = get_companion_obj(companion_name)
     if not (user_obj and companion_obj):
         return redirect("/")
     else:
         if request.method == "POST":
             petmed_id_for_alerts = request.form.getlist("alerts")
-            companion_obj = get_companion_obj(companion_id)
+            companion_obj = get_companion_obj(companion_name)
             petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
 
             # Renders new form with existing alerts, petmeds that have been selected, and
@@ -383,7 +468,7 @@ def show_alerts_and_form(companion_id):
 
 
 @app.route('/alerts/<int:companion_id>/add', methods=["POST"])
-def add_alerts(companion_id):
+def add_alerts(companion_name):
     # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
     value_types = ["primary_alert_phone", "secondary_alert_phone", "petmed_id"]
     values_dict = {val:request.form.get(val) for val in value_types}
@@ -525,11 +610,11 @@ def delete_medication_fromdb(med_name):
 # #     else:
 
 
-@app.route('/companion/<int:companion_id>', methods=['GET', 'POST'])  # get v post
-def edit_companion(companion_id):
+@app.route('/companion/<companion_name>', methods=['GET', 'POST'])  # get v post
+def edit_companion(companion_name):
     """Edit companions individually."""
     user_obj = confirm_loggedin()
-    companion_obj = Companion.query.filter(Companion.id == companion_id).first()
+    companion_obj = get_companion_obj(companion_name)
     if not (user_obj and companion_obj):
         return redirect("/")
     else:
@@ -539,6 +624,8 @@ def edit_companion(companion_id):
             return redirect('/')
         # If user is allowed to view pet:
         else:
+            companion_id = companion_obj.id
+
             if request.method == 'GET':
                 companion_attributes_dict = OrderedDict([("logged_in", True),
                                         ("new_companion", False),
@@ -548,7 +635,6 @@ def edit_companion(companion_id):
                                         ("Breed", ("breed", "text", companion_obj.breed)),
                                         ("Gender", ("gender", "text", companion_obj.gender)),
                                         ("Age", ("age", "text", companion_obj.age))])
-                print "companion_id: ", companion_id
                 companion_name = companion_obj.name
                 return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_name=companion_name, companion_id=companion_id)
             elif request.method == 'POST':
