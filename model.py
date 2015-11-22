@@ -184,7 +184,7 @@ class PetMedication(db.Model):
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     medication_id = db.Column(db.Integer, db.ForeignKey('medications.id'), nullable=False)
     current = db.Column(db.String(10), nullable=False)
-    dosage = db.Column(db.String, nullable=False)
+    dosage = db.Column(db.String, nullable=True)
     notes = db.Column(db.String, nullable=True)
     petvet_id = db.Column(db.Integer, db.ForeignKey('petvets.id'))
     frequency = db.Column(db.Integer)  # every X hours
@@ -211,7 +211,7 @@ class Alert(db.Model):
     primary_alert_phone = db.Column(db.String)
     secondary_alert_phone = db.Column(db.String)
     current = db.Column(db.String(20))
-    alert_options = db.Column(db.String(20))
+    alert_type = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 

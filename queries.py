@@ -6,6 +6,11 @@ def get_companion_obj(companion_name):
     return companion_obj
 
 
+def get_all_user_companions():
+    user_companions_list = Companion.query.filter(Companion.user_id == session.get("user_id")).all()
+    return user_companions_list
+
+
 def get_petvet_id_list(companion_id):
     companion_petvet_list = db.session.query(PetVet.id, PetVet.pet_id, PetVet.vet_id).filter(PetVet.pet_id == companion_id).all()
     print companion_petvet_list, "<<< COMP PETVET LIST"

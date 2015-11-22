@@ -8,40 +8,66 @@
 {% endblock %}
 
 {% block content2 %}
-        {% macro input(name, variable, type='text', value='', size=20) -%}
-             {{ name }} <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ size }}">
-        {%- endmacro %}
+    {% macro input(name, variable, type='text', value='', size=20) -%}
+        <tr>
+            <td>
+                {{ name }}
+            </td>
+            <td>
+                <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ size }}">
+            </td>
+        </tr>
+    {%- endmacro %}
+    <form action="#" id="newAlertForm" method="POST">
+        <table>
+            {{ input("Companion Name", "companion_name") }}
+            <tr>
+                <td>
+                    Alert Type
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select name="alert_type">
+                        <option value="text_sms">Text (SMS)</option>
+                        <option value="text_mms">Text (MMS)</option>
+                        <option value="email">Email</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Medication Name
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Primary Phone #
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Secondary Phone # (to enable forwarding)
+                </td>
+            </tr>
+        </table>
 
-        {% if petmed_med_dict.items() is defined %}
-            <form action="/alerts/{{ companion_obj.id }}/add" method="POST">
-                {% for petmed_obj, med_obj in petmed_med_dict.items() %}
-                    PetMed ID: {{ petmed_obj.id }} <br>
-                    PetMed Freq: Every {{ petmed_obj.frequency }} hours<br>
-                    Current: {{ petmed_obj.current }} <br>
-                    PetVet ID: {{ petmed_obj.petvet_id }} <br>
-                    Med ID: {{ med_obj.id }} <br>
-                    Med Name: {{ med_obj.name }} <br>
-                    <br>
-                        {{ input("First alert", "scheduled_alert_datetime", "datetime-local") }}<br>
-                        <select multiple class="alert_type">
-                            <option value="Email">Email</option>
-                            <option value="SMS">Text(SMS)</option>
-                            <option value="MMS">Text(MMS)</option>
-                        </select><br>
-                        {{ input("Email", "alert_email", "email", user_obj.email ) }}<br>
-                        {{ input("Phone", "primary_alert_phone", "text") }}<br><br>
-                        OPTIONS ENABLED:<br> <!-- This will be User # -->
-                        <input type="checkbox" name="alert_options" value="Postpone">Postpone Alert by 1 hr<br>
-                        <input type="checkbox" name="alert_options" value="Cancel">Cancel this alert<br>
-                        <input type="checkbox" name="alert_options" value="Forward">Forward Alert to Secondary Contact<br>
-                        {{ input("Secondary #", "secondary_alert_phone", "text") }}<br>
-                        <input type="hidden" name="petmed_id" value="{{ petmed_obj.id }}">
-                        <!-- if one is selected, jquery/ajax popup box specific to selected.-->
-                    <input type="submit" value="Save alerts">
-                </form>
-            {% endfor %}
-        {% endif %}
+        PETMEDID + PET ID/name
+        PRIMARY PH
+        SECONDARY PH
+        ALERT-TYPE (text, sms, email)
+        DATETIME RANGE (FIRST ALERT)
+        PETMED ID (petmed name) TYPEAHEAD (or click or create new med if med does not yet exist)
 
-<!-- SEND TEST MESSAGE TO TEST IF IT WORKS -->
+        *** IF MED DOES NOT YET EXIST, WILL REQUIRE PETVET INFO TOO (vet name) TO ADD TO PET (or unknown/OTC)
+
+    </form>
+
+<script>
+
+
+
+</script>
+
 
 {% endblock %}

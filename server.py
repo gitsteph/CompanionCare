@@ -260,12 +260,34 @@ def show_veterinarians():
 def show_all_alerts_and_form():
     """Renders alerts page with existing alerts and other routes to add and edit alerts."""
     user_obj = confirm_loggedin()
-    companion_obj = get_companion_obj(companion_name)
-    if not (user_obj and companion_obj):
+    if not user_obj:
         return redirect("/")
     else:
+        all_alerts_dict_by_companion = {}
+        all_alerts_dict_by_medication = {}
+
         # Query for list of all user's companions.
+        user_companions_list = get_all_user_companions()
+        print user_companions_list
+
         # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
+        for companion_obj in user_companions_list:
+            alert_dict = {}
+            companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
+            alert_dict["companion_petvets_list"] = companion_petvets_list
+            for petvet in companion_petvets_list:
+                vet_name = petvet.veterinarian.name
+                alert_dict["vet_name"] = vet_name
+                petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
+                alert_dict["petmeds_list"] = petmeds_list
+                for petmed in petmeds_list:
+                    medication = petmed.medication
+                    alert_dict["medication"] = medication
+
+
+
+            # INFO NEEDED: medication, petmed, petvet id >>> vet name
+
         # Pass through petmed IDs to enable adding alerts onto meds.  JS front-end mechanism: click the med to popup a modal with a form to add the alert.
         # Or add a new alert to a medication not listed (will create a medication object too).
         # Enable user to minimize the add_new_alert div (on front-end).
@@ -475,12 +497,15 @@ def add_medication_todb():
 
 @app.route('/medications/directory_delete/<med_name>', methods=['POST'])
 def delete_medication_fromdb(med_name):
-    db.session.delete(Medication.query.filter(Medication.name == med_name).first())
-    db.session.commit()
+    try:
+        db.session.delete(Medication.query.filter(Medication.name == med_name).first())
+    except:  # TODO: fix this in a better way.  Error because of model db cascade alls.
+        return "Cannot delete medication as it is already assigned to companions."
 
+    db.session.commit()
     return "The medication entry has been deleted."
 
-
+######## NEED TO COMPLETE ROUTES BELOW ########
 
 # def show_medications():
 #     if request.method == 'GET':

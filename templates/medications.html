@@ -19,7 +19,7 @@
                         {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
                                 <tr>
                                     <td> <!-- Clicking will trigger the modal(route). -->
-                                        <!-- displays med name & corresponding link-->
+                                    <!-- Loop displays med name & corresponding link-->
                                       <a href="#my_modal" id="medModal" data-toggle="modal" 
                                         data-med-name="{{ med.name }}" 
                                         data-general-description="{{ med.general_description }}"
@@ -135,7 +135,6 @@ $('#my_modal').on('show.bs.modal', function(e) {
   });
 
   $('#addForCompanionBtn').on('click', function(evt) {
-    console.log("hi");
     $('#GenDescriptionHolder').hide();
     $('#medNameForcomp').html("hi");
     $('#companionMedFormHolder').show();
@@ -156,10 +155,8 @@ $('#my_modal').on('show.bs.modal', function(e) {
     $('#addMedForCompanionSubmitBtn').on('click', function(evt) {
       evt.preventDefault();
       $('#medname_hidden').val(medName);
-      console.log($('#medname_hidden').val());
       companion_name = $('#companion_name-field').val();
       addMedForCompURI = "/add_companion_medication/" + companion_name;
-      console.log(addMedForCompURI);
       $('#companionMedForm').attr('action', addMedForCompURI);
 
       var medForCompInputs = {
@@ -193,15 +190,17 @@ $('#my_modal').on('show.bs.modal', function(e) {
   }
 
   function confirmDeletion(evt) {
-    var confirmationResp = prompt("Are you sure you'd like to delete this medication? (y/n)")
+    var confirmationResp = prompt("Are you sure you'd like to delete this medication? (y/n)");
     if (confirmationResp.toLowerCase() === "y") {
+      console.log(confirmationResp);
       deleteMedFromDb();
     }
     else {
+      console.log(confirmationResp);
       alert("No changes have been made.");
     }
   }
-
+  $('#deleteMedBtn').off('click');
   $('#deleteMedBtn').on('click', confirmDeletion);
 
 });
@@ -213,7 +212,7 @@ function showNewMedication(result) {
   var newMedName = $('#medname-field').val();
   var newGenDesc = $('#general_description-field').val();
   var newStorageInfo = $('#storage_information-field').val();
-  var newMedLink = "<a href='#my_modal' id='medModal' data-toggle='modal' data-med-name='"+newMedName+"' data-general-description='"+ newGenDesc+"' data-storage-information='"+ newStorageInfo +"''>"+newMedName+ "</a>"
+  var newMedLink = "<a href='#my_modal' id='medModal' data-toggle='modal' data-med-name='"+newMedName+"' data-general-description='"+ newGenDesc+"' data-storage-information='"+ newStorageInfo +"''>"+newMedName+ "</a>";
   $('#full_med_list').prepend(newMedLink);
 }
 
@@ -226,8 +225,6 @@ function addNewMedToDb(evt) {
         "storage_information": $('#storage_information-field').val(),
         "side_effects_and_drug_interactions": $('#side_effects_and_drug_interactions-field').val()
     };
-    console.log(formInputs);
-    console.log("hihi");
     $.post("/medications/directory_add", formInputs, showNewMedication);  // BUG HERE!!!
     // This is an alternate way to submit the form data.
     // $.post("/medications/directory_add", $("#new_medform").serialize()); 
