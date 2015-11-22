@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-{% block content1 %}Alerts 
-    {% if companion_obj is defined %}
-        for {{ companion_obj.name }}
-    {% endif %}
-{% endblock %}
+{% block content1 %}Alerts{% endblock %}
 
 {% block content2 %}
     {% macro input(name, variable, type='text', value='', size=20) -%}
@@ -14,19 +10,24 @@
                 {{ name }}
             </td>
             <td>
-                <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ size }}">
+                <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ 42 }}">
             </td>
         </tr>
     {%- endmacro %}
+
     <form action="#" id="newAlertForm" method="POST">
         <table>
             {{ input("Companion Name", "companion_name") }}
+            ### TYPEAHEAD HERE
+
+            {{ input("Medication Name", "medication_name") }} 
+
+            ###TYPEAHEAD HERE ### PETMED ID QUERY FROM PET AND MED, CREATE NEW MED IF NO MED IN DIRECTORY (FOR PETVET ID, SET TO UNKNOWN ID) *FIRST PETVET SHOULD BE UNKNOWN, SECOND OTC
+
             <tr>
                 <td>
                     Alert Type
                 </td>
-            </tr>
-            <tr>
                 <td>
                     <select name="alert_type">
                         <option value="text_sms">Text (SMS)</option>
@@ -35,37 +36,73 @@
                     </select>
                 </td>
             </tr>
+
+            {{ input("Alert Frequency", "alert_frequency") }} 
+
+            ### QUERY FOR MEDICATION-- IF MED FREQ = ALERT FREQ, then add alert freq.  If med freq != null or alert_freq, then request confirmation first.
             <tr>
                 <td>
-                    Medication Name
+                    Alert Date/Time Start (First Alert)
+                </td>
+                <td>
+                    <span id="#alertDateTimeRange">
+                        <input type="text" id="date_start" class="date start" />
+                        <input type="text" id="time_start" class="time start" />
+                    </span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    Primary Phone #
+                    Alert Date/Time End (Final Alert)
+                </td>
+                <td>
+                    <span id="#alertDateTimeRange">
+                        <input type="text" id="time_end" class="time end" />
+                        <input type="text" id="date_end" class="date end" />
+                    </span>
+                </td>
+            </tr>
+            {{ input("Primary Phone #", "primary_phone") }}
+            <tr>
+                <td>
+                    <p>Forwarding Status: </p>
+                </td>
+                <td>
+                    <span id="forwarding_status">Disabled</span>
+                    <button button type="button" id="forward_enabled" value="enable">Enable Forwarding</button>
+                    <button button type="button" id="forward_disabled" value="disable" style="display: none">Disable Forwarding</button>
                 </td>
             </tr>
             <tr>
                 <td>
-                    Secondary Phone # (to enable forwarding)
+                    <span id="secondary_phone-text" style="display: none">
+                        Secondary Phone #
+                    </span>
+                </td>
+                <td>
+                    <input type="text" id="secondary_phone-field" name="secondary_phone" style="display: none"></input>
                 </td>
             </tr>
         </table>
-
-        PETMEDID + PET ID/name
-        PRIMARY PH
-        SECONDARY PH
-        ALERT-TYPE (text, sms, email)
-        DATETIME RANGE (FIRST ALERT)
-        PETMED ID (petmed name) TYPEAHEAD (or click or create new med if med does not yet exist)
-
-        *** IF MED DOES NOT YET EXIST, WILL REQUIRE PETVET INFO TOO (vet name) TO ADD TO PET (or unknown/OTC)
-
     </form>
 
 <script>
 
+$('#forward_enabled').on('click', function(evt) {
+    $('#secondary_phone-text').show();
+    $('#secondary_phone-field').show();
+    $('#forward_enabled').hide();
+    $('#forwarding_status').text("Enabled");
+    $('#forward_disabled').show();
+});
 
+$('#forward_disabled').on('click', function(evt) {
+    $('#forwarding_status').text("Disabled");
+    $('#forward_enabled').show();
+    $('#secondary_phone-text').hide();
+    $('#secondary_phone-field').hide();
+    $('#forward_disabled').hide(); // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
+})
 
 </script>
 

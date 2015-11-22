@@ -209,9 +209,10 @@ class Alert(db.Model):
     petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'), nullable=True)
     petfood_id = db.Column(db.Integer, nullable=True)
     primary_alert_phone = db.Column(db.String)
-    secondary_alert_phone = db.Column(db.String)
+    secondary_alert_phone = db.Column(db.String)  ### NEED TO ADD FWD ENABLED OR DISABLED ATTR
     current = db.Column(db.String(20))
     alert_type = db.Column(db.String(20))
+    alert_frequency = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
