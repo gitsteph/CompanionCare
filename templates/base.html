@@ -61,8 +61,7 @@
         {% endif %}
             </div>
             <!-- /#sidebar-wrapper -->
-
-
+{% block usermodal %}
         <!-- User Modal -->
         <div class="modal" id="user_modal">
           <div class="modal-dialog modal-sm">
@@ -106,7 +105,7 @@
             </div>
           </div>
         </div>
-
+{% endblock %}
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     {% for message in messages %}

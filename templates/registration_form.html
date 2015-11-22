@@ -1,22 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-    {% if user_attributes_dict['logged_in'] %}
-        {% set text = "Insert changes over placeholder values." %}
-        {% set register_or_update = "update" %}
-        {% set action_path = "/user_profile/edit" %}
-        {% set heading = "Update" %}
-    {% else %}
-        {% set register_or_update = "register" %}
-        {% set action_path = "/register" %}
-        {% set heading = "Register" %}
-        {% set nologin = True %}
-    {% endif %}
+{% set nologin = True %}
+{% block usermodal %}{% endblock %}
 
-{% block content1 %}{{ heading }}{% endblock %}
+{% block content1 %}Register New Account{% endblock %}
 {% block content2 %}
-
-    {{ text }}
 
     {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
     <tr>
@@ -26,29 +15,23 @@
         </td>
     </tr>
     {%- endmacro %}
-    <form action="{{ action_path }}" method="POST">
-    <table>
-        <tr>
-            <th>
-                User Information:
-            </th>
-        </tr>
-        {% for name, key in user_attributes_dict.items() %}
-            {% if name != "logged_in" %}
-                {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
-            {% endif %}
-        {% endfor %}
-    </table>
+    <form action="/register" method="POST">
+        <table>
+            <tr>
+                <th>
+                    User Information:
+                </th>
+            </tr>
+            {% for name, key in user_attributes_dict.items() %}
+                {% if name != "logged_in" %}
+                    {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+                {% endif %}
+            {% endfor %}
+        </table>
         <br><br>
         <div>
-            <input type="submit" value="{{ register_or_update }}">
+            <input type="submit" value="Register">
         </div>
-
-    </form>
-    <!-- ONLY SHOW BELOW IF USER LOGGED IN: NEED TO FIX THIS -->
-    <form action="/user_profile/edit" method="POST">
-        <input type="hidden" name="delete" value="delete_user">
-        <input type="submit" value="delete account">
     </form>
 
 {% endblock %}
