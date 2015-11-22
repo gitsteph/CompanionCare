@@ -13,56 +13,55 @@
     {% endif %}
 
 {% block content2 %}
-<div class="row">
-    <div class="col-xs-6 col-md-6 col-lg-6">
-       {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
-            <tr>
-                <td>
-                    {{ name }}
-                </td>
-                <td>
-                    <input type="{{ type }}" name="{{ variable }}" value="{{
-                    value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
-                </td>
-            </tr>
-        {%- endmacro %}
+    <div class="row">
+        <div class="col-xs-6 col-md-6 col-lg-6">
+           {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
+                <tr>
+                    <td>
+                        {{ name }}
+                    </td>
+                    <td>
+                        <input type="{{ type }}" name="{{ variable }}" value="{{
+                        value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
+                    </td>
+                </tr>
+            {%- endmacro %}
 
-        <form action="{{ action_path }}" method="POST">
-            <table>
-                {% for name, key in companion_attributes_dict.items() %}
-                    {% if name != "logged_in" and name != "new_companion" %}
-                        {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
-                    {% endif %}
-                {% endfor %}<br>
-            </table>
-            <br>
-            <div>
-                <input type="submit" value="{{ add_or_update }} Companion Profile">
-            </div>
-        </form>
-        <form action="/companion/{{companion_id}}" method="POST">
-            <input type="hidden" name="delete" value="delete_companion_profile">
-            <input type="submit" value="delete companion profile">
-        </form>
-    </div>
-    <!-- ADD NETWORK ID HERE -->
-    <div class="col-xs-6 col-md-6 col-lg-6">
+            <form action="{{ action_path }}" method="POST">
+                <table>
+                    {% for name, key in companion_attributes_dict.items() %}
+                        {% if name != "logged_in" and name != "new_companion" %}
+                            {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+                        {% endif %}
+                    {% endfor %}<br>
+                </table>
+                <br>
+                <div>
+                    <input type="submit" value="{{ add_or_update }} Companion Profile">
+                </div>
+            </form>
+            <form action="/companion/{{companion_id}}" method="POST">
+                <input type="hidden" name="delete" value="delete_companion_profile">
+                <input type="submit" value="delete companion profile">
+            </form>
+        </div><!-- Closing column.-->
+        <div class="col-xs-6 col-md-6 col-lg-6">
 
-        <form action="/medications/{{ companion_id }}" method="GET">
-            <input type="submit" value="{{ add_or_update }} medications">
-        </form>
+            <form action="/medications/{{ companion_id }}" method="GET">
+                <input type="submit" value="{{ add_or_update }} medications">
+            </form>
 
-            <div>
-                <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
-            </div>
+                <div>
+                    <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
+                </div>
 
-            <div>
-                <a href="/photos">{{ add_or_update }} Photos</a>
-            </div>
-        
-        <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
+                <div>
+                    <a href="/photos">{{ add_or_update }} Photos</a>
+                </div>
+            
+            <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
 
-    </div>
-</div>
+        </div><!-- Closing column.-->
+    </div><!-- Closing row.-->
 
 {% endblock %}
