@@ -1,110 +1,178 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-{% block content1 %}Alerts{% endblock %}
+{% block content1 %} <span id="alerts_title">Alerts</span> {% endblock %}
 
 {% block content2 %}
-    {% macro input(name, variable, type='text', value='', size=20) -%}
-        <tr>
-            <td>
-                {{ name }}
-            </td>
-            <td>
-                <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" size="{{ 42 }}">
-            </td>
-        </tr>
+    {% macro input(name, variable, display="block", type='text', value='') -%}
+        <div class="form-group">
+            <div class="row">
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                        <label id="{{ variable }}-label" style="display: {{ display }}">{{ name }}</label>
+                    </div><!-- Closing out col.-->
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                        <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" class="form-control" id="{{ variable }}-field" style="display: {{ display }}">
+                    </div><!-- Closing out col.-->
+            </div><!-- Closing out row.-->
+        </div><!-- Closing out form group.-->
     {%- endmacro %}
 
-    <form action="#" id="newAlertForm" method="POST">
-        <table>
-            {{ input("Companion Name", "companion_name") }}
-            ### TYPEAHEAD HERE
 
-            {{ input("Medication Name", "medication_name") }} 
+<button type="button" class="btn btn-primary" id="openAlertFormBtn">Add New Alert</button>
 
-            ###TYPEAHEAD HERE ### PETMED ID QUERY FROM PET AND MED, CREATE NEW MED IF NO MED IN DIRECTORY (FOR PETVET ID, SET TO UNKNOWN ID) *FIRST PETVET SHOULD BE UNKNOWN, SECOND OTC
 
-            <tr>
-                <td>
-                    Alert Type
-                </td>
-                <td>
-                    <select name="alert_type">
-                        <option value="text_sms">Text (SMS)</option>
-                        <option value="text_mms">Text (MMS)</option>
-                        <option value="email">Email</option>
-                    </select>
-                </td>
-            </tr>
+        <div id="addNewAlertForm" style="display: none">
+        <form action="#" class="form-horizontal" id="newAlertForm" method="POST">
+                {{ input("Companion Name", "companion_name") }}
+    <!--             ### TYPEAHEAD HERE
+     -->
+                {{ input("Medication Name", "medication_name") }} 
 
-            {{ input("Alert Frequency", "alert_frequency") }} 
+    <!--             ###TYPEAHEAD HERE ### PETMED ID QUERY FROM PET AND MED, CREATE NEW MED IF NO MED IN DIRECTORY (FOR PETVET ID, SET TO UNKNOWN ID) *FIRST PETVET SHOULD BE UNKNOWN, SECOND OTC
+     -->
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <label><strong>Alert Type</strong></label>
+                                </div><!-- Closing out col.-->
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <select class="form-control" name="alert_type">
+                                        <option value="" selected disabled>Dropdown to Select</option>
+                                        <option value="text_sms">Text (SMS)</option>
+                                        <option value="text_mms">Text (MMS)</option>
+                                        <option value="email">Email</option>
+                                    </select>
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
 
-            ### QUERY FOR MEDICATION-- IF MED FREQ = ALERT FREQ, then add alert freq.  If med freq != null or alert_freq, then request confirmation first.
-            <tr>
-                <td>
-                    Alert Date/Time Start (First Alert)
-                </td>
-                <td>
-                    <span id="#alertDateTimeRange">
-                        <input type="text" id="date_start" class="date start" />
-                        <input type="text" id="time_start" class="time start" />
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Alert Date/Time End (Final Alert)
-                </td>
-                <td>
-                    <span id="#alertDateTimeRange">
-                        <input type="text" id="time_end" class="time end" />
-                        <input type="text" id="date_end" class="date end" />
-                    </span>
-                </td>
-            </tr>
-            {{ input("Primary Phone #", "primary_phone") }}
-            <tr>
-                <td>
-                    <p>Forwarding Status: </p>
-                </td>
-                <td>
-                    <span id="forwarding_status">Disabled</span>
-                    <button button type="button" id="forward_enabled" value="enable">Enable Forwarding</button>
-                    <button button type="button" id="forward_disabled" value="disable" style="display: none">Disable Forwarding</button>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span id="secondary_phone-text" style="display: none">
-                        Secondary Phone #
-                    </span>
-                </td>
-                <td>
-                    <input type="text" id="secondary_phone-field" name="secondary_phone" style="display: none"></input>
-                </td>
-            </tr>
-        </table>
-    </form>
+                {{ input("Alert Frequency", "alert_frequency") }} 
 
-<script>
+    <!--             ### QUERY FOR MEDICATION-- IF MED FREQ = ALERT FREQ, then add alert freq.  If med freq != null or alert_freq, then request confirmation first.
+     -->
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                <label><strong>Alert Start (First Alert)</strong></label>
+                            </div><!-- Closing out col.-->
 
-$('#forward_enabled').on('click', function(evt) {
-    $('#secondary_phone-text').show();
-    $('#secondary_phone-field').show();
-    $('#forward_enabled').hide();
-    $('#forwarding_status').text("Enabled");
-    $('#forward_disabled').show();
-});
+                            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                <div class="form-group">
+                                    <div class='input-group date' name="alert_datetime_start" id='alertDateTimeStart'>
+                                        <input type='text' class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div><!-- Closing out col.-->
+                            <script type="text/javascript">
+                                $(function () {
+                                    $('#alertDateTimeStart').datetimepicker();
+                                });
+                            </script>
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out container.-->
 
-$('#forward_disabled').on('click', function(evt) {
-    $('#forwarding_status').text("Disabled");
-    $('#forward_enabled').show();
-    $('#secondary_phone-text').hide();
-    $('#secondary_phone-field').hide();
-    $('#forward_disabled').hide(); // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
-})
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                <label><strong>Alert End (Final Alert)</strong></label>
+                            </div><!-- Closing out col.-->
+                            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                <div class="form-group">
+                                    <div class='input-group date' id='alertDateTimeEnd'>
+                                        <input type='text' name="alert_datetime_end" class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div><!-- Closing out col.-->
+                            <script type="text/javascript">
+                                $(function () {
+                                    $('#alertDateTimeEnd').datetimepicker();
+                                });
+                            </script>
+                        </div><!-- Closing out row.-->
+                    </div>
 
-</script>
+                    {{ input("Primary Phone #", "primary_phone") }}
 
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <label><strong>Forwarding Status</strong></label>
+                                </div><!-- Closing out col.-->
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <span id="forwarding_status">Disabled</span>
+                                    <button type="button" class="btn btn-secondary" id="forward_enabled" value="enable">Enable Forwarding</button>
+                                    <button type="button" class="btn btn-secondary" id="forward_disabled" value="disable" style="display: none">Disable Forwarding</button>
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
+
+                    {{ input("Secondary Phone #", "secondary_phone", "none") }}
+
+
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
+                                    <button type="button" class="btn btn-primary" id="submitAddNewAlertBtn" value="submitAddNewAlert">Submit New Alert</button>
+                                    <button type="button" class="btn btn-primary" id="cancelAddNewAlertBtn" value="cancelAddNewAlert">Cancel</button>
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
+        </form>
+
+        <script>
+
+        $('#forward_enabled').on('click', function(evt) {
+            $('#secondary_phone-label').show();
+            $('#secondary_phone-field').show();
+            $('#forward_enabled').hide();
+            $('#forwarding_status').text("Enabled");
+            $('#forward_disabled').show();
+        });
+
+        $('#forward_disabled').on('click', function(evt) {
+            $('#forwarding_status').text("Disabled");
+            $('#forward_enabled').show();
+            $('#secondary_phone-label').hide();
+            $('#secondary_phone-field').hide();
+            $('#forward_disabled').hide(); // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
+        })
+
+        $('#cancelAddNewAlertBtn').on('click', function(evt) {
+            $('#addNewAlertForm').hide(); // TODO: RESET VALUES too.
+            $('#openAlertFormBtn').show();
+        })
+
+
+
+
+
+
+
+        $('#submitAddNewAlertBtn').on('click', function(evt) {
+
+            $.post()
+
+            $('#addNewAlertForm').hide(); // TODO: RESET VALUES too.
+            $('#openAlertFormBtn').show();
+        })
+
+        </script>
+    </div>
+
+
+
+
+    <script>
+    $('#openAlertFormBtn').on('click', function(evt) {
+        $('#addNewAlertForm').show();
+        $('#openAlertFormBtn').hide();
+    })
+    </script>
 
 {% endblock %}

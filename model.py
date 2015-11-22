@@ -210,7 +210,9 @@ class Alert(db.Model):
     petfood_id = db.Column(db.Integer, nullable=True)
     primary_alert_phone = db.Column(db.String)
     secondary_alert_phone = db.Column(db.String)  ### NEED TO ADD FWD ENABLED OR DISABLED ATTR
-    current = db.Column(db.String(20))
+    alert_datetime_start = db.Column(db.DateTime)
+    alert_datetime_end = db.Column(db.DateTime)
+    current = db.Column(db.String(20))  ### EVENTUALLY REMOVE AND CALCULATE IN SERVER
     alert_type = db.Column(db.String(20))
     alert_frequency = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, nullable=False)
