@@ -35,7 +35,7 @@ def confirm_loggedin():
         user_obj = User.query.filter(User.id == user_id).first()
     return user_obj
 
-
+######## ALERTS MULTIPROCESSING SEND & RESPOND ########
 @app.route('/sms', methods=["POST"])
 def retrieve_user_response_and_reply():
     user_from = request.values.get('From', None)
@@ -74,6 +74,44 @@ def time_alerts():
         # run every minute
         time.sleep(10)
 
+################
+
+######## LOGIN/LOGOUT ########
+@app.route('/login', methods=['POST'])
+def process_login():
+    """Processes log in information for existing users."""
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    # Queries "users" table in database to determine whether the user already has an account.
+    # If the user has an account, the user's account information and password are verified.
+    user_object = User.query.filter(User.email == email).first()
+    if user_object:
+        if user_object.password == password:
+            session['user_id'] = user_object.id
+
+            flash("Logged in")
+            return redirect("/")  # dashboard
+        else:
+            flash('wrong password')
+            return redirect("/")  # login page
+    else:
+        flash('no such user')
+        return redirect("/")
+
+
+@app.route('/logout/<int:deleted>')
+def logout(deleted):
+    """Log out."""
+
+    del session["user_id"]
+    if deleted != 2:
+        flash("Logged Out.")
+    return redirect("/")
+
+################
+
+######## HOME, DASHBOARD, USER REGISTRATION, UPDATE, DELETE USER ########
 
 @app.route('/', methods=['GET'])
 def show_homedash():
@@ -129,39 +167,6 @@ def register_user():
         return redirect("/")
 
 
-@app.route('/login', methods=['POST'])
-def process_login():
-    """Processes log in information for existing users."""
-    email = request.form.get("email")
-    password = request.form.get("password")
-
-    # Queries "users" table in database to determine whether the user already has an account.
-    # If the user has an account, the user's account information and password are verified.
-    user_object = User.query.filter(User.email == email).first()
-    if user_object:
-        if user_object.password == password:
-            session['user_id'] = user_object.id
-
-            flash("Logged in")
-            return redirect("/")  # dashboard
-        else:
-            flash('wrong password')
-            return redirect("/")  # login page
-    else:
-        flash('no such user')
-        return redirect("/")
-
-
-@app.route('/logout/<int:deleted>')
-def logout(deleted):
-    """Log out."""
-
-    del session["user_id"]
-    if deleted != 2:
-        flash("Logged Out.")
-    return redirect("/")
-
-
 @app.route('/user_profile/delete', methods=['POST'])
 def delete_user_profile():
     """Deletes user profile and returns to home page, logged out."""
@@ -197,61 +202,7 @@ def update_user_profile():
     return "Your user profile has been updated."
 
 
-def process_add_new_companion(value_types):
-    # Requests information about each companion.
-    values_dict = {val:request.form.get(val) for val in value_types}
-    values_dict["user_id"] = session["user_id"]
-    values_dict["created_at"] = datetime.datetime.now()
-    values_dict["updated_at"] = None
-
-    new_companion = Companion(**values_dict)
-    db.session.add(new_companion)
-    db.session.commit()
-
-
-@app.route('/new_companion', methods=['GET', 'POST'])
-def add_new_companion():
-    """Add companions individually."""
-    user_obj = confirm_loggedin()
-    if not user_obj:
-        return redirect("/")
-    else:
-        if request.method == 'GET':
-            """Shows form to add a companion."""
-            def add_new_companion_form():
-                companion_attributes_dict = OrderedDict([("logged_in", True),
-                                                        ("new_companion", True),
-                                                        ("Name", ("name", "text")),
-                                                        ("Primary Nickname", ("primary_nickname", "text")),
-                                                        ("Species", ("species", "text")),
-                                                        ("Breed", ("breed", "text")),
-                                                        ("Gender", ("gender", "text")),
-                                                        ("Age", ("age", "text"))])
-                return companion_attributes_dict
-
-            companion_attributes_dict = add_new_companion_form()
-            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict)
-
-        elif request.method == 'POST':
-            """Processes new companion information."""
-
-            value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
-            process_add_new_companion(value_types)
-            return redirect("/")
-
-
-@app.route('/vet_finder', methods=['GET'])
-def find_vet():
-    pass
-    return redirect('/')
-
-
-@app.route('/veterinary_specialists', methods=['GET', 'POST'])
-def show_veterinarians():
-    if request.method == 'GET':
-        return render_template("veterinary_specialists.html")
-#     else:
-
+################
 
 ######## ALERTS ########
 
@@ -263,26 +214,26 @@ def show_all_alerts_and_form():
     if not user_obj:
         return redirect("/")
     else:
-        all_alerts_dict_by_companion = {}
-        all_alerts_dict_by_medication = {}
+        # all_alerts_dict_by_companion = {}
+        # all_alerts_dict_by_medication = {}
 
-        # Query for list of all user's companions.
-        user_companions_list = get_all_user_companions()
-        print user_companions_list
+        # # Query for list of all user's companions.
+        # user_companions_list = get_all_user_companions()
+        # print user_companions_list
 
-        # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
-        for companion_obj in user_companions_list:
-            alert_dict = {}
-            companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
-            alert_dict["companion_petvets_list"] = companion_petvets_list
-            for petvet in companion_petvets_list:
-                vet_name = petvet.veterinarian.name
-                alert_dict["vet_name"] = vet_name
-                petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
-                alert_dict["petmeds_list"] = petmeds_list
-                for petmed in petmeds_list:
-                    medication = petmed.medication
-                    alert_dict["medication"] = medication
+        # # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
+        # for companion_obj in user_companions_list:
+        #     alert_dict = {}
+        #     companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
+        #     alert_dict["companion_petvets_list"] = companion_petvets_list
+        #     for petvet in companion_petvets_list:
+        #         vet_name = petvet.veterinarian.name
+        #         alert_dict["vet_name"] = vet_name
+        #         petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
+        #         alert_dict["petmeds_list"] = petmeds_list
+        #         for petmed in petmeds_list:
+        #             medication = petmed.medication
+        #             alert_dict["medication"] = medication
 
 
 
@@ -296,49 +247,6 @@ def show_all_alerts_and_form():
         # VISUALIZE the relationships below! And enable viewing/editing from visualization area.  (separate div)
         return render_template('alerts.html', user_obj=user_obj)
 
-
-
-
-@app.route('/alerts/<companion_name>', methods=["GET", "POST"])
-def show_alerts_and_form(companion_name):
-    # Will return a list of petmed_ids (unicode) that the user selects to add alert.
-    user_obj = confirm_loggedin()
-    companion_obj = get_companion_obj(companion_name)
-    if not (user_obj and companion_obj):
-        return redirect("/")
-    else:
-        if request.method == "POST":
-            petmed_id_for_alerts = request.form.getlist("alerts")
-            companion_obj = get_companion_obj(companion_name)
-            petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
-
-            # Renders new form with existing alerts, petmeds that have been selected, and
-            # fields to add alerts to selected petmeds.
-            return render_template('alerts.html',
-                                    companion_obj=companion_obj,
-                                    petmed_med_dict=petmed_med_dict,
-                                    user_obj=user_obj)
-
-
-@app.route('/alerts/<int:companion_id>/add', methods=["POST"])
-def add_alerts(companion_name):
-    # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
-    value_types = ["primary_alert_phone", "secondary_alert_phone", "petmed_id"]
-    values_dict = {val:request.form.get(val) for val in value_types}
-    values_dict["alert_options"] = request.form.getlist("alert_options")
-    values_dict["created_at"] = datetime.datetime.now()
-    values_dict["updated_at"] = datetime.datetime.now()  # Only true for creation.
-
-    new_alert = Alert(**values_dict)
-    db.session.add(new_alert)
-    db.session.commit()
-
-    # Schedule alert in alertlog (set to not-issued).
-    alert_id = db.session.query(Alert).filter(Alert.petmed_id == values_dict["petmed_id"]).order_by(Alert.updated_at.desc()).first().id
-    scheduled_alert_datetime = request.form.get("scheduled_alert_datetime")
-    schedule_alert(alert_id, scheduled_alert_datetime)
-
-    return redirect('/')
 
 ######## MEDICATIONS ########
 
@@ -505,7 +413,93 @@ def delete_medication_fromdb(med_name):
     db.session.commit()
     return "The medication entry has been deleted."
 
+#### CHECK AND REFACTOR BELOW
+
+def process_add_new_companion(value_types):
+    # Requests information about each companion.
+    values_dict = {val:request.form.get(val) for val in value_types}
+    values_dict["user_id"] = session["user_id"]
+    values_dict["created_at"] = datetime.datetime.now()
+    values_dict["updated_at"] = None
+
+    new_companion = Companion(**values_dict)
+    db.session.add(new_companion)
+    db.session.commit()
+
+
+@app.route('/new_companion', methods=['GET', 'POST'])
+def add_new_companion():
+    """Add companions individually."""
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        if request.method == 'GET':
+            """Shows form to add a companion."""
+            def add_new_companion_form():
+                companion_attributes_dict = OrderedDict([("logged_in", True),
+                                                        ("new_companion", True),
+                                                        ("Name", ("name", "text")),
+                                                        ("Primary Nickname", ("primary_nickname", "text")),
+                                                        ("Species", ("species", "text")),
+                                                        ("Breed", ("breed", "text")),
+                                                        ("Gender", ("gender", "text")),
+                                                        ("Age", ("age", "text"))])
+                return companion_attributes_dict
+
+            companion_attributes_dict = add_new_companion_form()
+            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict)
+
+        elif request.method == 'POST':
+            """Processes new companion information."""
+
+            value_types = ["name", "primary_nickname", "species", "breed", "gender", "age"]
+            process_add_new_companion(value_types)
+            return redirect("/")
+
+
 ######## NEED TO COMPLETE ROUTES BELOW ########
+
+@app.route('/alerts/<companion_name>', methods=["GET", "POST"])
+def show_alerts_and_form(companion_name):
+    # Will return a list of petmed_ids (unicode) that the user selects to add alert.
+    user_obj = confirm_loggedin()
+    companion_obj = get_companion_obj(companion_name)
+    if not (user_obj and companion_obj):
+        return redirect("/")
+    else:
+        if request.method == "POST":
+            petmed_id_for_alerts = request.form.getlist("alerts")
+            companion_obj = get_companion_obj(companion_name)
+            petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
+
+            # Renders new form with existing alerts, petmeds that have been selected, and
+            # fields to add alerts to selected petmeds.
+            return render_template('alerts.html',
+                                    companion_obj=companion_obj,
+                                    petmed_med_dict=petmed_med_dict,
+                                    user_obj=user_obj)
+
+
+@app.route('/alerts/<int:companion_id>/add', methods=["POST"])
+def add_alerts(companion_name):
+    # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
+    value_types = ["primary_alert_phone", "secondary_alert_phone", "petmed_id"]
+    values_dict = {val:request.form.get(val) for val in value_types}
+    values_dict["alert_options"] = request.form.getlist("alert_options")
+    values_dict["created_at"] = datetime.datetime.now()
+    values_dict["updated_at"] = datetime.datetime.now()  # Only true for creation.
+
+    new_alert = Alert(**values_dict)
+    db.session.add(new_alert)
+    db.session.commit()
+
+    # Schedule alert in alertlog (set to not-issued).
+    alert_id = db.session.query(Alert).filter(Alert.petmed_id == values_dict["petmed_id"]).order_by(Alert.updated_at.desc()).first().id
+    scheduled_alert_datetime = request.form.get("scheduled_alert_datetime")
+    schedule_alert(alert_id, scheduled_alert_datetime)
+
+    return redirect('/')
 
 # def show_medications():
 #     if request.method == 'GET':
@@ -545,6 +539,18 @@ def delete_medication_fromdb(med_name):
 # def show_veterinarians():
 #     if request.method == 'GET':
 
+#     else:
+
+@app.route('/vet_finder', methods=['GET'])
+def find_vet():
+    pass
+    return redirect('/')
+
+
+@app.route('/veterinary_specialists', methods=['GET', 'POST'])
+def show_veterinarians():
+    if request.method == 'GET':
+        return render_template("veterinary_specialists.html")
 #     else:
 
 

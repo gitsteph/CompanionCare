@@ -36,7 +36,7 @@
                                     <label><strong>Alert Type</strong></label>
                                 </div><!-- Closing out col.-->
                                 <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
-                                    <select class="form-control" name="alert_type">
+                                    <select class="form-control" id="alert_type-field" name="alert_type">
                                         <option value="" selected disabled>Dropdown to Select</option>
                                         <option value="text_sms">Text (SMS)</option>
                                         <option value="text_mms">Text (MMS)</option>
@@ -46,7 +46,31 @@
                         </div><!-- Closing out row.-->
                     </div><!-- Closing out form group.-->
 
-                {{ input("Alert Frequency", "alert_frequency") }} 
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <label id="alert_frequency-label">Alert Frequency</label>
+                                </div><!-- Closing out col.-->
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    Every <input type="tect" name="alert_frequency" class="form-control" id="alert_frequency-field">
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
+
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <label><strong>Frequency Units</strong></label>
+                                </div><!-- Closing out col.-->
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                                    <select class="form-control" name="alert_frequency_unit" id="alert_frequency_unit-field">
+                                        <option value="" selected disabled>Frequency Unit</option>
+                                        <option value="hours">hour(s)</option>
+                                        <option value="days">day(s)</option>
+                                    </select>
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
 
     <!--             ### QUERY FOR MEDICATION-- IF MED FREQ = ALERT FREQ, then add alert freq.  If med freq != null or alert_freq, then request confirmation first.
      -->
@@ -59,7 +83,7 @@
                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                                 <div class="form-group">
                                     <div class='input-group date' name="alert_datetime_start" id='alertDateTimeStart'>
-                                        <input type='text' class="form-control" />
+                                        <input type='text' id="alert_datetime_start-field" class="form-control" />
                                         <span class="input-group-addon">
                                             <span class="glyphicon glyphicon-calendar"></span>
                                         </span>
@@ -82,7 +106,7 @@
                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                                 <div class="form-group">
                                     <div class='input-group date' id='alertDateTimeEnd'>
-                                        <input type='text' name="alert_datetime_end" class="form-control" />
+                                        <input type='text' id="alert_datetime_end-field" name="alert_datetime_end" class="form-control" />
                                         <span class="input-group-addon">
                                             <span class="glyphicon glyphicon-calendar"></span>
                                         </span>
@@ -152,11 +176,27 @@
 
 
 
-
+        function refreshAlerts(result) {
+            alert(result);
+            window.location.href="/alerts";
+        }
 
         $('#submitAddNewAlertBtn').on('click', function(evt) {
 
-            $.post()
+            var alertInputs = {
+                "companion_name": $('#companion_name-field').val(),
+                "medication_name": $('#medication_name-field').val(),
+                "alert_type": $('#alert_type-field').val(),
+                "alert_frequency": $('#alert_frequency-field').val(),
+                "alert_frequency_unit": $('#alert_frequency_unit-field').val(),
+                "primary_phone": $('#primary_phone-field').val(),
+                "secondary_phone": $('#secondary_phone-field').val(),
+                "alert_datetime_start": $('#alert_datetime_start').val(),
+                "alert_datetime_end": $('#alert_datetime_end').val()
+            }
+
+
+            $.post("/add_new_alert", alertInputs, refreshAlerts);
 
             $('#addNewAlertForm').hide(); // TODO: RESET VALUES too.
             $('#openAlertFormBtn').show();
