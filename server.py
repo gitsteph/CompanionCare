@@ -3,11 +3,13 @@ from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
 from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import update, delete, exc
 from alerts import *
 from queries import *
 from collections import OrderedDict
 import multiprocessing
+from vet_finder import search
 # from celery import Celery
 import send_messages
 import datetime
@@ -25,14 +27,14 @@ app.secret_key = "###"
 # app.jinja_env.undefined = StrictUndefined
 
 
-### REMOVE AFTER SEEDING
-def add_unknown_vet():
-    vet_dict={}
-    vet_dict["name"] = "Unknown"
-    vet_dict["created_at"] = datetime.datetime.now()
-    new_vet = Veterinarian(**vet_dict)
-    db.session.add(new_vet)
-    db.session.commit()
+# ### REMOVE AFTER SEEDING
+# def add_unknown_vet():
+#     vet_dict={}
+#     vet_dict["name"] = "Unknown"
+#     vet_dict["created_at"] = datetime.datetime.now()
+#     new_vet = Veterinarian(**vet_dict)
+#     db.session.add(new_vet)
+#     db.session.commit()
 
 
 # Helper function to check whether user is logged in.
@@ -97,7 +99,7 @@ def process_login():
     # If the user has an account, the user's account information and password are verified.
     user_object = User.query.filter(User.email == email).first()
     if user_object:
-        if user_object.password == password:
+        if check_password_hash(user_object.password, password):
             session['user_id'] = user_object.id
 
             flash("Logged in")
@@ -156,9 +158,14 @@ def register_user():
         """Processes new user registration."""
 
         # Requests information provided by the user from registration form.
-        value_types = ["email", "password", "first_name", "last_name", "phone", "zipcode"]
+        value_types = ["email", "first_name", "last_name", "phone", "zipcode"]
         values_dict = {val:request.form.get(val) for val in value_types}
         values_dict["created_at"] = datetime.datetime.now()
+        unhashed_pw = request.form.get("password")
+        print unhashed_pw, "<<< unhashed"
+        password = generate_password_hash(unhashed_pw)  # hashes and salts pw
+        print password, "<<< hashed"
+        values_dict["password"] = password
 
         # Queries "users" table in database to determine whether user already has an account.
         # If the user has an account, the user is redirected to login page.
@@ -255,6 +262,8 @@ def show_all_alerts_and_form():
     if not user_obj:
         return redirect("/")
     else:
+        ######## THIS NEEDS WORK!!!!! GO BACK
+
         # all_alerts_dict_by_companion = {}
         # all_alerts_dict_by_medication = {}
 
@@ -431,9 +440,11 @@ def add_medications_for_companion(companion_name):
     if not PetMedication.query.filter(PetMedication.petvet_id == petvet_id, PetMedication.medication_id == med_id).first():
         # Converts frequency into hours from whatever user unit was input.
         frequency = int(request.form.get("frequency"))
-        frequency_unit = request.form.get("frequency_unit")
+        frequency_unit = request.form.get("frequency_units")
         if frequency_unit == "days":
+            print frequency_unit
             frequency = frequency * 24
+            print frequency
         values_dict["medication_id"] = int(med_id)
         values_dict["petvet_id"] = int(petvet_id)
         values_dict["frequency"] = frequency
@@ -444,6 +455,7 @@ def add_medications_for_companion(companion_name):
         db.session.commit()
 
         return "This medication has been added for your companion."
+
 
 def view_individual_medication(med_name):
     medication_obj = Medication.query.filter(Medication.name == med_name).first()
@@ -515,6 +527,72 @@ def delete_medication_fromdb(med_name):
     db.session.commit()
     return "The medication entry has been deleted."
 
+
+######## VETERINARIANS ########
+
+@app.route('/veterinarians', methods=['GET', 'POST'])
+def show_veterinarians():
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        #### TODO: VISUALIZE relationships and enable dynamic edits.
+        return render_template("veterinary_specialists.html", user_obj=user_obj)
+
+
+@app.route('/edit_veterinarian_profile', methods=["POST"])
+def edit_vet_ajax():
+    """AJAX route to edit existing veterinarian profile.  Can only be accessed on front-end via visualized vets."""
+    return  #### TODO: Complete this route.
+
+
+def edit_vet_profile(vet_id, vet_dict):
+    """Updates vet profile."""
+    vet_dict["updated_at"] = datetime.datetime.now()
+    vet_dict = {k:v for k,v in vet_dict.iteritems() if v}
+    update_dict = update(Veterinarian.__table__).where(Veterinarian.id == vet_id).values(**vet_dict)
+    db.session.execute(update_dict)
+    db.session.commit()
+
+
+@app.route('/add_new_veterinarian', methods=["POST"])
+def add_new_veterinarian():
+    """AJAX route to add new veterinarian from veterinarians route."""
+    veterinarian_attributes = ["name", "office_name", "phone_number", "email", "address", "specialties"]
+    new_vet_dict = {val:request.form.get(val) for val in veterinarian_attributes}
+    vet_obj = Veterinarian.query.filter(Veterinarian.name == new_vet_dict["name"], Veterinarian.office_name == new_vet_dict["office_name"]).first()
+    vet_name = new_vet_dict["name"]
+    if vet_obj:
+        # Update for non-null values in dict in case user enters a vet already listed.
+        edit_vet_profile(vet_obj.id, new_vet_dict)
+        rtrn_msg = vet_name + "'s veterinarian entry has been updated in our database."
+
+    else:
+        # Create new vet entry in db.
+        new_vet_dict["created_at"] = datetime.datetime.now()
+        new_vet = Veterinarian(**new_vet_dict)
+        db.session.add(new_vet)
+        db.session.commit()
+        rtrn_msg = vet_name + " has been added to our database."
+
+    return rtrn_msg
+
+
+@app.route('/find_vet', methods=["GET"])
+def find_veterinarian(location="San Francisco"):
+    #### TODO: turn this into an AJAX call via vets page.
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        print search("veterinarian", "San Francisco")
+        query_results = search("veterinarian", location)
+        query_businesses_list = query_results["businesses"]  # becomes a list of dictionaries with each dict being a business profile
+
+        return render_template("veterinary_specialists.html", user_obj=user_obj, query_businesses_list=query_businesses_list)
+
+################
+
 #### CHECK AND REFACTOR BELOW
 
 @app.route('/new_companion', methods=['GET', 'POST'])
@@ -547,6 +625,22 @@ def add_new_companion():
             process_add_new_companion(value_types)
             return redirect("/")
 
+
+######## PHOTOS ########
+
+@app.route('/photos', methods=['GET'])
+def show_photos():
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+
+
+        
+        return render_template("photos.html", user_obj=user_obj)
+
+
+################
 
 ######## NEED TO COMPLETE ROUTES BELOW ########
 
@@ -617,31 +711,7 @@ def add_alerts(companion_name):
 #             # db.session.add(new_companion)
 #             # db.session.commit()
 
-# @app.route('/photos', methods=['GET'])
-# def show_photos():
-#     if request.method == 'GET':
-#         return render_template("photos.html")
 
-#     else:
-
-
-# @app.route('/alerts', methods=['GET','POST'])
-# def show_veterinarians():
-#     if request.method == 'GET':
-
-#     else:
-
-@app.route('/vet_finder', methods=['GET'])
-def find_vet():
-    pass
-    return redirect('/')
-
-
-@app.route('/veterinary_specialists', methods=['GET', 'POST'])
-def show_veterinarians():
-    if request.method == 'GET':
-        return render_template("veterinary_specialists.html")
-#     else:
 
 
 @app.route('/companion/name/<companion_name>', methods=['GET', 'POST'])

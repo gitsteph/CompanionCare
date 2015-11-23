@@ -13,7 +13,7 @@ class User(db.Model):
     email = db.Column(db.String(40), nullable=False, unique=True)
     first_name = db.Column(db.String(20), nullable=False)
     last_name = db.Column(db.String(20), nullable=False)
-    password = db.Column(db.String(20), nullable=False)
+    password = db.Column(db.String, nullable=False)  # stores hashed pw
     phone = db.Column(db.String, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)  # DELETE THIS LATER
     created_at = db.Column(db.DateTime, nullable=False)

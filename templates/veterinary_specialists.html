@@ -4,10 +4,95 @@
 {% block content1 %}Veterinary Specialists{% endblock %}
 {% block content2 %} 
 
-<!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
-For each companion, add name, office_name, phone, email, address, and specialties. -->
+    {% macro input(name, variable, type='text', display="block") -%}
+        <div class="form-group">
+            <div class="row">
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                        <label id="{{ variable }}-label" style="display: {{ display }}">{{ name }}</label>
+                    </div><!-- Closing out col.-->
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                        <input type="{{ type }}" name="{{ variable }}" class="form-control" id="{{ variable }}-field" style="display: {{ display }}">
+                    </div><!-- Closing out col.-->
+            </div><!-- Closing out row.-->
+        </div><!-- Closing out form group.-->
+    {%- endmacro %}
 
 
+<!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.  For each vet, add name, office_name, phone, email, address, and specialties. -->
+
+    <button type="button" class="btn btn-primary" id="addNewVetFormBtn">Add New Veterinary Specialist</button>
+
+
+
+    {% for business in query_businesses_list %}
+        {{ business.name }}
+    {% endfor %}
+
+
+    <div id="addNewVetForm" style="display: none">
+        <form action="/add_new_veterinarian" class="form-horizontal" id="newVetForm" method="POST">
+
+<!-- ADD OVER THE COUNTER AS VET OPTION? -->
+                    {{ input("Veterinarian Name", "name") }}
+
+                    {{ input("Specialties", "specialties") }}
+
+                    {{ input("Office Name", "office_name") }}
+
+                    {{ input("Phone Number", "phone_number") }}
+
+                    {{ input("Email", "email", "email") }}
+
+                    {{ input("Address", "address") }}
+
+                    <div class="form-group">
+                        <div class="row">
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
+                                    <button type="button" class="btn btn-primary" id="submitAddNewVetBtn" value="submitAddNewVet">Submit New Vet Profile</button>
+                                    <button type="button" class="btn btn-primary" id="cancelAddNewVetBtn" value="cancelAddNewVet">Cancel</button>
+                                </div><!-- Closing out col.-->
+                        </div><!-- Closing out row.-->
+                    </div><!-- Closing out form group.-->
+        </form>
+
+<!-- (VET FOR SPECIFIC COMPANION(S)  IF YES, AJAX OPEN TO ENABLE SELECTION) -->
+        <script>
+
+        $('#cancelAddNewVetBtn').on('click', function(evt) {
+            $('#addNewVetForm').hide(); // TODO: RESET VALUES too.
+            $('#addNewVetFormBtn').show();
+        })
+
+        function resfreshVets(result) {
+            alert(result);
+            window.location.href="/veterinarians";
+        }
+
+        $('#submitAddNewVetBtn').on('click', function(evt) {
+            console.log("hihi");
+            evt.preventDefault();
+            var vetInputs = {
+                "name": $('#name-field').val(),
+                "office_name": $('#office_name-field').val(),
+                "phone_number": $('#phone_number-field').val(),
+                "email": $('#email-field').val(),
+                "address": $('#address-field').val(),
+                "specialties": $('#specialties-field').val(),
+            }
+
+            $.post("/add_new_veterinarian", vetInputs, resfreshVets);
+        })
+
+        </script>
+    </div>
+
+    <script>
+    $('#addNewVetFormBtn').on('click', function(evt) {
+        $('#addNewVetForm').show();
+        $('#addNewVetFormBtn').hide();
+    })
+
+    </script>
 
 <!--
 Enable button to add new veterinary specialist.
