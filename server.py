@@ -1,9 +1,10 @@
-from flask import Flask, request, render_template, redirect, flash, jsonify, g
+from flask import Flask, request, render_template, redirect, flash, jsonify, url_for, send_from_directory
 from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
 from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug import secure_filename
 from sqlalchemy import update, delete, exc
 from alerts import *
 from queries import *
@@ -19,8 +20,11 @@ import os
 
 # NEED TO FIX AUTH STUFF
 
+UPLOAD_FOLDER = 'static/img/uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # auth = HTTPBasicAuth()
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.secret_key = "###"
 
@@ -35,6 +39,29 @@ app.secret_key = "###"
 #     new_vet = Veterinarian(**vet_dict)
 #     db.session.add(new_vet)
 #     db.session.commit()
+
+
+@app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
+def uploaded_file(filename):
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        filepath = "/" + UPLOAD_FOLDER + "/" + filename
+        return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/photos/upload', methods=["POST"])
+def upload_file():
+    file = request.files['photo']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('uploaded_file', filename=filename))
+    else:
+        return redirect('/photos/upload')
 
 
 # Helper function to check whether user is logged in.
@@ -636,7 +663,7 @@ def show_photos():
     else:
 
 
-        
+
         return render_template("photos.html", user_obj=user_obj)
 
 

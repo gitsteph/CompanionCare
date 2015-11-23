@@ -4,9 +4,17 @@
 {% block content1 %}Photos{% endblock %}
 {% block content2 %} 
 
+{% if filepath is defined %}
+    <img src="{{ filepath }}" alt="{{ filename }}" style="width:304px; height=auto;"> {{ filename }}
+{% endif %}
+
 <!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
 -->
-
+<h3>Upload new photo</h3>
+<form method="POST" enctype="multipart/form-data" action="/photos/upload">
+    <input type="file" name="photo"></input>
+    <input type="submit" value="Upload"></input>
+</form>
 
 <!--
 Enable button to add new photos.
