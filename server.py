@@ -51,25 +51,6 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 #     db.session.commit()
 
 
-
-
-
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    if request.method == 'POST':
-        data_file = request.files.get('file')
-        file_name = data_file.filename
-        conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_KEY)
-        bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
-        k = Key(bucket)
-        # k.set_contents_from_file(data_file)
-        k.set_contents_from_string(data_file.read())
-
-        # return jsonify(name=file_name)
-        return jsonify(name=file_name)
-
-
 @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
 def uploaded_file(filename):
     user_obj = confirm_loggedin()
@@ -79,20 +60,10 @@ def uploaded_file(filename):
         filepath = "/" + UPLOAD_FOLDER + "/" + filename
         return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
-def upload_file_locally():
-    file = request.files['photo']
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))  # CHECK THIS!
-        return redirect(url_for('uploaded_file', filename=filename))
-    else:
-        return redirect('/photos/upload')
 
 @app.route('/photos/upload', methods=["POST"])
 def upload_file_online():
+    #### TODO: STORE POINTER AND OTHER INFO IN TO DB!
     # Uploads files (photos) to AWS S3.
     if request.method == 'POST':
         data_file = request.files.get('photo')
@@ -107,15 +78,23 @@ def upload_file_online():
             bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
             k = Key(bucket)
             k.set_contents_from_string(data_file.read())
-
+            url = k.generate_url(expires_in=0, query_auth=False)  # need to set to private later
             return jsonify(name=file_name)
-### TODO: NEED A WAY TO GET URL FROM UPLOAD INTO DB.
+
+            # return redirect(url_for('uploaded_file', filename=filename))
 
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-        # return redirect(url_for('uploaded_file', filename=filename))
-
-
+def upload_file_locally():
+    file = request.files['photo']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('uploaded_file', filename=filename))
+    else:
+        return redirect('/photos/upload')
 
 # Helper function to check whether user is logged in.
 def confirm_loggedin():
