@@ -18,15 +18,25 @@ import time
 import os
 # from flask.ext.httpauth import HTTPBasicAuth
 
-# NEED TO FIX AUTH STUFF
+from uuid import uuid4
+import boto
+from boto.s3.key import Key
+import boto.s3.connection
 
-UPLOAD_FOLDER = 'static/img/uploads'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-# auth = HTTPBasicAuth()
+# NEED TO FIX AUTH STUFF
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.secret_key = "###"
+
+app.config['AWS_ACCESS_KEY'] = os.environ["AWSAccessKeyId"]
+app.config['AWS_SECRET_KEY'] = os.environ["AWSSecretKey"]
+app.config['AWS_BUCKET_NAME'] = os.environ["AWSBuckedName1"]
+
+UPLOAD_FOLDER = 'static/img/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
+# auth = HTTPBasicAuth()
 
 # app.jinja_env.undefined = StrictUndefined
 
@@ -41,6 +51,25 @@ app.secret_key = "###"
 #     db.session.commit()
 
 
+
+
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if request.method == 'POST':
+        data_file = request.files.get('file')
+        file_name = data_file.filename
+        conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_KEY)
+        bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
+        k = Key(bucket)
+        # k.set_contents_from_file(data_file)
+        k.set_contents_from_string(data_file.read())
+
+        # return jsonify(name=file_name)
+        return jsonify(name=file_name)
+
+
 @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
 def uploaded_file(filename):
     user_obj = confirm_loggedin()
@@ -53,15 +82,39 @@ def uploaded_file(filename):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/photos/upload', methods=["POST"])
-def upload_file():
+def upload_file_locally():
     file = request.files['photo']
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))  # CHECK THIS!
         return redirect(url_for('uploaded_file', filename=filename))
     else:
         return redirect('/photos/upload')
+
+@app.route('/photos/upload', methods=["POST"])
+def upload_file_online():
+    # Uploads files (photos) to AWS S3.
+    if request.method == 'POST':
+        data_file = request.files.get('photo')
+        if data_file and allowed_file(data_file.filename):
+            file_name = data_file.filename
+            conn = boto.s3.connect_to_region('us-west-1',
+               aws_access_key_id=app.config["AWS_ACCESS_KEY"],
+               aws_secret_access_key=app.config["AWS_SECRET_KEY"],
+               is_secure=True,
+               calling_format = boto.s3.connection.OrdinaryCallingFormat(),
+               )
+            bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
+            k = Key(bucket)
+            k.set_contents_from_string(data_file.read())
+
+            return jsonify(name=file_name)
+### TODO: NEED A WAY TO GET URL FROM UPLOAD INTO DB.
+
+
+
+        # return redirect(url_for('uploaded_file', filename=filename))
+
 
 
 # Helper function to check whether user is logged in.
