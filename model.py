@@ -82,7 +82,7 @@ class Companion(db.Model):
     gender = db.Column(db.String(20))
     breed = db.Column(db.String(20))
     age = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  ## DELETE THIS LATER
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
@@ -209,10 +209,10 @@ class Alert(db.Model):
     petmed_id = db.Column(db.Integer, db.ForeignKey('petmedications.id'), nullable=True)
     petfood_id = db.Column(db.Integer, nullable=True)
     primary_alert_phone = db.Column(db.String)
-    secondary_alert_phone = db.Column(db.String)  ### NEED TO ADD FWD ENABLED OR DISABLED ATTR
+    secondary_alert_phone = db.Column(db.String)
+    forwarding_option = db.Column(db.String)  # NEED TO ADD FWD ENABLED OR DISABLED ATTR
     alert_datetime_start = db.Column(db.DateTime)
     alert_datetime_end = db.Column(db.DateTime)
-    current = db.Column(db.String(20))  ### EVENTUALLY REMOVE AND CALCULATE IN SERVER
     alert_type = db.Column(db.String(20))
     alert_frequency = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, nullable=False)

@@ -25,6 +25,16 @@ app.secret_key = "###"
 # app.jinja_env.undefined = StrictUndefined
 
 
+### REMOVE AFTER SEEDING
+def add_unknown_vet():
+    vet_dict={}
+    vet_dict["name"] = "Unknown"
+    vet_dict["created_at"] = datetime.datetime.now()
+    new_vet = Veterinarian(**vet_dict)
+    db.session.add(new_vet)
+    db.session.commit()
+
+
 # Helper function to check whether user is logged in.
 def confirm_loggedin():
     user_id = session.get("user_id")
@@ -204,6 +214,37 @@ def update_user_profile():
 
 ################
 
+######## ADD COMPANION ########
+
+def process_add_new_companion(value_types):
+    # Requests information about each companion.
+    companion_values_dict = {val:request.form.get(val) for val in value_types}
+    companion_values_dict["user_id"] = session["user_id"]
+    companion_values_dict["created_at"] = datetime.datetime.now()
+    companion_values_dict["updated_at"] = None
+    new_companion = Companion(**companion_values_dict)
+
+    #### TODO: Fix minor bug--default value in form is empty string if no input provided.
+    #### Either make age required or remove default val. Age requires int.
+
+    db.session.add(new_companion)
+    db.session.commit()
+
+    # Upon creation of new companion in db, also create new petvet relationship between Companion & Unknown Vet.
+    companion_name = request.form.get("name")
+
+    petvet_values_dict = {}
+    # Queries for id of newly-created companion in db.
+    petvet_values_dict["pet_id"] = Companion.query.filter(Companion.name == companion_name).first().id
+    petvet_values_dict["vet_id"] = Veterinarian.query.filter(Veterinarian.name == "Unknown").first().id  # Unknown Vet
+    print petvet_values_dict
+
+    new_petvet = PetVet(**petvet_values_dict)
+    db.session.add(new_petvet)
+    db.session.commit()
+
+################
+
 ######## ALERTS ########
 
 
@@ -248,6 +289,65 @@ def show_all_alerts_and_form():
         return render_template('alerts.html', user_obj=user_obj)
 
 
+@app.route('/add_new_alert', methods=["POST"])
+def add_new_alert():
+    alert_variables = ["primary_alert_phone", "secondary_alert_phone", "alert_datetime_start", "alert_datetime_end", "alert_type"]
+    alert_frequency = request.form.get("alert_frequency")
+    alert_frequency_unit = request.form.get("alert_frequency_unit")
+    if alert_frequency_unit == "days":  # to convert to hours
+        alert_frequency = alert_frequency * 24
+    alert_values_dict = {}
+    alert_values_dict["alert_frequency"] = alert_frequency
+    alert_values_dict = {var:request.form.get(var) for var in alert_variables}
+    print alert_values_dict
+    alert_values_dict["created_at"] = datetime.datetime.now()
+
+    companion_name = request.form.get("companion_name")  # Companion must exist already or user will need to add via different route.
+    medication_name = request.form.get("medication_name")  # Medication must exist already or user will need to add via different route.
+
+    # Assign petvet id matching companion and unknown vet.  User can update with more info at a later point in time if needed.
+    companion_obj = get_companion_obj(companion_name)
+    companion_id = companion_obj.id
+    print "pet_id", companion_id
+
+    # Gets medication obj from db.
+    medication_obj = Medication.query.filter(Medication.name == medication_name).first()
+    medication_id = medication_obj.id
+    print medication_id, "medID"
+
+    companion_petvets_list = companion_obj.petvets  # returns list of petvets
+    companion_petvet_ids_set = set()
+    for companion_petvet in companion_petvets_list:
+        companion_petvet_ids_set.add(companion_petvet.id)
+
+    print companion_petvet_ids_set
+
+    # Iterate through list of petvets to see if there is a match for a medication issued connected to petvet.
+    # If no medication issued, prompt user to add medication for pet via different route.
+    # Else, assign petvet id for alert dict.
+
+    petmed_obj = PetMedication.query.filter(PetMedication.medication_id == medication_id, PetMedication.petvet_id.in_(companion_petvet_ids_set)).first()
+    petmed_id = petmed_obj.id
+
+    print petmed_obj, "<<< ", petmed_id
+    alert_values_dict["petmed_id"] = petmed_id
+    print alert_values_dict
+
+    new_alert = Alert(**alert_values_dict)
+    db.session.add(new_alert)
+    db.session.commit()
+
+    # Schedule first alert (via alertlog entry), set to not-issued yet.
+    alert_id = db.session.query(Alert).filter(Alert.petmed_id == alert_values_dict["petmed_id"]).order_by(Alert.updated_at.desc()).first().id
+    first_alert_datetime = alert_values_dict["alert_datetime_start"]
+    schedule_alert(alert_id, first_alert_datetime)
+
+    ### TODO: When an exception is thrown, e.g. if companion or medication does not exist, or if companion is not assigned specific medication already,
+    ### prompt the user to add either companion, medication, or petmed via different route.
+
+    rtrn_msg = "An alert has been set for " + str(companion_obj.name) +"."
+    return rtrn_msg
+
 ######## MEDICATIONS ########
 
 @app.route('/medications', methods=['GET', 'POST'])
@@ -284,6 +384,8 @@ def add_medications_for_companion(companion_name):
 
     companion_id = companion_obj.id
     vet_name = request.form.get("prescribing_vet")
+    if not vet_name:
+        vet_name = "Unknown"
     vet_obj = Veterinarian.query.filter(Veterinarian.name == vet_name).first()
 
     # If Veteranarian name is not yet in the database, add it.
@@ -415,18 +517,6 @@ def delete_medication_fromdb(med_name):
 
 #### CHECK AND REFACTOR BELOW
 
-def process_add_new_companion(value_types):
-    # Requests information about each companion.
-    values_dict = {val:request.form.get(val) for val in value_types}
-    values_dict["user_id"] = session["user_id"]
-    values_dict["created_at"] = datetime.datetime.now()
-    values_dict["updated_at"] = None
-
-    new_companion = Companion(**values_dict)
-    db.session.add(new_companion)
-    db.session.commit()
-
-
 @app.route('/new_companion', methods=['GET', 'POST'])
 def add_new_companion():
     """Add companions individually."""
@@ -448,7 +538,7 @@ def add_new_companion():
                 return companion_attributes_dict
 
             companion_attributes_dict = add_new_companion_form()
-            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict)
+            return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, user_obj=user_obj)
 
         elif request.method == 'POST':
             """Processes new companion information."""

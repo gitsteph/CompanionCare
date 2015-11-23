@@ -4,14 +4,14 @@
 {% block content1 %} <span id="alerts_title">Alerts</span> {% endblock %}
 
 {% block content2 %}
-    {% macro input(name, variable, display="block", type='text', value='') -%}
+    {% macro input(name, variable, display="block", type='text') -%}
         <div class="form-group">
             <div class="row">
                     <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                         <label id="{{ variable }}-label" style="display: {{ display }}">{{ name }}</label>
                     </div><!-- Closing out col.-->
                     <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
-                        <input type="{{ type }}" name="{{ variable }}" value="{{ value|e }}" class="form-control" id="{{ variable }}-field" style="display: {{ display }}">
+                        <input type="{{ type }}" name="{{ variable }}" class="form-control" id="{{ variable }}-field" style="display: {{ display }}">
                     </div><!-- Closing out col.-->
             </div><!-- Closing out row.-->
         </div><!-- Closing out form group.-->
@@ -121,7 +121,7 @@
                         </div><!-- Closing out row.-->
                     </div>
 
-                    {{ input("Primary Phone #", "primary_phone") }}
+                    {{ input("Primary Phone #", "primary_alert_phone") }}
 
                     <div class="form-group">
                         <div class="row">
@@ -136,7 +136,7 @@
                         </div><!-- Closing out row.-->
                     </div><!-- Closing out form group.-->
 
-                    {{ input("Secondary Phone #", "secondary_phone", "none") }}
+                    {{ input("Secondary Phone #", "secondary_alert_phone", "none") }}
 
 
                     <div class="form-group">
@@ -152,8 +152,8 @@
         <script>
 
         $('#forward_enabled').on('click', function(evt) {
-            $('#secondary_phone-label').show();
-            $('#secondary_phone-field').show();
+            $('#secondary_alert_phone-label').show();
+            $('#secondary_alert_phone-field').show();
             $('#forward_enabled').hide();
             $('#forwarding_status').text("Enabled");
             $('#forward_disabled').show();
@@ -162,19 +162,19 @@
         $('#forward_disabled').on('click', function(evt) {
             $('#forwarding_status').text("Disabled");
             $('#forward_enabled').show();
-            $('#secondary_phone-label').hide();
-            $('#secondary_phone-field').hide();
+            $('#secondary_alert_phone-label').hide();
+            $('#secondary_alert_phone-field').hide();
             $('#forward_disabled').hide(); // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
         })
 
         $('#cancelAddNewAlertBtn').on('click', function(evt) {
             $('#addNewAlertForm').hide(); // TODO: RESET VALUES too.
+            $('#forward_enabled').show();
+            $('#forward_disabled').hide();
+            $('#secondary_alert_phone-label').hide();
+            $('#secondary_alert_phone-field').hide();
             $('#openAlertFormBtn').show();
         })
-
-
-
-
 
         function refreshAlerts(result) {
             alert(result);
@@ -189,12 +189,11 @@
                 "alert_type": $('#alert_type-field').val(),
                 "alert_frequency": $('#alert_frequency-field').val(),
                 "alert_frequency_unit": $('#alert_frequency_unit-field').val(),
-                "primary_phone": $('#primary_phone-field').val(),
-                "secondary_phone": $('#secondary_phone-field').val(),
-                "alert_datetime_start": $('#alert_datetime_start').val(),
-                "alert_datetime_end": $('#alert_datetime_end').val()
+                "primary_alert_phone": $('#primary_alert_phone-field').val(),
+                "secondary_alert_phone": $('#secondary_alert_phone-field').val(),
+                "alert_datetime_start": $('#alert_datetime_start-field').val(),
+                "alert_datetime_end": $('#alert_datetime_end-field').val()
             }
-
 
             $.post("/add_new_alert", alertInputs, refreshAlerts);
 
