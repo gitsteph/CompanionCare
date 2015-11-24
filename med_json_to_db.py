@@ -44,15 +44,15 @@ def write_med_to_db():
                 med_val_str = strip_and_stringify_med_vals(med_values_list)
                 med_dict["side_effects_and_drug_interactions"] = str(med_val_str)
             med_dict["created_at"] = datetime.datetime.now()
-
-        new_med = Medication(**med_dict)
-        db.session.add(new_med)
-        db.session.commit()
+        if med_dict["name"]:
+            new_med = Medication(**med_dict)
+            db.session.add(new_med)
+            db.session.commit()
     return (""" hihi """)
 
 
 if __name__ == "__main__":
-    app.debug = False
+    app.debug = True
 
     connect_to_db(app)
     app.run()
