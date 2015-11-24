@@ -99,16 +99,20 @@ def upload_file_online():
                     image_dict["updated_at"] = datetime.datetime.now()
                     image_dict = {k:v for k,v in image_dict.iteritems() if v}
 
-                    img_update = update(Image.__table__).where(Image.user_id == session['user_id'], Image.id == image_query_id).values(**image_dict)
+                    img_update = update(Image.__table__).where(Image.id == image_query_id).values(**image_dict)
                     db.session.execute(img_update)
+                    flash("Your photo has been updated.")
                 else:
                     # If no pointer stored, add new image entry to db.
                     image_dict["created_at"] = datetime.datetime.now()
                     new_image = Image(**image_dict)
                     db.session.add(new_image)
+                    flash("Your photo has been uploaded.")
 
                 db.session.commit()
-                return render_template('photos.html', user_obj=user_obj, url=location_url)
+
+                image_obj = Image.query.filter(Image.location_url == location_url).first()
+                return render_template('photos.html', user_obj=user_obj, image_obj=image_obj)
             else:
                 flash("Upload unsuccessful")
                 return redirect('/photos')
@@ -722,9 +726,9 @@ def show_photos():
         return redirect("/")
     else:
 
+        image_list = Image.query.filter(Image.user_id == session.get("user_id")).all()
 
-
-        return render_template("photos.html", user_obj=user_obj)
+        return render_template("photos.html", user_obj=user_obj, image_list=image_list)
 
 
 ################

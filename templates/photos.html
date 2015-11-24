@@ -3,14 +3,18 @@
 
 {% block content1 %}Photos{% endblock %}
 {% block content2 %} 
-
-{% if url is defined %}
-    <img src="{{ url }}" alt="{{ url }}" style="width:304px; height=auto;"> {{ filename }}
+    
+{% if image_obj is defined %}
+    <div class="row">
+        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="center">
+            <div><img src="{{ image_obj.location_url }}" alt="{{ image_obj.name }}" style="width:304px; height=auto;"> </div>
+            <div>{{ image_obj.name }}</div>
+            <div>Tags: {{ image_obj.tags }}</div>
+        </div>
+    </div>
 {% endif %}
 
-<!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
--->
-<form method="POST" enctype="multipart/form-data" action="/photos/upload">
+<form method="POST" id="photoForm" enctype="multipart/form-data" action="/photos/upload" style="display: block">
     <div class="form-group">
         <div class="row">
             <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="center">
@@ -49,8 +53,17 @@
         </div><!-- Closing out row.-->
     </div><!-- Closing out form group.-->
 </form>
-
-<!--
-Enable button to add new photos.
- -->
+<br><br>
+<div class="row">
+        {% if image_list is defined %}
+            <div id="images">
+                {% for image_obj in image_list %}
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4" align="center">
+                    <div><img src="{{ image_obj.location_url }}" alt="{{ name }}" style="width:304px; height=auto;"> </div>
+                    <div>{{ image_obj.name }}</div>
+                    <div>Tags: {{ image_obj.tags }}</div>
+                </div><!-- Closing out col.-->
+                {% endfor %}
+        {% endif %}
+</div><!-- Closing out row.-->
 {% endblock %}
