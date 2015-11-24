@@ -61,7 +61,10 @@ def add_unknown_vet():
 #         filepath = "/" + UPLOAD_FOLDER + "/" + filename
 #         return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
 
-#### TODO: SERVE ALL PHOTOS UPLOADED BY USER!
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/photos/upload', methods=["POST"])
 def upload_file_online():
@@ -117,9 +120,6 @@ def upload_file_online():
                 flash("Upload unsuccessful")
                 return redirect('/photos')
 
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def upload_file_locally():
     file = request.files['photo']
