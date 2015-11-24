@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, flash, jsonify, url
 from flask import session
 from flask_debugtoolbar import DebugToolbarExtension
 # from jinja2 import StrictUndefined
-from model import connect_to_db, db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from model import connect_to_db, db, User, Companion, Image, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug import secure_filename
 from sqlalchemy import update, delete, exc
@@ -15,13 +15,14 @@ from vet_finder import search
 import send_messages
 import datetime
 import time
-import os
-# from flask.ext.httpauth import HTTPBasicAuth
-
 from uuid import uuid4
 import boto
 from boto.s3.key import Key
 import boto.s3.connection
+import os
+# from flask.ext.httpauth import HTTPBasicAuth
+
+
 
 # NEED TO FIX AUTH STUFF
 app = Flask(__name__)
@@ -51,37 +52,66 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 #     db.session.commit()
 
 
-@app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
-def uploaded_file(filename):
-    user_obj = confirm_loggedin()
-    if not user_obj:
-        return redirect("/")
-    else:
-        filepath = "/" + UPLOAD_FOLDER + "/" + filename
-        return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
+# @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
+# def uploaded_file(filename):
+#     user_obj = confirm_loggedin()
+#     if not user_obj:
+#         return redirect("/")
+#     else:
+#         filepath = "/" + UPLOAD_FOLDER + "/" + filename
+#         return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
 
+#### TODO: SERVE ALL PHOTOS UPLOADED BY USER!
 
 @app.route('/photos/upload', methods=["POST"])
 def upload_file_online():
-    #### TODO: STORE POINTER AND OTHER INFO IN TO DB!
     # Uploads files (photos) to AWS S3.
-    if request.method == 'POST':
-        data_file = request.files.get('photo')
-        if data_file and allowed_file(data_file.filename):
-            file_name = data_file.filename
-            conn = boto.s3.connect_to_region('us-west-1',
-               aws_access_key_id=app.config["AWS_ACCESS_KEY"],
-               aws_secret_access_key=app.config["AWS_SECRET_KEY"],
-               is_secure=True,
-               calling_format = boto.s3.connection.OrdinaryCallingFormat(),
-               )
-            bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
-            k = Key(bucket)
-            k.set_contents_from_string(data_file.read())
-            url = k.generate_url(expires_in=0, query_auth=False)  # need to set to private later
-            return jsonify(name=file_name)
+    user_obj = confirm_loggedin
+    if not user_obj:
+        return redirect('/')
+    else:
+        if request.method == 'POST':
+            data_file = request.files.get("photo")
+            if data_file and allowed_file(data_file.filename):
+                file_name = data_file.filename
+                conn = boto.s3.connect_to_region('us-west-1',
+                   aws_access_key_id=app.config["AWS_ACCESS_KEY"],
+                   aws_secret_access_key=app.config["AWS_SECRET_KEY"],
+                   is_secure=True,
+                   calling_format = boto.s3.connection.OrdinaryCallingFormat(),
+                   )
+                bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
+                k = Key(bucket)
+                k.set_contents_from_string(data_file.read())
+                k.set_acl('public-read')
+                location_url = k.generate_url(expires_in=0, query_auth=False)  # public
+                image_dict = {}
+                image_dict["location_url"] = location_url
+                image_dict["user_id"] = session.get("user_id")
+                image_dict["name"] = request.form.get("name")
+                image_dict["tags"] = request.form.get("tags")
 
-            # return redirect(url_for('uploaded_file', filename=filename))
+                # Check to see if image already has a pointer stored in db.
+                image_query = Image.query.filter(Image.location_url == location_url).first()
+                if image_query:
+                    # If pointer already stored, update instead of adding.
+                    image_query_id = image_query.id
+                    image_dict["updated_at"] = datetime.datetime.now()
+                    image_dict = {k:v for k,v in image_dict.iteritems() if v}
+
+                    img_update = update(Image.__table__).where(Image.user_id == session['user_id'], Image.id == image_query_id).values(**image_dict)
+                    db.session.execute(img_update)
+                else:
+                    # If no pointer stored, add new image entry to db.
+                    image_dict["created_at"] = datetime.datetime.now()
+                    new_image = Image(**image_dict)
+                    db.session.add(new_image)
+
+                db.session.commit()
+                return render_template('photos.html', user_obj=user_obj, url=location_url)
+            else:
+                flash("Upload unsuccessful")
+                return redirect('/photos')
 
 
 def allowed_file(filename):
@@ -140,8 +170,6 @@ def time_alerts():
             for alertlog in alertlogs:
                 issue_alert_and_update_alertlog(alertlog.id)
 
-        # TODO: if response is received, update_alertlog_with_user_response.
-        # TODO: after alertlog updated, update_next_alert_based_on_user_response.
         # run every minute
         time.sleep(10)
 

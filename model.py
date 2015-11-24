@@ -26,7 +26,7 @@ class User(db.Model):
 
     companions = db.relationship('Companion', cascade="all,delete", backref="user")
     # usernetworks = db.relationship('UserNetwork', backref="user")
-
+    images = db.relationship('Image', cascade="all,delete", backref="user")
 
 # class UserNetwork(db.Model):
 #     """Users may belong to many networks, and networks may have many users with different access."""
@@ -238,6 +238,20 @@ class AlertLog(db.Model):
     recipient = db.Column(db.String, nullable=False)
     action_taken = db.Column(db.String(20))
     response_timestamp = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=True)
+
+
+class Image(db.Model):
+    """Images."""
+
+    __tablename__="images"
+
+    id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
+    name = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    location_url = db.Column(db.String)
+    tags = db.Column(db.String)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 

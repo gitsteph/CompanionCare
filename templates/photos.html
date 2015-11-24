@@ -4,16 +4,50 @@
 {% block content1 %}Photos{% endblock %}
 {% block content2 %} 
 
-{% if filepath is defined %}
-    <img src="{{ filepath }}" alt="{{ filename }}" style="width:304px; height=auto;"> {{ filename }}
+{% if url is defined %}
+    <img src="{{ url }}" alt="{{ url }}" style="width:304px; height=auto;"> {{ filename }}
 {% endif %}
 
 <!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.
 -->
-<h3>Upload new photo</h3>
 <form method="POST" enctype="multipart/form-data" action="/photos/upload">
-    <input type="file" name="photo"></input>
-    <input type="submit" value="Upload"></input>
+    <div class="form-group">
+        <div class="row">
+            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="center">
+                <h3>Upload new photo</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                <label id="image_name">Image Name</label>
+            </div><!-- Closing out col.-->
+            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                <input type="text" name="name" class="form-control" id="name-field">
+            </div><!-- Closing out col.-->
+        </div><!-- Closing out row.-->
+        <div class="row">
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                    <label id="name">Image to Upload</label>
+                </div><!-- Closing out col.-->
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                    <input type="file" name="photo" class="form-control" id="photo-field">
+                </div><!-- Closing out col.-->
+        </div><!-- Closing out row.-->
+        <div class="row">
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                    <label id="tags">Tags</label>
+                </div><!-- Closing out col.-->
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                    <input type="text" name="tags" class="form-control" id="tags-field">
+                </div><!-- Closing out col.-->
+        </div><!-- Closing out row.-->
+    </div><!-- Closing out form group.-->
+        <div class="row">
+            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
+                <input type="submit" class="btn btn-primary" value="Upload"></input>
+            </div><!-- Closing out col.-->
+        </div><!-- Closing out row.-->
+    </div><!-- Closing out form group.-->
 </form>
 
 <!--
