@@ -392,21 +392,35 @@ def show_all_alerts_and_form():
         alert_dict = objtree()
 
         for companion_obj in user_companions_list:
+            companion_name = companion_obj.name
             companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
             # alert_dict["companion_petvets_list"] = companion_petvets_list
+            alert_dict[companion_obj] = objdict(objtree)
             for petvet in companion_petvets_list:
-                vet_name = petvet.veterinarian.name
                 vet_obj = petvet.veterinarian
-                # alert_dict["vet_name"] = vet_name
                 petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
-                # alert_dict["petmeds_list"] = petmeds_list
+                alert_dict[companion_obj][vet_obj] = objdict(objtree)
                 for petmed in petmeds_list:
                     medication = petmed.medication
                     alerts = petmed.alerts
+                    alert_dict[companion_obj][vet_obj][medication] = objdict(objtree)
                     for alert in alerts:
+                        alert_id = alert.id
                         alert_dict[companion_obj][vet_obj][medication] = alert
         ddict = dd2dr(alert_dict)
-        print ddict
+
+        def convertToD3Form(d):
+            if not isinstance(d, dict):  # if d has no children, stop recursing
+                return [{'name':str(d.id)}]
+
+            l = []
+            for k,v in d.iteritems():  # iterate through all children of d
+                l.append({'name':str(k.name), 'children':convertToD3Form(v)})  # add child and recursively add its children
+            return l
+
+        user_obj.name = user_obj.first_name + ' ' + user_obj.last_name
+        ddict_tree = convertToD3Form({user_obj:ddict})
+        print 'D3 Form:', ddict_tree
 
 
             # INFO NEEDED: medication, petmed, petvet id >>> vet name
@@ -417,7 +431,7 @@ def show_all_alerts_and_form():
 
 
         # VISUALIZE the relationships below! And enable viewing/editing from visualization area.  (separate div)
-        return render_template('alerts.html', user_obj=user_obj)
+        return render_template('alerts.html', user_obj=user_obj, ddict_tree=str(ddict_tree))
 
 
 @app.route('/add_new_alert', methods=["POST"])
