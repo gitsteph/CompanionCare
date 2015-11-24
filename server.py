@@ -8,7 +8,7 @@ from werkzeug import secure_filename
 from sqlalchemy import update, delete, exc
 from alerts import *
 from queries import *
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import multiprocessing
 from vet_finder import search
 # from celery import Celery
@@ -42,14 +42,37 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # app.jinja_env.undefined = StrictUndefined
 
 
-### REMOVE AFTER SEEDING
+######## HELPER FUNCTION DDICT/OBJTREE ########
+class objdict(defaultdict):
+    def __getattr__(self, key):
+        try:
+            return self.__dict__[key]
+        except KeyError:
+            return self.__getitem__(key)
+
+    __setattr__ = lambda self, k, v: self.__setitem__(k,v)
+
+
+objtree = lambda: objdict(objtree)
+
+
+def dd2dr(dd):
+    """defaultdict to dict recursively"""
+    return dict(
+        (k, dd2dr(v) if isinstance(v, defaultdict) else v)
+        for k, v in dd.items()
+    )
+
+
+######## HELPER FUNCTION TO SEED ONLY ONCE ########
 def add_unknown_vet():
-    vet_dict={}
-    vet_dict["name"] = "Unknown"
-    vet_dict["created_at"] = datetime.datetime.now()
-    new_vet = Veterinarian(**vet_dict)
-    db.session.add(new_vet)
-    db.session.commit()
+    if not Veterinarian.query.filter(Veterinarian.name == "Unknown").first():
+        vet_dict={}
+        vet_dict["name"] = "Unknown"
+        vet_dict["created_at"] = datetime.datetime.now()
+        new_vet = Veterinarian(**vet_dict)
+        db.session.add(new_vet)
+        db.session.commit()
 
 
 # @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
@@ -60,6 +83,8 @@ def add_unknown_vet():
 #     else:
 #         filepath = "/" + UPLOAD_FOLDER + "/" + filename
 #         return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
+
+
 
 
 def allowed_file(filename):
@@ -354,29 +379,34 @@ def show_all_alerts_and_form():
     if not user_obj:
         return redirect("/")
     else:
-        ######## THIS NEEDS WORK!!!!! GO BACK
+        ####### THIS NEEDS WORK!!!!! GO BACK
 
-        # all_alerts_dict_by_companion = {}
-        # all_alerts_dict_by_medication = {}
+        all_alerts_dict_by_companion = {}
+        all_alerts_dict_by_medication = {}
 
-        # # Query for list of all user's companions.
-        # user_companions_list = get_all_user_companions()
-        # print user_companions_list
+        # Query for list of all user's companions.
+        user_companions_list = get_all_user_companions()
+        print user_companions_list
 
-        # # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
-        # for companion_obj in user_companions_list:
-        #     alert_dict = {}
-        #     companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
-        #     alert_dict["companion_petvets_list"] = companion_petvets_list
-        #     for petvet in companion_petvets_list:
-        #         vet_name = petvet.veterinarian.name
-        #         alert_dict["vet_name"] = vet_name
-        #         petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
-        #         alert_dict["petmeds_list"] = petmeds_list
-        #         for petmed in petmeds_list:
-        #             medication = petmed.medication
-        #             alert_dict["medication"] = medication
+        # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
+        alert_dict = objtree()
 
+        for companion_obj in user_companions_list:
+            companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
+            # alert_dict["companion_petvets_list"] = companion_petvets_list
+            for petvet in companion_petvets_list:
+                vet_name = petvet.veterinarian.name
+                vet_obj = petvet.veterinarian
+                # alert_dict["vet_name"] = vet_name
+                petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
+                # alert_dict["petmeds_list"] = petmeds_list
+                for petmed in petmeds_list:
+                    medication = petmed.medication
+                    alerts = petmed.alerts
+                    for alert in alerts:
+                        alert_dict[companion_obj][vet_obj][medication] = alert
+        ddict = dd2dr(alert_dict)
+        print ddict
 
 
             # INFO NEEDED: medication, petmed, petvet id >>> vet name

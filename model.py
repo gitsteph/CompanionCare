@@ -223,7 +223,7 @@ class Alert(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "<ID=%s PetMed ID=%s Alert DateTime=%s>" % (self.id, self.petmed_id, self.next_alert_datetime)
+        return "<ID=%s PetMed ID=%s Alert DateTime Start=%s & End=%s>" % (self.id, self.petmed_id, self.alert_datetime_start, self.alert_datetime_end)
 
 
 class AlertLog(db.Model):
