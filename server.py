@@ -42,14 +42,14 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 # app.jinja_env.undefined = StrictUndefined
 
 
-# ### REMOVE AFTER SEEDING
-# def add_unknown_vet():
-#     vet_dict={}
-#     vet_dict["name"] = "Unknown"
-#     vet_dict["created_at"] = datetime.datetime.now()
-#     new_vet = Veterinarian(**vet_dict)
-#     db.session.add(new_vet)
-#     db.session.commit()
+### REMOVE AFTER SEEDING
+def add_unknown_vet():
+    vet_dict={}
+    vet_dict["name"] = "Unknown"
+    vet_dict["created_at"] = datetime.datetime.now()
+    new_vet = Veterinarian(**vet_dict)
+    db.session.add(new_vet)
+    db.session.commit()
 
 
 # @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
@@ -316,6 +316,7 @@ def update_user_profile():
 
 def process_add_new_companion(value_types):
     # Requests information about each companion.
+    add_unknown_vet()
     companion_values_dict = {val:request.form.get(val) for val in value_types}
     companion_values_dict["user_id"] = session["user_id"]
     companion_values_dict["created_at"] = datetime.datetime.now()
