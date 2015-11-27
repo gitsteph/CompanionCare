@@ -15,7 +15,6 @@ class User(db.Model):
     last_name = db.Column(db.String(20), nullable=False)
     password = db.Column(db.String, nullable=False)  # stores hashed pw
     phone = db.Column(db.String, nullable=True)
-    zipcode = db.Column(db.String(15), nullable=True)  # DELETE THIS LATER
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
@@ -40,7 +39,6 @@ class User(db.Model):
 #     created_at = db.Column(db.DateTime, nullable=False)
 #     updated_at = db.Column(db.DateTime, nullable=True)
 
-
 # class Network(db.Model):
 #     """Companion networks-- most likely households."""
 
@@ -54,8 +52,6 @@ class User(db.Model):
 
 #     usernetworks = db.relationship('UserNetwork', backref="network")
 #     companions = db.relationship('Companion', backref="network")
-
-
 
 # class Permission(db.Model):
 #     """User access for UserNetworks."""
@@ -84,13 +80,14 @@ class Companion(db.Model):
     age = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # network_id = db.Column(db.Integer, db.ForeignKey('networks.id'))
+    image_id = db.Column(db.Integer, db.ForeignKey('images.id'))
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
     petvets = db.relationship('PetVet', cascade="all,delete", backref="companion")
     petfoods = db.relationship('PetFood', cascade="all,delete", backref="companion")
     weightlogs = db.relationship('WeightLog', cascade="all,delete", backref="companion")
-
+    images = db.relationship('Image', cascade="all,delete", backref="companion")
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -164,6 +161,7 @@ class Medication(db.Model):
     missed_dose = db.Column(db.String, nullable=True)
     storage_information = db.Column(db.String, nullable=True)
     side_effects_and_drug_interactions = db.Column(db.String, nullable=True)
+    petmd_url = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 
@@ -245,7 +243,7 @@ class AlertLog(db.Model):
 class Image(db.Model):
     """Images."""
 
-    __tablename__="images"
+    __tablename__ = "images"
 
     id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     name = db.Column(db.String)

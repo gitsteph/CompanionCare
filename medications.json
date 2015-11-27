@@ -63,7 +63,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/acepromazine"
     },
     "Advantage": {
         "General Description": [
@@ -103,7 +104,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/advantage"
     },
     "Amitriptyline": {
         "General Description": [
@@ -149,7 +151,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/amitriptyline"
     },
     "Amlodipine Besylate": {
         "Dosage and Administration": [
@@ -198,7 +201,8 @@
         "Uses": [
             "Amlodipine Besylate is used to treat hypertension (high blood pressure), especially in cats with kidney disease.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/amlodipine-besylate"
     },
     "Ammonium Chloride": {
         "General Description ": [
@@ -244,7 +248,8 @@
         "Storage Information ": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ammonium-chloride"
     },
     "Amoxicillin": {
         "General Description": [
@@ -295,7 +300,8 @@
             "\u00a0",
             "Injection is effective 3 months after reconstitution at room temperature and 1 year after reconstitution if refrigerated.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/amoxicillin"
     },
     "Ampicillin": {
         "General Description": [
@@ -347,7 +353,8 @@
             "\u00a0",
             "Ampicillin sodium Injection should be used immediately after reconstitution.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ampicillin"
     },
     "Antacids": {
         "General Description": [
@@ -400,7 +407,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature unless otherwise noted on the drug label.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/antacids"
     },
     "Asprin": {
         "General Description": [
@@ -462,7 +470,8 @@
         "Storage Information": [
             "Store in a tightly sealed container. Read the storage instructions on the drug label as some forms may need to be refrigerated.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/asprin"
     },
     "Atenolol": {
         "General Description": [
@@ -513,7 +522,8 @@
         "Storage Information": [
             "Keep tablets in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/atenolol"
     },
     "Azathioprine": {
         "General Description": [
@@ -563,7 +573,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature away from heat and moisture.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/azathioprine"
     },
     "Baytril": {
         "General Description": [
@@ -617,7 +628,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/baytril"
     },
     "Benadryl for Dogs and Cats": {
         "General Description": [
@@ -680,7 +692,8 @@
             "LimelightPlayerUtil.initEmbed('limelight_player_799607');",
             "",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/benadryl"
     },
     "Benazepril": {
         "General Description": [
@@ -729,7 +742,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature. Refrigerate the oral liquid.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/benazepril"
     },
     "Bromides": {
         "General Description ": [
@@ -789,7 +803,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/bromides"
     },
     "Buspirone": {
         "General Description": [
@@ -835,7 +850,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/buspirone"
     },
     "Capstar": {
         "General Description": [
@@ -867,7 +883,8 @@
         "Storage Information": [
             "Keep in a seal package at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/capstar"
     },
     "Captopril": {
         "General Description": [
@@ -914,7 +931,8 @@
             "\u00a0",
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/captopril"
     },
     "Carnitine": {
         "General Description": [
@@ -950,7 +968,8 @@
             "\u00a0",
             "Read the drug label for storage information.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/carnitine"
     },
     "Cefpodoxime Proxetil": {
         "Dosage and Administration": [
@@ -1005,7 +1024,8 @@
         "Uses": [
             "Cefpodoxime Proxetil is used for treatment of infections, most commonly skin infections caused by susceptible strains of Staphylococcus intermedius, aureus and canis, E. coli, Pasteurella multocida, and Proteus mirabilis bacteria.\u00a0",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cefpodoxime-proxetil"
     },
     "Chlorambucil": {
         "General Description": [
@@ -1057,7 +1077,8 @@
         "Storage Information": [
             "Store in a tightly sealed container in a refrigerator. Additionally, as with any medication, keep out of children\u2019s reach.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/chlorambucil"
     },
     "Cimetidine": {
         "General Description": [
@@ -1098,7 +1119,8 @@
         "Storage Information": [
             "Store in a tight container at room temperature protected from light and heat.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cimetidine"
     },
     "Ciprofloxacin": {
         "General Description": [
@@ -1155,7 +1177,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ciprofloxacin"
     },
     "Cisapride": {
         "General Description ": [
@@ -1198,7 +1221,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cisapride"
     },
     "Clavamox": {
         "General Description": [
@@ -1250,7 +1274,8 @@
             "\u00a0",
             "Keep oral liquid refrigerated- it will remain effective 10 days after mixed.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/clavamox"
     },
     "Clindamycin": {
         "General Description": [
@@ -1291,7 +1316,8 @@
         "Storage Information": [
             "Tablets and capsules are to be kept in a tightly sealed container at room temperature. Oral liquid (reconstituted powder) is to be kept at room temperature. Some formulations may only be good for 14 days after mixing, read the drug label carefully.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/clindamycin"
     },
     "Clomipramine": {
         "Dosage and Administration": [
@@ -1355,7 +1381,8 @@
             "\u00a0",
             "This drug should be used in conjunction with behavioral modification techniques.\u00a0",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/clomipramine"
     },
     "Codeine": {
         "General Description": [
@@ -1409,7 +1436,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/codeine"
     },
     "Cyclosporine": {
         "Dosage and Administration": [
@@ -1470,7 +1498,8 @@
         "Uses": [
             "Cyclosporine is indicated for the control of atopica dermatitis in dogs weighing at least 4 lbs body weight.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cyclosporine-atopica"
     },
     "Cyclosporine Ophthalmic Ointment": {
         "Dosage and Administration": [
@@ -1514,7 +1543,8 @@
         "Uses": [
             "Cyclosporine ophthalmic (Optimmune) is indicated for the treatment of keratonconjnctivitis sicca (KCS) and chronic superficial keratitis in dogs. KCS (aka dry eye syndrome) is usually a lifetime required treatment.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cyclosporine-ophthalmic-ointment"
     },
     "Cyproheptadine": {
         "General Description": [
@@ -1558,7 +1588,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cyproheptadine"
     },
     "Cytoxan": {
         "General Description": [
@@ -1607,7 +1638,8 @@
         "Storage Information": [
             "Injectable may need to be refrigerated - pay close attention to the drug label\u2019s instructions for storage information.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/cytoxan"
     },
     "DL-Methionine": {
         "Dosage and Administration": [
@@ -1663,7 +1695,8 @@
         "Uses": [
             "Methionine is used to prevent and treat types of kidney and bladder stones.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/dl-methionine"
     },
     "Deracoxib": {
         "Dosage and Administration": [
@@ -1731,7 +1764,8 @@
             "\u00a0",
             "Do NOT use in cats.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/deracoxib-deramaxx"
     },
     "Dexamethasone": {
         "General Description": [
@@ -1817,7 +1851,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature unless otherwise noted. Keep injection protected from light.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/dexamethasone"
     },
     "Diazepam": {
         "General Description": [
@@ -1869,7 +1904,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/diazepam"
     },
     "Difloxacin": {
         "GENERAL DESCRIPTION:": [],
@@ -1897,7 +1933,8 @@
             "",
             "USE CAUTION WHEN ADMINISTERING THIS DRUG TO CATS - Use with extreme caution and only with the recommendation of an experienced veterinarian when giving this drug to cats, especially those with pre-existing kidney failure. Difloxacin has a tendency to consistently cause loss of appetite and vomiting in cats."
         ],
-        "STORAGE INFORMATION:": []
+        "STORAGE INFORMATION:": [],
+        "med_url": "/pet-medication/difloxacin"
     },
     "Digoxin": {
         "General Description": [
@@ -1965,7 +2002,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/digoxin"
     },
     "Doxycycline": {
         "General Description": [
@@ -2018,7 +2056,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature. Refrigerate unreconstituted oral gel. Once reconstituted, refrigerate and use within three days.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/doxycycline"
     },
     "Enalapril": {
         "General Description": [
@@ -2070,7 +2109,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature. Refrigerate the oral liquid.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/enalapril"
     },
     "Ephedrine": {
         "General Description": [
@@ -2120,7 +2160,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature away from heat and sunlight.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ephedrine"
     },
     "Etodolac": {
         "Dosage and Administration": [
@@ -2190,7 +2231,8 @@
         "Uses": [
             "Etodolac is used in dogs for pain and inflammation associated with osteoarthritis.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/etodolac"
     },
     "Famotidine": {
         "Dosage and Administration": [
@@ -2242,7 +2284,8 @@
         "Uses": [
             "Famotidine is used to help reduce the amount of stomach acid produced. It aids in the treatment of stomach ulcers that are present and helps prevent ulcer formation. Famotidine can also be used to treat gastritis, esophagitis, and gastric or esophageal reflux as well as prevent stomach or duodenal ulcers in animals with kidney failure.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/famotidine"
     },
     "Fenbendazole": {
         "GENERAL DESCRIPTION:": [
@@ -2285,7 +2328,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/fenbendazole"
     },
     "Firocoxib": {
         "Dosage and Administration": [
@@ -2353,7 +2397,8 @@
         "Uses": [
             "Firocoxib is used in dogs for pain and inflammation associated with osteoarthritis. Firocoxib is also used to help control postoperative pain and inflammation associated with soft-tissue and orthopedic surgery.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/firocoxib-previcox"
     },
     "Fluconazole": {
         "General Description": [
@@ -2402,7 +2447,8 @@
         "Storage Information": [
             "Tablets should be kept in a tightly sealed container at room temperature. Oral liquids should be refrigerated and shaken before use.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/fluconazole"
     },
     "Fluoxetine": {
         "General Description": [
@@ -2461,7 +2507,8 @@
         "Storage Information": [
             "Store at room temperature. Do not remove desiccant canister from the bottle. Completely close bottle between uses.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/fluoxetine"
     },
     "Frontline Top Spot": {
         "General Description": [
@@ -2496,7 +2543,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/frontline-top-spot"
     },
     "Furosemide": {
         "General Description": [
@@ -2553,7 +2601,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature protected from light and heat.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/furosemide"
     },
     "Gentamicin": {
         "Dosage and Administration": [
@@ -2610,7 +2659,8 @@
             "\u00a0",
             "Gentamicin and Mometasone (corticosteroid) with Clomitrazole is used in the treatment of otitis externa in dogs caused by susceptible strains of yeast and bacteria.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/gentamicin"
     },
     "Griseofulvin": {
         "General Description": [
@@ -2656,7 +2706,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/griseofulvin"
     },
     "Heartgard": {
         "General Description": [
@@ -2697,7 +2748,8 @@
         "Storage Information": [
             "Store at room temperature and protect from light. Keep sealed in foil package until use.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/heartgard"
     },
     "Hydralazine": {
         "General Description": [
@@ -2741,7 +2793,8 @@
         "Storage Information": [
             "Read the drug label for storage information.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/hydralazine"
     },
     "Hydroxyzine": {
         "General Description": [
@@ -2784,7 +2837,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/hydroxyzine"
     },
     "Imodium": {
         "General Description": [
@@ -2836,7 +2890,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/imodium"
     },
     "Insulin": {
         "General Description": [],
@@ -2844,6 +2899,7 @@
         "Missed Dose?": [],
         "Side Effects and Drug Reactions": [],
         "Storage Information": [],
+        "med_url": "/pet-medication/insulin",
         "\u00a0": [
             "",
             "Be sure you have the appropriate size syringe for the concentration of insulin you are using. Variations include: U-40, U-100, and U-500 syringes which go to their corresponding 40, 100, and 500 units/ml insulin concentrations.",
@@ -2925,7 +2981,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/interceptor"
     },
     "Itraconazole": {
         "General Description": [
@@ -2973,7 +3030,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature and protected from heat or light.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/itraconazole"
     },
     "K9 Advantix": {
         "GENERAL DESCRIPTION": [
@@ -3018,7 +3076,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/k9-advantix"
     },
     "Kaopectate": {
         "General Description": [
@@ -3063,7 +3122,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/kaopectate"
     },
     "Ketoconazole": {
         "General Description": [
@@ -3121,7 +3181,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature and protected from heat or light.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ketoconazole"
     },
     "Lactated Ringer\u2019s": {
         "Dosage and Administration": [
@@ -3168,7 +3229,8 @@
         "Uses": [
             "Lactated Ringer\u2019s are used to help maintain hydration or to rehydrate animals. It can be used in the treatment of decreased intake of fluids and replace fluids lost do to kidney disease or illness.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/lactated-ringers-injection"
     },
     "Lactulose": {
         "General Description": [
@@ -3204,7 +3266,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature protected from light. Do not refrigerate.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/lactulose"
     },
     "Levothyroxine Sodium": {
         "Dosage and Administration": [
@@ -3265,7 +3328,8 @@
         "Uses": [
             "Levothyroxine Sodium is a synthetic thyroid hormone, usually as a lifelong medication, for animals that have an underactive thyroid (i.e., animals with hypothyroidism).",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/levothyroxine-sodium"
     },
     "Lysine": {
         "General Description": [
@@ -3298,7 +3362,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/lysine"
     },
     "Marbofloxacin": {
         "Dosage and Administration": [
@@ -3366,7 +3431,8 @@
         "Uses": [
             "Marbofloxacin (Zeniquin) is indicated for the treatment of infections in dogs and cats associated with bacteria susceptible to marbofloxacin.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/marbofloxacin-zeniquin"
     },
     "Maropitant Citrate": {
         "Dosage and Administration": [
@@ -3426,7 +3492,8 @@
         "Uses": [
             "Maropitant Citrate tablets are used to help prevent and control acute vomiting and also to help prevent the onset of vomiting due to motion sickness in dogs.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/maropitant-citrate"
     },
     "Medroxyprogesterone Acetate": {
         "General Description": [
@@ -3476,7 +3543,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/medroxyprogesterone-acetate"
     },
     "Meloxicam": {
         "Dosage and Administration": [
@@ -3544,7 +3612,8 @@
         "Uses": [
             "Meloxicam (Metacam) is used in dogs for pain and inflammation associated with osteoarthritis.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/meloxicam-metacam"
     },
     "Methimazole": {
         "General Description": [
@@ -3579,7 +3648,8 @@
         "Storage Information": [
             "Refrigerate oral liquid. Keep tablets in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/methimazole"
     },
     "Methyl Prednisolone": {
         "General Description": [
@@ -3633,7 +3703,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/methyl-prednisolone"
     },
     "Metoclopramide": {
         "General Description": [
@@ -3686,7 +3757,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/metoclopramide"
     },
     "Metronidazole": {
         "General Description": [
@@ -3750,7 +3822,8 @@
             "LimelightPlayerUtil.initEmbed('limelight_player_264181');",
             "",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/metronidazole"
     },
     "Mitotane": {
         "Dosage and Administration": [
@@ -3818,7 +3891,8 @@
         "Uses": [
             "Mitotane is used in the treatment of Cushing\u2019s disease (hyperadrenocorticism) and related symptoms in dogs.\u00a0",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/mitotane-lysodren"
     },
     "Naproxen": {
         "General Description": [
@@ -3867,7 +3941,8 @@
         "Storage Information": [
             "Store in a tightly sealed container. Read the storage instructions on the drug label as some forms may need to be refrigerated.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/naproxen"
     },
     "Neomycin sulfate": {
         "General Description": [
@@ -3918,7 +3993,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/neomycin-sulfate"
     },
     "Norvasc": {
         "General Description": [
@@ -3959,7 +4035,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/norvasc"
     },
     "Oxazepam": {
         "General Description": [
@@ -4011,7 +4088,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/oxazepam"
     },
     "Pancreatic Enzymes": {
         "Dosage and Administration": [
@@ -4072,7 +4150,8 @@
         "Uses": [
             "Pancreatic Enzyme is used as a digestive aid: replacement therapy where digestion of protein, carbohydrate and fat is inadequate due to exocrine pancreatic insufficiency.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/pancreatic-enzymes"
     },
     "Penicillin": {
         "General Description": [
@@ -4123,7 +4202,8 @@
             "Injection is effective 24 hrs after reconstitution at room temperature and 7 days after reconstitution if refrigerated.",
             "",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/penicillin"
     },
     "Pepcid": {
         "General Description": [
@@ -4162,7 +4242,8 @@
         "Storage Information": [
             "Store in a tight container at room temperature protected from light and heat.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/pepcid"
     },
     "Pepto Bismol": {
         "General Description": [
@@ -4201,7 +4282,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/pepto-bismol"
     },
     "Phenobarbital": {
         "General Description": [
@@ -4263,7 +4345,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/phenobarbital"
     },
     "Phenoxybenzamine": {
         "General Description": [
@@ -4304,7 +4387,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/phenoxybenzamine"
     },
     "Piroxicam": {
         "General Description": [
@@ -4350,7 +4434,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/piroxicam"
     },
     "Polysuflated Glycosaminoglycan": {
         "Dosage and Administration": [
@@ -4408,7 +4493,8 @@
         "Uses": [
             "Polysuflated Glycosaminoglycan, injectable is an osteoarthritis medication that is used to treat traumatic and non-infectious abnormalities and arthritis associated with joint stiffness and limping.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/polysuflated-glycosaminoglycan"
     },
     "Potassium Supplements": {
         "General Description": [
@@ -4449,7 +4535,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/potassium-supplements"
     },
     "Praziquantel": {
         "General Description": [
@@ -4487,7 +4574,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/praziquantel"
     },
     "Prednisone Prednisolone": {
         "How It Works": [
@@ -4547,7 +4635,8 @@
             "LimelightPlayerUtil.initEmbed('limelight_player_889144');",
             "",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/prednisone-prednisolone"
     },
     "Program": {
         "General Description": [
@@ -4597,7 +4686,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/program"
     },
     "Proin": {
         "General Description": [
@@ -4642,7 +4732,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/proin"
     },
     "Propranolol": {
         "General Description": [
@@ -4705,7 +4796,8 @@
         "Storage Information": [
             "Keep tablets in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/propranolol"
     },
     "Pyrantel Pamoate": {
         "General Description": [
@@ -4751,7 +4843,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/pyrantel-pamoate"
     },
     "Revolution": {
         "General Description": [
@@ -4792,7 +4885,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/revolution"
     },
     "Rifampin": {
         "General Description": [
@@ -4838,7 +4932,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/rifampin"
     },
     "Rimadyl": {
         "General Description": [
@@ -4889,7 +4984,8 @@
         "Storage Information": [
             "Store in a tightly sealed container. Read the storage instructions on the drug label as some forms may need to be refrigerated.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/rimadyl"
     },
     "SMZ TMP": {
         "General Description": [
@@ -4945,9 +5041,12 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/smz-tmp"
     },
-    "Selegiline": {},
+    "Selegiline": {
+        "med_url": "/pet-medication/selegiline"
+    },
     "Sentinel": {
         "General Description": [
             "Milbemycin is used to prevent heartworm and other parasitic infestations on your pet. It is found in two drugs, Sentinel\u00ae (Milbemycin Oxime and Lufenuron) and Interceptor (Milbemycin Oxime only).",
@@ -4992,7 +5091,8 @@
         "Storage Information": [
             "Store at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/sentinel"
     },
     "Spinosad plus Milbemycin oxime": {
         "Dosage and Administration": [
@@ -5048,7 +5148,8 @@
         "Uses": [
             "Trifexis is indicated for the prevention of heartworm disease and treat and control hookworms, roundworms and whipworms. Trifexis also kills fleas and is indicated for the treatment and prevention of flea infestations.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/trifexis-spinosad-plus-milbemycin-oxime"
     },
     "Sucralfate": {
         "General Description": [
@@ -5081,7 +5182,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/sucralfate"
     },
     "Sulfasalazine": {
         "General Description": [
@@ -5131,7 +5233,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/sulfasalazine"
     },
     "Taurine": {
         "General Description": [
@@ -5161,7 +5264,8 @@
         "Storage Information": [
             "Store in a sealed container.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/taurine"
     },
     "Temaril P": {
         "General Description": [
@@ -5215,7 +5319,8 @@
         "Storage Information": [
             "Store in a cool, dry place at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/temaril-p"
     },
     "Tetracycline": {
         "General Description": [
@@ -5275,7 +5380,8 @@
         "Storage Information": [
             "Store in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/tetracycline"
     },
     "Triamcinolone Acetonide": {
         "General Description": [
@@ -5313,7 +5419,8 @@
         "Storage Information": [
             "Store tablets at room temperature away from moisture and heat. The injection should be protected from light.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/triamcinolone-acetonide"
     },
     "Trilostane": {
         "Dosage and Administration": [
@@ -5377,7 +5484,8 @@
         "Uses": [
             "Trilostane (Vetoryl) is indicated for the treatment of pituitary-dependant hyperadrenocorticism and treatment of hyperadrenocorticism due to adrenocortical tumors in dogs.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/trilostane"
     },
     "Tylenol": {
         "General Description": [
@@ -5450,7 +5558,8 @@
             "LimelightPlayerUtil.initEmbed('limelight_player_198931');",
             "",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/tylenol"
     },
     "Tylosin": {
         "General Description": [
@@ -5484,7 +5593,8 @@
         "Storage Information": [
             "Store Tylosin capsules in a tight container at room temperature. Protect the oral solution from light.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/tylosin"
     },
     "Ursodiol": {
         "General Description": [
@@ -5526,7 +5636,8 @@
         "Storage Information": [
             "Store Ursodiol in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/ursodiol"
     },
     "Vetmedin": {
         "General Description": [
@@ -5572,7 +5683,8 @@
         "Storage Information": [
             "Keep in a tightly sealed container at room temperature.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/vetmedin"
     },
     "Zantac": {
         "General Description": [
@@ -5615,6 +5727,7 @@
         "Storage Information": [
             "Store in a tight container at room temperature protected from light and heat.",
             "\u00a0"
-        ]
+        ],
+        "med_url": "/pet-medication/zantac"
     }
 }

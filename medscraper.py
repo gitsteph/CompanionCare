@@ -113,13 +113,14 @@ all_meds_list = get_meds_list()
 rescrape = False  # set this to True if you want to re-download+scrape medicines that are already in the json
 
 for (med_url, med_name) in all_meds_list:
-    sleep_randomly()
-
     print 'grabbing', med_name
     if rescrape or med_name not in all_meds_dict:
+        sleep_randomly()
         all_meds_dict[med_name] = get_med(med_url)
 
-        with open('medications.json', 'w') as fp:
-            json.dump(all_meds_dict, fp, sort_keys=True, indent=4, separators=(',', ': '))
+    all_meds_dict[med_name]["med_url"] = med_url
+
+    with open('medications.json', 'w') as fp:
+        json.dump(all_meds_dict, fp, sort_keys=True, indent=4, separators=(',', ': '))
 
     print 'grabbed med', med_name

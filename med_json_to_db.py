@@ -16,11 +16,13 @@ all_meds_list = sorted(all_meds_dict.items())
 
 ## TODO: Need to refactor how side_effects... is stored/parsed.
 
+
 def strip_and_stringify_med_vals(med_values_list):
     med_val_str = ('\n').join(med_values_list)
     for unicode_str in [u'\xa0', u'\u2019', u'\u2014', u'\xc2', u'\xae']:
         med_val_str = med_val_str.replace(unicode_str, "")
     return med_val_str
+
 
 @app.route('/')
 def write_med_to_db():
@@ -43,6 +45,8 @@ def write_med_to_db():
             elif key_attr_value == "Side Effects and Drug Reactions":
                 med_val_str = strip_and_stringify_med_vals(med_values_list)
                 med_dict["side_effects_and_drug_interactions"] = str(med_val_str)
+            elif key_attr_value == "med_url":
+                med_dict["petmd_url"] = str(med_values_list)
             med_dict["created_at"] = datetime.datetime.now()
         if med_dict["name"] != "Selegiline":
             new_med = Medication(**med_dict)

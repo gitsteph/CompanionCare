@@ -21,6 +21,7 @@ from boto.s3.key import Key
 import boto.s3.connection
 import os
 
+
 app = Flask(__name__)
 
 app.secret_key = "###"
@@ -97,11 +98,11 @@ def upload_file_online():
             if data_file and allowed_file(data_file.filename):
                 file_name = data_file.filename
                 conn = boto.s3.connect_to_region('us-west-1',
-                   aws_access_key_id=app.config["AWS_ACCESS_KEY"],
-                   aws_secret_access_key=app.config["AWS_SECRET_KEY"],
-                   is_secure=True,
-                   calling_format = boto.s3.connection.OrdinaryCallingFormat(),
-                   )
+                                                 aws_access_key_id=app.config["AWS_ACCESS_KEY"],
+                                                 aws_secret_access_key=app.config["AWS_SECRET_KEY"],
+                                                 is_secure=True,
+                                                 calling_format=boto.s3.connection.OrdinaryCallingFormat(),
+                                                 )
                 bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
                 k = Key(bucket)
                 k.set_contents_from_string(data_file.read())
@@ -138,6 +139,20 @@ def upload_file_online():
             else:
                 flash("Upload unsuccessful")
                 return redirect('/photos')
+
+
+@app.route('/photos/<int:image_id>', methods=["GET"])
+def retrieve_photo(image_id):  # ### TODO: ENABLE EDIT IMAGE TAGS FROM THIS ROUTE.
+    user_obj = confirm_loggedin
+    if not user_obj:
+        return redirect('/')
+    else:
+        photo_obj = get_photo_obj(image_id)
+        if not photo_obj:
+            flash("You do not have an image stored with that ID.")
+            return redirect('/photos')
+        else:
+            return render_template('photos.html', user_obj=user_obj, photo_obj=photo_obj)
 
 
 def upload_file_locally():
@@ -266,15 +281,14 @@ def register_user():
                                                 ("Password", ("password", "password")),
                                                 ("First Name", ("first_name", "text")),
                                                 ("Last Name", ("last_name", "text")),
-                                                ("Phone Number", ("phone", "text")),
-                                                ("Zipcode", ("zipcode", "text"))])
+                                                ("Phone Number", ("phone", "text"))])
             return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
 
     elif request.method == 'POST':
         """Processes new user registration."""
 
         # Requests information provided by the user from registration form.
-        value_types = ["email", "first_name", "last_name", "phone", "zipcode"]
+        value_types = ["email", "first_name", "last_name", "phone"]
         values_dict = {val:request.form.get(val) for val in value_types}
         values_dict["created_at"] = datetime.datetime.now()
         unhashed_pw = request.form.get("password")
@@ -721,6 +735,7 @@ def find_veterinarian(location="San Francisco"):
 ################
 
 ######## NEED TO COMPLETE ROUTES BELOW ########
+#### TODO ENABLE ADDING PHOTO TO SPECIFIC PET!
 @app.route('/new_companion', methods=['GET', 'POST'])
 def add_new_companion():
     """Add companions individually."""

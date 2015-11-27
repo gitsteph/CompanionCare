@@ -1,9 +1,15 @@
-from model import db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from model import db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog, Image
 from flask import session
+
 
 def get_companion_obj(companion_name):
     companion_obj = Companion.query.filter(Companion.name == companion_name, Companion.user_id == session.get("user_id")).first()
     return companion_obj
+
+
+def get_photo_obj(photo_id):
+    photo_obj = Image.query.filter(Image.id == photo_id, Image.user_id == session.get("user_id")).first()
+    return photo_obj
 
 
 def get_all_user_companions():

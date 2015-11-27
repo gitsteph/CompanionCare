@@ -6,25 +6,35 @@ Medication: <span id="medname_title">{{ medication_obj.name }}</span></div></div
 {% block content2 %} 
     <div class="row">
         <div class="col-xs-10 col-md-10 col-lg-10" id="med_info" style="display: block">
+            <br>
             <strong>General Description:</strong>
             <div id="main_GenDesc">
                 {{ medication_obj.general_description }}
             </div>
+            <br>
             <strong>How It Works:</strong>
             <div id="main_HowItWorks">
                 {{ medication_obj.how_it_works }}<br>
             </div>
+            <br>
             <strong>Storage Information:</strong> 
             <div id="main_StorageInfo">
                 {{ medication_obj.storage_information }}<br>
             </div>
+            <br>
             <strong>Missed Dose?</strong> 
             <div id="main_MissedDose">
                 {{ medication_obj.missed_dose }}<br>
             </div>
+            <br>
             <strong>Side Effects & Drug Interactions:</strong> 
             <div id="main_SEDI">
                 {{ medication_obj.side_effects_and_drug_interactions }}<br>
+            </div>
+            <br>
+            <strong>PetMD.com URL: </strong> 
+            <div id="petmd_url">
+                <a href="http://www.petmd.com{{ medication_obj.petmd_url }}"> www.petmd.com{{ medication_obj.petmd_url }}</a><br>
             </div>
             <br>
             <button id="editMedDisplay" value="register" button type="button" class="btn btn-primary">Edit this medication</a>
