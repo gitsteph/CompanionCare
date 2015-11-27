@@ -20,11 +20,7 @@ import boto
 from boto.s3.key import Key
 import boto.s3.connection
 import os
-# from flask.ext.httpauth import HTTPBasicAuth
 
-
-
-# NEED TO FIX AUTH STUFF
 app = Flask(__name__)
 
 app.secret_key = "###"
@@ -36,8 +32,6 @@ app.config['AWS_BUCKET_NAME'] = os.environ["AWSBuckedName1"]
 UPLOAD_FOLDER = 'static/img/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-
-# auth = HTTPBasicAuth()
 
 # app.jinja_env.undefined = StrictUndefined
 
@@ -75,16 +69,16 @@ def add_unknown_vet():
         db.session.commit()
 
 
-# @app.route('/photo/<filename>', methods=["GET"])  ## THIS NEEDS WORK
-# def uploaded_file(filename):
-#     user_obj = confirm_loggedin()
-#     if not user_obj:
-#         return redirect("/")
-#     else:
-#         filepath = "/" + UPLOAD_FOLDER + "/" + filename
-#         return render_template('photos.html', filepath=filepath, filename=filename, user_obj=user_obj)
+######## PHOTOS ########
 
-
+@app.route('/photos', methods=['GET'])
+def show_photos():
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        image_list = Image.query.filter(Image.user_id == session.get("user_id")).all()
+        return render_template("photos.html", user_obj=user_obj, image_list=image_list)
 
 
 def allowed_file(filename):
@@ -155,15 +149,8 @@ def upload_file_locally():
     else:
         return redirect('/photos/upload')
 
-# Helper function to check whether user is logged in.
-def confirm_loggedin():
-    user_id = session.get("user_id")
-    if not user_id:
-        print "redirected"
-        return None
-    else:
-        user_obj = User.query.filter(User.id == user_id).first()
-    return user_obj
+
+################
 
 ######## ALERTS MULTIPROCESSING SEND & RESPOND ########
 @app.route('/sms', methods=["POST"])
@@ -184,8 +171,9 @@ def retrieve_user_response_and_reply():
     new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
     new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
     companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
-
-    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, user_name)
+    medication_name = new_alertlog_obj.alert.petmedication.medication.name
+    missed_dose = new_alertlog_obj.alert.petmedication.medication.missed_dose
+    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, medication_name, missed_dose, user_name)
 
 
 def time_alerts():
@@ -202,9 +190,21 @@ def time_alerts():
         # run every minute
         time.sleep(10)
 
+
 ################
 
 ######## LOGIN/LOGOUT ########
+# Helper function to check whether user is logged in.
+def confirm_loggedin():
+    user_id = session.get("user_id")
+    if not user_id:
+        print "redirected"
+        return None
+    else:
+        user_obj = User.query.filter(User.id == user_id).first()
+    return user_obj
+
+
 @app.route('/login', methods=['POST'])
 def process_login():
     """Processes log in information for existing users."""
@@ -303,12 +303,6 @@ def register_user():
 @app.route('/user_profile/delete', methods=['POST'])
 def delete_user_profile():
     """Deletes user profile and returns to home page, logged out."""
-    # Queries all companions cared for by primary user.
-                # If user is sole primary user, will delete all pets.
-                # companion_list = Companion.query.filter(Companion.user_id == session["user_id"]).all()
-                # for companion in companion_list:
-                # GO BACK TO THIS LATER
-
     # To delete a user:
     db.session.delete(User.query.filter(User.id == session["user_id"]).first())
     db.session.commit()
@@ -423,14 +417,12 @@ def show_all_alerts_and_form():
         print 'D3 Form:', ddict_tree
 
 
-            # INFO NEEDED: medication, petmed, petvet id >>> vet name
+        # INFO NEEDED: medication, petmed, petvet id >>> vet name
 
         # Pass through petmed IDs to enable adding alerts onto meds.  JS front-end mechanism: click the med to popup a modal with a form to add the alert.
         # Or add a new alert to a medication not listed (will create a medication object too).
         # Enable user to minimize the add_new_alert div (on front-end).
 
-
-        # VISUALIZE the relationships below! And enable viewing/editing from visualization area.  (separate div)
         return render_template('alerts.html', user_obj=user_obj, ddict_tree=str(ddict_tree))
 
 
@@ -493,6 +485,7 @@ def add_new_alert():
     rtrn_msg = "An alert has been set for " + str(companion_obj.name) +"."
     return rtrn_msg
 
+################
 ######## MEDICATIONS ########
 
 @app.route('/medications', methods=['GET', 'POST'])
@@ -600,7 +593,6 @@ def view_individual_medication(med_name):
 
 
 @app.route('/medications/api/name/<med_name>', methods=['GET'])
-# @auth.login_required
 def view_single_med(med_name):
     medication_obj = view_individual_medication(med_name)
     med_cols = [("Name", medication_obj.name), ("General Description", medication_obj.general_description), ("How It Works", medication_obj.how_it_works),
@@ -671,8 +663,7 @@ def show_veterinarians():
     user_obj = confirm_loggedin()
     if not user_obj:
         return redirect("/")
-    else:
-        #### TODO: VISUALIZE relationships and enable dynamic edits.
+    else: # TODO: render all vets editable.
         return render_template("veterinary_specialists.html", user_obj=user_obj)
 
 
@@ -729,8 +720,7 @@ def find_veterinarian(location="San Francisco"):
 
 ################
 
-#### CHECK AND REFACTOR BELOW
-
+######## NEED TO COMPLETE ROUTES BELOW ########
 @app.route('/new_companion', methods=['GET', 'POST'])
 def add_new_companion():
     """Add companions individually."""
@@ -761,24 +751,6 @@ def add_new_companion():
             process_add_new_companion(value_types)
             return redirect("/")
 
-
-######## PHOTOS ########
-
-@app.route('/photos', methods=['GET'])
-def show_photos():
-    user_obj = confirm_loggedin()
-    if not user_obj:
-        return redirect("/")
-    else:
-
-        image_list = Image.query.filter(Image.user_id == session.get("user_id")).all()
-
-        return render_template("photos.html", user_obj=user_obj, image_list=image_list)
-
-
-################
-
-######## NEED TO COMPLETE ROUTES BELOW ########
 
 @app.route('/alerts/<companion_name>', methods=["GET", "POST"])
 def show_alerts_and_form(companion_name):
@@ -878,7 +850,6 @@ def edit_companion(companion_name):
             return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_name=companion_name, companion_id=companion_id, user_obj=user_obj)
         elif request.method == 'POST':
             if request.form.get("delete"):
-                # TODO: Notify all users of companion deletion.
                 # Delete companion!
                 db.session.delete(Companion.query.filter(Companion.id == companion_id).first())
                 db.session.commit()

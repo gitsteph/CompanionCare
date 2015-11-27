@@ -23,7 +23,8 @@
                                       <a href="#my_modal" id="medModal" data-toggle="modal" 
                                         data-med-name="{{ med.name }}" 
                                         data-general-description="{{ med.general_description }}"
-                                        data-storage-information="{{ med.storage_information }}">
+                                        data-storage-information="{{ med.storage_information }}"
+                                        data-missed-dose="{{ med.missed_dose }}">
                                         {{ med.name }}
                                       </a>
                                     </td>
@@ -49,6 +50,9 @@
           <p id="description">content</p>
           <h4>Storage Information</h4>
           <p id="storageInfo">content</p>
+          <h4>Missed Dose</h4>
+          <p id="missedDose">content</p>
+
         </div>
         <div class="modal-footer">
           <button id="addForCompanionBtn" type="button" class="btn btn-default">Add to MedList for Companion</button>
@@ -125,9 +129,13 @@ $('#my_modal').on('show.bs.modal', function(e) {
   var medName = $(e.relatedTarget).data('med-name');
   var generalDescription = $(e.relatedTarget).data('general-description');
   var storageInfo = $(e.relatedTarget).data('storage-information');
+  var missedDose = $(e.relatedTarget).data('missed-dose');
+
   $(e.currentTarget).find('h4[class="modal-title"]').html(medName);
   $(e.currentTarget).find('p[id="description"]').html(generalDescription);
   $(e.currentTarget).find('p[id="storageInfo"]').html(storageInfo);
+  $(e.currentTarget).find('p[id="missedDose"]').html(missedDose);
+
   console.log(medName);
 
   $('#moreDetailsBtn').on('click', function(evt) {
