@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>{% block title %}CompanionCare{% endblock %}</title>
-        <!-- <script type="text/javascript" src="/static/bower_components/jquery/jquery.min.js"></script> -->
+        <link href='https://fonts.googleapis.com/css?family=Lobster|Arimo:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
         <script src="http://code.jquery.com/jquery.js"></script>
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script> 
@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="/static/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />
         <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
         <link href="/static/css/sidebar.css" rel="stylesheet" type="text/css"/>
+        <link href="/static/css/style.css" rel="stylesheet" type="text/css"/>
         <link href="/static/css/dashboard.css" rel="stylesheet" type="text/css"/>
         <script src="http://d3js.org/d3.v3.min.js"></script>
         <style>
@@ -19,7 +20,7 @@
         </style>
     </head>
     <body>
-
+{% block navbar %}
         <div class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
 
@@ -29,7 +30,8 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>                        
                     </button>
-                    <div><a class="navbar-brand" href="/">CompanionCare</a></div>
+                    <div>
+                    <a class="navbar-brand" href="/">CompanionCare</a></div>
                 </div>
 
                 <div class="navbar-collapse collapse" id="myNavbar">
@@ -43,6 +45,7 @@
                 </div>
             </div>
         </div>
+        {% endblock %}
         <div id="wrapper" style="padding-top:50px">
             <!-- Sidebar -->
         {% if session.get('user_id') %}
@@ -64,7 +67,7 @@
                         <a href="/photos">Photos</a>
                     </li>
                     <li>
-                        <a href="#">Visualization</a>
+                        <a href="/visualization">Visualization</a>
                     </li>
 
                 </ul>
@@ -133,9 +136,14 @@
                 {% block content2 %} TEXT HERE {% endblock %}
             </div>
         </div>
+<br><br>
 
-            <br><br>
-            <footer></footer>
+    <footer class="footer">
+      <div class="container">
+        <p class="text-muted"><div align="center">Made with <span class="glyphicon glyphicon-heart" aria-hidden="true"></span> and
+<img src="/static/img/navbar_brand.png" height="25" width="auto"> at Hackbright Academy.</span></div></p>
+      </div>
+    </footer>
         </div><!-- Closing out container.-->
 
 <script>

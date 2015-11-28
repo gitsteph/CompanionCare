@@ -59,6 +59,8 @@ def dd2dr(dd):
     )
 
 
+################
+
 ######## HELPER FUNCTION TO SEED ONLY ONCE ########
 def add_unknown_vet():
     if not Veterinarian.query.filter(Veterinarian.name == "Unknown").first():
@@ -70,8 +72,225 @@ def add_unknown_vet():
         db.session.commit()
 
 
-######## PHOTOS ########
+################
 
+######## ALERTS MULTIPROCESSING SEND & RESPOND ########
+@app.route('/sms', methods=["POST"])
+def retrieve_user_response_and_reply():
+    user_from = request.values.get('From', None)
+    user_response = request.values.get('Body', None)
+    user_response = user_response.lower()
+    user_from = user_from.strip('+1')
+    user_name = db.session.query(User).filter(User.phone == user_from).first().first_name
+
+    # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
+    # and saves the desired action.  This will then trigger setting the next alert.
+    user_response = user_response.split()
+    alert_id = user_response[0]
+    action_taken = user_response[1]
+
+    # Processes user_response and returns the datetime of next scheduled alert.
+    new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
+    new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
+    companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
+    medication_name = new_alertlog_obj.alert.petmedication.medication.name
+    missed_dose = new_alertlog_obj.alert.petmedication.medication.missed_dose
+    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, medication_name, missed_dose, user_name)
+
+
+def time_alerts():
+    while True:
+        current_datetime = datetime.datetime.now()
+        # query for alerts with past datetimes that have not yet been issued.
+        alertlogs = AlertLog.query.filter(AlertLog.scheduled_alert_datetime < current_datetime,
+                                          AlertLog.alert_issued.is_(None)).all()
+        print alertlogs, "<<< ALERTS PENDING"
+        if alertlogs:
+            for alertlog in alertlogs:
+                issue_alert_and_update_alertlog(alertlog.id)
+
+        # run every minute
+        time.sleep(10)
+
+
+################
+
+######## LOGIN/LOGOUT ########
+# Helper function to check whether user is logged in.
+def confirm_loggedin():
+    user_id = session.get("user_id")
+    if not user_id:
+        print "redirected"
+        return None
+    else:
+        user_obj = User.query.filter(User.id == user_id).first()
+    return user_obj
+
+
+@app.route('/login', methods=['POST'])
+def process_login():
+    """Processes log in information for existing users."""
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    # Queries "users" table in database to determine whether the user already has an account.
+    # If the user has an account, the user's account information and password are verified.
+    user_object = User.query.filter(User.email == email).first()
+    if user_object:
+        if check_password_hash(user_object.password, password):
+            session['user_id'] = user_object.id
+
+            flash("Logged in")
+            return redirect("/")  # dashboard
+        else:
+            flash('wrong password')
+            return redirect("/")  # login page
+    else:
+        flash('no such user')
+        return redirect("/")
+
+
+@app.route('/logout/<int:deleted>')
+def logout(deleted):
+    """Log out."""
+
+    del session["user_id"]
+    if deleted != 2:
+        flash("Logged Out.")
+    return redirect("/")
+
+################
+
+######## HOME, DASHBOARD, USER REGISTRATION, UPDATE, DELETE USER ########
+@app.route('/', methods=['GET'])
+def show_homedash():
+    """If not logged in, will show homepage.  Else, will show dashboard."""
+    user_obj = confirm_loggedin()
+    if user_obj:
+        companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
+        print companion_obj_list
+        return render_template("index.html", user_obj=user_obj, companion_obj_list=companion_obj_list)
+    else:
+        user_attributes_dict = OrderedDict([("logged_in", False),
+                                                ("Email", ("email", "email")),
+                                                ("Password", ("password", "password")),
+                                                ("First Name", ("first_name", "text")),
+                                                ("Last Name", ("last_name", "text")),
+                                                ("Phone Number", ("phone", "text"))])
+            
+        return render_template("home.html", user_attributes_dict=user_attributes_dict)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register_user():
+    # if request.method == 'GET':
+    #     """Shows form to register new user."""
+    #     if confirm_loggedin():
+    #         flash('logged into account, already have account')
+    #         return redirect("/")
+    #     else:
+    #         user_attributes_dict = OrderedDict([("logged_in", False),
+    #                                             ("Email", ("email", "email")),
+    #                                             ("Password", ("password", "password")),
+    #                                             ("First Name", ("first_name", "text")),
+    #                                             ("Last Name", ("last_name", "text")),
+    #                                             ("Phone Number", ("phone", "text"))])
+    #         return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
+
+    # el
+    if request.method == 'POST':
+        """Processes new user registration."""
+
+        # Requests information provided by the user from registration form.
+        value_types = ["email", "first_name", "last_name", "phone"]
+        values_dict = {val:request.form.get(val) for val in value_types}
+        values_dict["created_at"] = datetime.datetime.now()
+        unhashed_pw = request.form.get("password")
+        print unhashed_pw, "<<< unhashed"
+        password = generate_password_hash(unhashed_pw)  # hashes and salts pw
+        print password, "<<< hashed"
+        values_dict["password"] = password
+
+        # Queries "users" table in database to determine whether user already has an account.
+        # If the user has an account, the user is redirected to login page.
+        # Otherwise, a new account is created and the user is logged in via the session.
+        user_object = User.query.filter(User.email == values_dict["email"]).first()
+        if user_object:
+            flash('account exists')
+            return redirect("/")
+        else:
+            new_user = User(**values_dict)
+            db.session.add(new_user)
+            db.session.commit()
+            user_object = User.query.filter(User.email == values_dict["email"]).first()
+            session['user_id'] = user_object.id
+
+        return redirect("/")
+
+
+@app.route('/user_profile/delete', methods=['POST'])
+def delete_user_profile():
+    """Deletes user profile and returns to home page, logged out."""
+    # To delete a user:
+    db.session.delete(User.query.filter(User.id == session["user_id"]).first())
+    db.session.commit()
+    flash('Your account has been deleted.')
+    return redirect("/logout/2")
+
+
+@app.route('/user_profile/update', methods=['POST'])
+def update_user_profile():
+    """AJAX route to update user profile from modal."""
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
+        values_dict = {val:request.form.get(val) for val in value_types}
+        print values_dict
+        values_dict["updated_at"] = datetime.datetime.now()
+        values_dict = {k:v for k,v in values_dict.iteritems() if v}
+
+        ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
+        db.session.execute(ind_update)
+        db.session.commit()
+    return "Your user profile has been updated."
+
+
+################
+
+######## ADD COMPANION ########
+def process_add_new_companion(value_types):
+    # Requests information about each companion.
+    add_unknown_vet()
+    companion_values_dict = {val:request.form.get(val) for val in value_types}
+    companion_values_dict["user_id"] = session["user_id"]
+    companion_values_dict["created_at"] = datetime.datetime.now()
+    companion_values_dict["updated_at"] = None
+    new_companion = Companion(**companion_values_dict)
+
+    #### TODO: Fix minor bug--default value in form is empty string if no input provided.
+    #### Either make age required or remove default val. Age requires int.
+
+    db.session.add(new_companion)
+    db.session.commit()
+
+    # Upon creation of new companion in db, also create new petvet relationship between Companion & Unknown Vet.
+    companion_name = request.form.get("name")
+
+    petvet_values_dict = {}
+    # Queries for id of newly-created companion in db.
+    petvet_values_dict["pet_id"] = Companion.query.filter(Companion.name == companion_name).first().id
+    petvet_values_dict["vet_id"] = Veterinarian.query.filter(Veterinarian.name == "Unknown").first().id  # Unknown Vet
+    print petvet_values_dict
+
+    new_petvet = PetVet(**petvet_values_dict)
+    db.session.add(new_petvet)
+    db.session.commit()
+
+################
+
+######## PHOTOS ########
 @app.route('/photos', methods=['GET'])
 def show_photos():
     user_obj = confirm_loggedin()
@@ -167,230 +386,15 @@ def upload_file_locally():
 
 ################
 
-######## ALERTS MULTIPROCESSING SEND & RESPOND ########
-@app.route('/sms', methods=["POST"])
-def retrieve_user_response_and_reply():
-    user_from = request.values.get('From', None)
-    user_response = request.values.get('Body', None)
-    user_response = user_response.lower()
-    user_from = user_from.strip('+1')
-    user_name = db.session.query(User).filter(User.phone == user_from).first().first_name
-
-    # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
-    # and saves the desired action.  This will then trigger setting the next alert.
-    user_response = user_response.split()
-    alert_id = user_response[0]
-    action_taken = user_response[1]
-
-    # Processes user_response and returns the datetime of next scheduled alert.
-    new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
-    new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
-    companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
-    medication_name = new_alertlog_obj.alert.petmedication.medication.name
-    missed_dose = new_alertlog_obj.alert.petmedication.medication.missed_dose
-    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, medication_name, missed_dose, user_name)
-
-
-def time_alerts():
-    while True:
-        current_datetime = datetime.datetime.now()
-        # query for alerts with past datetimes that have not yet been issued.
-        alertlogs = AlertLog.query.filter(AlertLog.scheduled_alert_datetime < current_datetime,
-                                          AlertLog.alert_issued.is_(None)).all()
-        print alertlogs, "<<< ALERTS PENDING"
-        if alertlogs:
-            for alertlog in alertlogs:
-                issue_alert_and_update_alertlog(alertlog.id)
-
-        # run every minute
-        time.sleep(10)
-
-
-################
-
-######## LOGIN/LOGOUT ########
-# Helper function to check whether user is logged in.
-def confirm_loggedin():
-    user_id = session.get("user_id")
-    if not user_id:
-        print "redirected"
-        return None
-    else:
-        user_obj = User.query.filter(User.id == user_id).first()
-    return user_obj
-
-
-@app.route('/login', methods=['POST'])
-def process_login():
-    """Processes log in information for existing users."""
-    email = request.form.get("email")
-    password = request.form.get("password")
-
-    # Queries "users" table in database to determine whether the user already has an account.
-    # If the user has an account, the user's account information and password are verified.
-    user_object = User.query.filter(User.email == email).first()
-    if user_object:
-        if check_password_hash(user_object.password, password):
-            session['user_id'] = user_object.id
-
-            flash("Logged in")
-            return redirect("/")  # dashboard
-        else:
-            flash('wrong password')
-            return redirect("/")  # login page
-    else:
-        flash('no such user')
-        return redirect("/")
-
-
-@app.route('/logout/<int:deleted>')
-def logout(deleted):
-    """Log out."""
-
-    del session["user_id"]
-    if deleted != 2:
-        flash("Logged Out.")
-    return redirect("/")
-
-################
-
-######## HOME, DASHBOARD, USER REGISTRATION, UPDATE, DELETE USER ########
-
-@app.route('/', methods=['GET'])
-def show_homedash():
-    """If not logged in, will show homepage.  Else, will show dashboard."""
-    user_obj = confirm_loggedin()
-    if user_obj:
-        companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
-        print companion_obj_list
-        return render_template("index.html", user_obj=user_obj, companion_obj_list=companion_obj_list)
-    else:
-        return render_template("home.html")
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register_user():
-    if request.method == 'GET':
-        """Shows form to register new user."""
-        if confirm_loggedin():
-            flash('logged into account, already have account')
-            return redirect("/")
-        else:
-            user_attributes_dict = OrderedDict([("logged_in", False),
-                                                ("Email", ("email", "email")),
-                                                ("Password", ("password", "password")),
-                                                ("First Name", ("first_name", "text")),
-                                                ("Last Name", ("last_name", "text")),
-                                                ("Phone Number", ("phone", "text"))])
-            return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
-
-    elif request.method == 'POST':
-        """Processes new user registration."""
-
-        # Requests information provided by the user from registration form.
-        value_types = ["email", "first_name", "last_name", "phone"]
-        values_dict = {val:request.form.get(val) for val in value_types}
-        values_dict["created_at"] = datetime.datetime.now()
-        unhashed_pw = request.form.get("password")
-        print unhashed_pw, "<<< unhashed"
-        password = generate_password_hash(unhashed_pw)  # hashes and salts pw
-        print password, "<<< hashed"
-        values_dict["password"] = password
-
-        # Queries "users" table in database to determine whether user already has an account.
-        # If the user has an account, the user is redirected to login page.
-        # Otherwise, a new account is created and the user is logged in via the session.
-        user_object = User.query.filter(User.email == values_dict["email"]).first()
-        if user_object:
-            flash('account exists')
-            return redirect("/")
-        else:
-            new_user = User(**values_dict)
-            db.session.add(new_user)
-            db.session.commit()
-            user_object = User.query.filter(User.email == values_dict["email"]).first()
-            session['user_id'] = user_object.id
-
-        return redirect("/")
-
-
-@app.route('/user_profile/delete', methods=['POST'])
-def delete_user_profile():
-    """Deletes user profile and returns to home page, logged out."""
-    # To delete a user:
-    db.session.delete(User.query.filter(User.id == session["user_id"]).first())
-    db.session.commit()
-    flash('Your account has been deleted.')
-    return redirect("/logout/2")
-
-
-@app.route('/user_profile/update', methods=['POST'])
-def update_user_profile():
-    """AJAX route to update user profile from modal."""
-    user_obj = confirm_loggedin()
-    if not user_obj:
-        return redirect("/")
-    else:
-        value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
-        values_dict = {val:request.form.get(val) for val in value_types}
-        print values_dict
-        values_dict["updated_at"] = datetime.datetime.now()
-        values_dict = {k:v for k,v in values_dict.iteritems() if v}
-
-        ind_update = update(User.__table__).where(User.id == session['user_id']).values(**values_dict)
-        db.session.execute(ind_update)
-        db.session.commit()
-    return "Your user profile has been updated."
-
-
-################
-
-######## ADD COMPANION ########
-
-def process_add_new_companion(value_types):
-    # Requests information about each companion.
-    add_unknown_vet()
-    companion_values_dict = {val:request.form.get(val) for val in value_types}
-    companion_values_dict["user_id"] = session["user_id"]
-    companion_values_dict["created_at"] = datetime.datetime.now()
-    companion_values_dict["updated_at"] = None
-    new_companion = Companion(**companion_values_dict)
-
-    #### TODO: Fix minor bug--default value in form is empty string if no input provided.
-    #### Either make age required or remove default val. Age requires int.
-
-    db.session.add(new_companion)
-    db.session.commit()
-
-    # Upon creation of new companion in db, also create new petvet relationship between Companion & Unknown Vet.
-    companion_name = request.form.get("name")
-
-    petvet_values_dict = {}
-    # Queries for id of newly-created companion in db.
-    petvet_values_dict["pet_id"] = Companion.query.filter(Companion.name == companion_name).first().id
-    petvet_values_dict["vet_id"] = Veterinarian.query.filter(Veterinarian.name == "Unknown").first().id  # Unknown Vet
-    print petvet_values_dict
-
-    new_petvet = PetVet(**petvet_values_dict)
-    db.session.add(new_petvet)
-    db.session.commit()
-
-################
-
-######## ALERTS ########
-
-
-@app.route('/alerts', methods=["GET", "POST"])
-def show_all_alerts_and_form():
-    """Renders alerts page with existing alerts and other routes to add and edit alerts."""
+######## VISUALIZATION ########
+@app.route('/visualization', methods=["GET", "POST"])
+def show_data_tree():
+    """Renders D3 node tree displaying users, companions, vets, medications, and alerts."""
     user_obj = confirm_loggedin()
     if not user_obj:
         return redirect("/")
     else:
         ####### THIS NEEDS WORK!!!!! GO BACK
-
-        all_alerts_dict_by_companion = {}
-        all_alerts_dict_by_medication = {}
 
         # Query for list of all user's companions.
         user_companions_list = get_all_user_companions()
@@ -430,6 +434,24 @@ def show_all_alerts_and_form():
         ddict_tree = convertToD3Form({user_obj:ddict})
         print 'D3 Form:', ddict_tree
 
+        return render_template('visualization.html', user_obj=user_obj, ddict_tree=str(ddict_tree))
+
+
+################
+
+######## ALERTS ########
+@app.route('/alerts', methods=["GET", "POST"])
+def show_all_alerts_and_form():
+    """Renders alerts page with existing alerts and other routes to add and edit alerts."""
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        ####### THIS NEEDS WORK!!!!! GO BACK
+
+        # Query for list of all user's companions.
+        user_companions_list = get_all_user_companions()
+        print user_companions_list
 
         # INFO NEEDED: medication, petmed, petvet id >>> vet name
 
@@ -437,7 +459,7 @@ def show_all_alerts_and_form():
         # Or add a new alert to a medication not listed (will create a medication object too).
         # Enable user to minimize the add_new_alert div (on front-end).
 
-        return render_template('alerts.html', user_obj=user_obj, ddict_tree=str(ddict_tree))
+        return render_template('alerts.html', user_obj=user_obj)
 
 
 @app.route('/add_new_alert', methods=["POST"])
@@ -496,12 +518,13 @@ def add_new_alert():
     ### TODO: When an exception is thrown, e.g. if companion or medication does not exist, or if companion is not assigned specific medication already,
     ### prompt the user to add either companion, medication, or petmed via different route.
 
-    rtrn_msg = "An alert has been set for " + str(companion_obj.name) +"."
+    rtrn_msg = "An alert has been set for " + str(companion_obj.name) + "."
     return rtrn_msg
 
-################
-######## MEDICATIONS ########
 
+################
+
+######## MEDICATIONS ########
 @app.route('/medications', methods=['GET', 'POST'])
 def show_all_medications():
     user_obj = confirm_loggedin()
@@ -522,7 +545,7 @@ def show_all_medications():
         return render_template("medications.html", list_med_list=list_med_list, user_obj=user_obj)
 
 
-@app.route('/add_companion_medication/<companion_name>', methods=['POST'])  ### NEW PATH TO ADD FOR COMPANION
+@app.route('/add_companion_medication/<companion_name>', methods=['POST'])
 def add_medications_for_companion(companion_name):
     """AJAX path from medications to add a specific medication for an individual companion."""
     user_obj = confirm_loggedin()
@@ -669,22 +692,50 @@ def delete_medication_fromdb(med_name):
     db.session.commit()
     return "The medication entry has been deleted."
 
+################
 
 ######## VETERINARIANS ########
-
 @app.route('/veterinarians', methods=['GET', 'POST'])
 def show_veterinarians():
     user_obj = confirm_loggedin()
     if not user_obj:
         return redirect("/")
-    else: # TODO: render all vets editable.
-        return render_template("veterinary_specialists.html", user_obj=user_obj)
+    else:  # TODO: render all vets editable.
+
+        # generate list of vets for user's companions.
+        user_companions = get_all_user_companions()
+        user_petvets_list = []
+
+        for companion_obj in user_companions:
+            petvets = PetVet.query.filter(PetVet.pet_id == companion_obj.id).all()
+            user_petvets_list += petvets
+
+        user_vets_set = set()
+        vet_id_set = set()
+
+        for petvet in user_petvets_list:
+            vet_obj = petvet.veterinarian
+            vet_id_set.add(vet_obj.id)
+            user_vets_set.add(vet_obj)
+
+        vet_companion_dict = {}
+        for vet_obj in user_vets_set:
+            vet_companion_dict[vet_obj] = []
+            petvets_list_by_vet = vet_obj.petvets
+            for petvet in petvets_list_by_vet:
+                companion_obj = petvet.companion
+                vet_companion_dict[vet_obj].append(companion_obj)
+
+        # generate list of all avail. vets, excluding vets already in user network.
+        all_vets = Veterinarian.query.filter(~Veterinarian.id.in_(vet_id_set)).all()
+
+        return render_template("veterinary_specialists.html", user_obj=user_obj, vet_companion_dict=vet_companion_dict, all_vets=all_vets, user_companions=user_companions)
 
 
 @app.route('/edit_veterinarian_profile', methods=["POST"])
 def edit_vet_ajax():
     """AJAX route to edit existing veterinarian profile.  Can only be accessed on front-end via visualized vets."""
-    return  #### TODO: Complete this route.
+    return  # ### TODO: Complete this route.
 
 
 def edit_vet_profile(vet_id, vet_dict):
@@ -696,9 +747,38 @@ def edit_vet_profile(vet_id, vet_dict):
     db.session.commit()
 
 
+def add_petvet(companions_list, vet_id):
+    linked_pets = []
+    for companion_name in companions_list:
+        companion_obj = get_companion_obj_by_id(companion_name)
+        # If PetVet relationship is not yet in the database, add it.
+        petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_obj.id).first()
+        if petvet_obj:
+            print "PetVet already in db."
+            print petvet_obj.id
+        else:
+            petvet_dict = {}
+            petvet_dict = {"pet_id": int(companion_obj.id),
+                           "vet_id": int(vet_id)}
+            petvet_entry = PetVet(**petvet_dict)
+            db.session.add(petvet_entry)
+            db.session.commit()
+            linked_pets.append(companion_obj.name)
+    if linked_pets:
+        def stringlist(tolist):
+            if len(tolist) <= 2:
+                return " and ".join(tolist)
+            else:
+                return ", ".join(tolist[:-1]) + " and " + tolist[-1]
+        flash("This veterinarian is now connected to " + stringlist(linked_pets) + ".")
+    return redirect('/veterinarians')
+
+
 @app.route('/add_new_veterinarian', methods=["POST"])
 def add_new_veterinarian():
     """AJAX route to add new veterinarian from veterinarians route."""
+    print 'Full Form',request.form
+
     veterinarian_attributes = ["name", "office_name", "phone_number", "email", "address", "specialties"]
     new_vet_dict = {val:request.form.get(val) for val in veterinarian_attributes}
     vet_obj = Veterinarian.query.filter(Veterinarian.name == new_vet_dict["name"], Veterinarian.office_name == new_vet_dict["office_name"]).first()
@@ -714,8 +794,14 @@ def add_new_veterinarian():
         new_vet = Veterinarian(**new_vet_dict)
         db.session.add(new_vet)
         db.session.commit()
+        vet_obj = Veterinarian.query.filter(Veterinarian.name == new_vet_dict["name"], Veterinarian.office_name == new_vet_dict["office_name"]).first()
         rtrn_msg = vet_name + " has been added to our database."
-
+    companions = request.form.getlist("companions[]")
+    if not companions:
+        companions = [request.form.get("companions")]
+    print companions, "<<<<"
+    if companions:
+        add_petvet(companions, vet_obj.id)
     return rtrn_msg
 
 
@@ -736,6 +822,7 @@ def find_veterinarian(location="San Francisco"):
 
 ######## NEED TO COMPLETE ROUTES BELOW ########
 #### TODO ENABLE ADDING PHOTO TO SPECIFIC PET!
+
 @app.route('/new_companion', methods=['GET', 'POST'])
 def add_new_companion():
     """Add companions individually."""
@@ -807,34 +894,6 @@ def add_alerts(companion_name):
     schedule_alert(alert_id, scheduled_alert_datetime)
 
     return redirect('/')
-
-# def show_medications():
-#     if request.method == 'GET':
-#         medication_attributes_dict = OrderedDict([("name", "Medication Name"),
-#                                       ("current", "Current"),
-#                                       ("frequency", "Frequency"),
-#                                       ("prescribing_vet", "Prescribing Veterinarian")])
-#         companion_name = request.args.get("companion_name")
-#         companion_id = request.args.get("companion_id")
-#         # Other attributes will be provided from scraped medication data.
-#         return render_template("medications.html",
-#                                medication_attributes_dict=medication_attributes_dict,
-#                                companion_name=companion_name,
-#                                companion_id=companion_id)
-
-#     elif request.method == 'POST':
-
-#             value_types = ["name", "current", "frequency", "prescribing_vet"]
-#             values_dict = {val:request.form.get(val) for val in value_types}
-#             values_dict["user_id"] = session["user_id"]
-#             # values_dict["created_at"] = datetime.datetime.now()
-#             # values_dict["updated_at"] = None
-
-#             # new_companion = Companion(**values_dict)
-#             # db.session.add(new_companion)
-#             # db.session.commit()
-
-
 
 
 @app.route('/companion/name/<companion_name>', methods=['GET', 'POST'])

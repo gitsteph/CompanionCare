@@ -5,7 +5,7 @@
 {% block content2 %}
     <div id="main_body">
         <div class="row">
-            <div class="col-xs-8 col-xs-offset-2 col-md-8 col-md-offset-2 col-lg-8 col-lg-offset-2">Click on the links below to view detailed information about pet medications or add prescriptions that the companions in your own care network are taking.</div>
+            <div class="col-xs-12 col-md-12 col-lg-12">Click on the links below to view detailed information about pet medications or add prescriptions that the companions in your own care network are taking.</div>
         </div><br>
         <div class="row">
             <div class="col-xs-4 col-md-4 col-lg-4">
@@ -14,7 +14,7 @@
         </div>
         <div class="row">
             {% for mini_meds_list in list_med_list %} <!-- To split all meds into three columns. -->
-                <div class="col-xs-4 col-md-4 col-lg-4" id="full_med_list">
+                <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4" id="full_med_list">
                     <table>
                         {% for med in mini_meds_list %} <!-- For each med in list of med_tuples. -->
                                 <tr>

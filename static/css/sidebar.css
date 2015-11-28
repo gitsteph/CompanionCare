@@ -8,6 +8,26 @@
 
 /* Toggle Styles */
 
+.navbar {
+    background-color: #1695A3;
+}
+
+.navbar.navbar-default.navbar-fixed-top li a {
+    color: #FFFFFF;
+}
+
+.navbar-default .navbar-brand {
+    color: #FFFFFF;
+    font-family: 'Lobster', cursive;
+    font-size: 250%;
+}
+
+.navbar-default .navbar-brand:hover {
+    color: #000000;
+}
+
+ul.nav a:hover { color: #000000 !important; }
+
 #wrapper {
     padding-left: 0;
     -webkit-transition: all 0.5s ease;
@@ -39,7 +59,7 @@
     height: 100%;
     margin-left: -150px;
     overflow-y: auto;
-    background: #000;
+    background: #225378;
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
     -o-transition: all 0.5s ease;
@@ -80,12 +100,13 @@
 .sidebar-nav li a {
     display: block;
     text-decoration: none;
-    color: #999999;
+    color: #FFFFFF;
+    font-family: 'Arimo', sans-serif;
 }
 
 .sidebar-nav li a:hover {
     text-decoration: none;
-    color: #fff;
+    color: #FFFFFF;
     background: rgba(255,255,255,0.2);
 }
 

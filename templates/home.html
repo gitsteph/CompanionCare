@@ -1,37 +1,64 @@
 {% extends 'base.html' %}
 {% block title %}CompanionCare{% endblock %}
-
+{% block style %} body { background-image: url("../static/img/splash_bg_light.jpg"); background-size: 100%; background-repeat:no-repeat; background-color:#C0C4C7} {% endblock %}
+{% block navbar %}{% endblock %}
 {% block usermodal %}{% endblock %}
-{% block content1 %}Home Page{% endblock %}
+{% block content1 %}<div style="color:#1695A3"><h1 style="font-family: 'Lobster', cursive; font-size: 250%;">CompanionCare</h1><h3 style="color:#1695A3">A Tool for Conscientious Pet Partners</h3></div>{% endblock %}
     {% block content2 %}
+    <div class="row"><br><br></div>
     <div class="row">
-        <div class="col-xs-6 col-md-6 col-lg-6">
-        <form action="/login", method='POST'>
+        <div class="col-xs-10 col-xs-offset-2 col-sm-offset-0 col-sm-8 col-md-8 col-lg-7 col-lg-offset-1">
+            <h3>Care about your pet's health?</h3>
+            Lorem ipsum, I do too!  I created this pet health web app to make sure my pet could get the medication he needed, when he needed it -- and I'm sharing it with you so you can too!  Track your pet's medication, with SMS alerts to remind you when each pill must be taken.  Find out what to do if you've missed a dose by checking the comprehensive medicine database.  Remember all your vets for all your pets with the vet listing page.  And visualize your pet health status with our detailed visualizations page.
+        </div><!-- Closing out column.-->
+
+        <div class="col-xs-10 col-xs-offset-2 col-sm-offset-0 col-sm-4 col-md-4 col-lg-2 col-lg-offset-1">
+            <h3 style="color:#1695A3">Register Here:</h3>
+            {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
+    <tr>
+        <td>{{ name }}</td>
+        <td><input type="{{ type }}" name="{{ variable }}" value="{{
+            value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
+        </td>
+    </tr>
+    {%- endmacro %}
+    <form action="/register" method="POST">
+        <table>
+            {% for name, key in user_attributes_dict.items() %}
+                {% if name != "logged_in" %}
+                    {{ input(name, key[0], key[1], placeholder = key[2]) }}</p>
+                {% endif %}
+            {% endfor %}
+        </table>
+        <div>
+            <br>
+            <input type="submit" value="Register" class="btn btn-primary">
+        </div>
+    </form>
             <div>
+                
+            </div>
+        </div><!-- Closing out column.-->
+    </div> <!-- Closing out row.-->
+    <div style="text-align: center">
+        <br><br><br><br><br><br><br><br>
+    <form action="/login", method='POST'>
+            <div class="col-xs-12 col-sm-4 col-md-4 col-md-offset-1 col-lg-3 col-lg-offset-2">
+                
+                Already a user?  Login here:
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                 <label>Email:
                     <input type="email" name="email">
                 </label>
-            </div>
-            <br>
-            <div>
                 <label>Password:
                     <input type="password" name="password">
                 </label>
-            </div>
-            <br>
                 <input type="submit" value="login" button type="button" class="btn btn-primary">
-        </form>
-            <div>
-                <form action="/register">
-                    <input type="submit" value="register" button type="button" class="btn btn-primary">
-                </form>
             </div>
-        </div><!-- Closing out column.-->
-
-        <div class="col-xs-6 col-md-6 col-lg-6">TEST HERE
-        </div><!-- Closing out column.-->
-
-    </div> <!-- Closing out row.-->
+                
+        </form>
+    </div>
     {% endblock %}
 </div>
 

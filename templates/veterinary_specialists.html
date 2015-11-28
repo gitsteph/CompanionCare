@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-{% block content1 %}Veterinary Specialists{% endblock %}
+{% block content1 %}<span id="vetTitle">My Veterinarians</span>{% endblock %}
 {% block content2 %} 
-
     {% macro input(name, variable, type='text', display="block") -%}
         <div class="form-group">
             <div class="row">
@@ -16,51 +15,112 @@
             </div><!-- Closing out row.-->
         </div><!-- Closing out form group.-->
     {%- endmacro %}
+    <div id="mainButtons" align="center">
+        <button type="button" class="btn btn-primary" id="myVetsBtn" style="display: none">Your Veterinarians</button>
+        <button type="button" class="btn btn-primary" id="otherVetsBtn">All Veterinarians in Directory</button>
+        <button type="button" class="btn btn-primary" id="addNewVetFormBtn">Add New</button>
+    </div><br><br>
+    <div class="row" id="myVetsDiv">
+        {% for vet, comp_list in vet_companion_dict.iteritems() %}
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="rcorners" align="center">
+                <h4><span id="vetName"><center>{{ vet.name }}</center></h4>
+                <strong>Specialities: </strong> <span id="vetSpecialties">{{ vet.specialties }} </span><br>
+                <strong>Office Name: </strong> <span id="vetOfficeName">{{ vet.office_name }} </span><br>
+                <strong>Phone Number: </strong> <span id="vetPhoneNumber">{{ vet.phone_number }} </span><br>
+                <strong>Email: </strong> <span id="vetEmail">{{ vet.email }} </span><br>
+                <strong>Address: </strong> <span id="vetAddress">{{ vet.address }} </span><br>
+                <strong>Companions</strong>: {% for comp_obj in comp_list %}
+                    <a href="/companion/{{ comp_obj.id }}">{{ comp_obj.name }}</a>{% if not loop.last %}, {% endif %}                    
+                {% endfor %}
+                <div align="right"><a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
 
+            </div>
+            <br>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="row" id="allVetsDiv" style="display: none">
+        {% for vet in all_vets %}
+            {% if vet.name != "Unknown" %}
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="rcorners">
+                <h4><span id="vetName"><center>{{ vet.name }}</center></h4>
 
-<!-- View dropdown menu to enable companion selection.  One button enables adding new companion if no companion listed.  For each vet, add name, office_name, phone, email, address, and specialties. -->
+                <strong>Specialities: </strong> <span id="vetSpecialties">{{ vet.specialties }} </span><br>
+                <strong>Office Name: </strong> <span id="vetOfficeName">{{ vet.office_name }} </span><br>
+                <strong>Phone Number: </strong> <span id="vetPhoneNumber">{{ vet.phone_number }} </span><br>
+                <strong>Email: </strong> <span id="vetEmail">{{ vet.email }} </span><br>
+                <strong>Address: </strong> <span id="vetAddress">{{ vet.address }} </span><br>
+                <div align="right"><a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
 
-    <button type="button" class="btn btn-primary" id="addNewVetFormBtn">Add New Veterinary Specialist</button>
-
-
+            </div>
+            <br>
+        </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 
     {% for business in query_businesses_list %}
         {{ business.name }}
     {% endfor %}
 
-
     <div id="addNewVetForm" style="display: none">
         <form action="/add_new_veterinarian" class="form-horizontal" id="newVetForm" method="POST">
+            <br>
+            {{ input("Veterinarian Name", "name") }}
 
-<!-- ADD OVER THE COUNTER AS VET OPTION? -->
-                    {{ input("Veterinarian Name", "name") }}
+            {{ input("Specialties", "specialties") }}
 
-                    {{ input("Specialties", "specialties") }}
+            {{ input("Office Name", "office_name") }}
 
-                    {{ input("Office Name", "office_name") }}
+            {{ input("Phone Number", "phone_number") }}
 
-                    {{ input("Phone Number", "phone_number") }}
+            {{ input("Email", "email", "email") }}
 
-                    {{ input("Email", "email", "email") }}
+            {{ input("Address", "address") }}
 
-                    {{ input("Address", "address") }}
+            {% if user_companions %}
 
-                    <div class="form-group">
-                        <div class="row">
-                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
-                                    <button type="button" class="btn btn-primary" id="submitAddNewVetBtn" value="submitAddNewVet">Submit New Vet Profile</button>
-                                    <button type="button" class="btn btn-primary" id="cancelAddNewVetBtn" value="cancelAddNewVet">Cancel</button>
-                                </div><!-- Closing out col.-->
-                        </div><!-- Closing out row.-->
-                    </div><!-- Closing out form group.-->
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <label id="{{ variable }}-label" style="display: {{ display }}">
+                                Optional: Add for Existing Companion(s)
+                            </label>
+                        </div><!-- Closing out col.-->
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            {% for companion in user_companions %}
+                                <input type="checkbox" name="companions" id="companion-{{companion.id}}-field" value="{{ companion.id }}">{{ companion.name }}
+                            {% endfor %}
+                        </div><!-- Closing out col.-->
+                    </div><!-- Closing out row.-->
+                </div><!-- Closing out form group.-->
+            {% endif %}
+
+            <div class="form-group">
+                <div class="row">
+                        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xs-offset-2 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
+                            <button type="button" class="btn btn-primary" id="submitAddNewVetBtn" value="submitAddNewVet">Submit New Vet Profile</button>
+                            <button type="button" class="btn btn-primary" id="cancelAddNewVetBtn" value="cancelAddNewVet">Cancel</button>
+                        </div><!-- Closing out col.-->
+                </div><!-- Closing out row.-->
+            </div><!-- Closing out form group.-->
         </form>
 
-<!-- (VET FOR SPECIFIC COMPANION(S)  IF YES, AJAX OPEN TO ENABLE SELECTION) -->
         <script>
+
+        function isCheckbox (element) {
+           return element instanceof HTMLInputElement 
+              && element.getAttribute('type') == 'checkbox'
+        }
 
         $('#cancelAddNewVetBtn').on('click', function(evt) {
             $('#addNewVetForm').hide(); // TODO: RESET VALUES too.
             $('#addNewVetFormBtn').show();
+            $('#otherVetsBtn').show();
+            $('#myVetsDiv').show();
+            $('#vetTitle').text("My Veterinarians");
         })
 
         function resfreshVets(result) {
@@ -69,16 +129,24 @@
         }
 
         $('#submitAddNewVetBtn').on('click', function(evt) {
-            console.log("hihi");
             evt.preventDefault();
-            var vetInputs = {
-                "name": $('#name-field').val(),
-                "office_name": $('#office_name-field').val(),
-                "phone_number": $('#phone_number-field').val(),
-                "email": $('#email-field').val(),
-                "address": $('#address-field').val(),
-                "specialties": $('#specialties-field').val(),
+
+            var myForm = document.getElementById("newVetForm");
+            var vetInputs = {}
+            for (var i = 0; i < myForm.elements.length; i++) {
+                var el = myForm.elements[i];
+                if (isCheckbox(el)) {
+                    if (el.checked) {
+                        if (!(el.name in vetInputs)) {
+                            vetInputs[el.name] = []
+                        }
+                        vetInputs[el.name].push(el.value)
+                    }
+                } else {
+                    vetInputs[el.name] = el.value;
+                }
             }
+            console.log(vetInputs)
 
             $.post("/add_new_veterinarian", vetInputs, resfreshVets);
         })
@@ -90,11 +158,28 @@
     $('#addNewVetFormBtn').on('click', function(evt) {
         $('#addNewVetForm').show();
         $('#addNewVetFormBtn').hide();
+        $('#otherVetsBtn').hide();
+        $('#allVetsDiv').hide();
+        $('#myVetsBtn').hide();
+        $('#myVetsDiv').hide();
+        $('#vetTitle').text("Add New Veterinarian");
     })
 
+  $('#myVetsBtn').on('click', function(evt) {
+        $('#allVetsDiv').hide();
+        $('#otherVetsBtn').show();
+        $('#myVetsDiv').show();
+        $('#myVetsBtn').hide();
+        $('#vetTitle').text("My Veterinarians");
+    })
+
+  $('#otherVetsBtn').on('click', function(evt) {
+        $('#allVetsDiv').show();
+        $('#otherVetsBtn').hide();
+        $('#myVetsDiv').hide();
+        $('#myVetsBtn').show();
+        $('#vetTitle').text("Other Veterinarians");
+    })
     </script>
 
-<!--
-Enable button to add new veterinary specialist.
- -->
 {% endblock %}
