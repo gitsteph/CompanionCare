@@ -354,7 +354,7 @@ def upload_file_online():
                 db.session.commit()
 
                 image_obj = Image.query.filter(Image.location_url == location_url).first()
-                return render_template('photos.html', user_obj=user_obj, image_obj=image_obj)
+                return redirect('/photos/'+ str(image_obj.id))
             else:
                 flash("Upload unsuccessful")
                 return redirect('/photos')
@@ -724,7 +724,8 @@ def show_veterinarians():
             petvets_list_by_vet = vet_obj.petvets
             for petvet in petvets_list_by_vet:
                 companion_obj = petvet.companion
-                vet_companion_dict[vet_obj].append(companion_obj)
+                if session["user_id"] == companion_obj.user_id:
+                    vet_companion_dict[vet_obj].append(companion_obj)
 
         # generate list of all avail. vets, excluding vets already in user network.
         all_vets = Veterinarian.query.filter(~Veterinarian.id.in_(vet_id_set)).all()
@@ -923,6 +924,7 @@ def edit_companion(companion_name):
             companion_name = companion_obj.name
             return render_template("pet_detail.html", companion_attributes_dict=companion_attributes_dict, companion_name=companion_name, companion_id=companion_id, user_obj=user_obj)
         elif request.method == 'POST':
+            companion_id = companion_obj.id
             if request.form.get("delete"):
                 # Delete companion!
                 db.session.delete(Companion.query.filter(Companion.id == companion_id).first())

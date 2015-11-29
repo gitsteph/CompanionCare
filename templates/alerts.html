@@ -2,30 +2,7 @@
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
 {% block content1 %} <span id="alerts_title">Alerts</span> {% endblock %}
-{% block style %}
 
-    .node {
-        cursor: pointer;
-    }
-
-    .node circle {
-      fill: #fff;
-      stroke: steelblue;
-      stroke-width: 3px;
-    }
-
-    .node text {
-      font: 12px sans-serif;
-    }
-
-    .link {
-      fill: none;
-      stroke: #ccc;
-      stroke-width: 2px;
-    }
-
-
-{% endblock %}
 {% block content2 %}
     {% macro input(name, variable, display="block", type='text') -%}
         <div class="form-group">
@@ -46,12 +23,10 @@
         <div id="addNewAlertForm" style="display: none">
         <form action="#" class="form-horizontal" id="newAlertForm" method="POST">
                 {{ input("Companion Name", "companion_name") }}
-    <!--             ### TYPEAHEAD HERE
-     -->
+    <!-- TYPEAHEAD HERE-->
                 {{ input("Medication Name", "medication_name") }} 
 
-    <!--             ###TYPEAHEAD HERE ### PETMED ID QUERY FROM PET AND MED, CREATE NEW MED IF NO MED IN DIRECTORY (FOR PETVET ID, SET TO UNKNOWN ID) *FIRST PETVET SHOULD BE UNKNOWN, SECOND OTC
-     -->
+    <!-- TYPEAHEAD HERE-->
                     <div class="form-group">
                         <div class="row">
                                 <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
@@ -94,8 +69,6 @@
                         </div><!-- Closing out row.-->
                     </div><!-- Closing out form group.-->
 
-    <!--             ### QUERY FOR MEDICATION: IF MED FREQ = ALERT FREQ, then add alert freq.  If med freq != null or alert_freq, then request confirmation first.
-     -->
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
@@ -169,6 +142,7 @@
 
         <script>
 
+        // TO enable or disable secondary contact info:
         $('#forward_enabled').on('click', function(evt) {
             $('#secondary_alert_phone-label').show();
             $('#secondary_alert_phone-field').show();
@@ -182,9 +156,11 @@
             $('#forward_enabled').show();
             $('#secondary_alert_phone-label').hide();
             $('#secondary_alert_phone-field').hide();
-            $('#forward_disabled').hide(); // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
+            $('#forward_disabled').hide();
+            // TODO: NEED TO ENABLE DISABLE OF PREV ALERTS FWD
         })
 
+        // TO cancel new alert: will reset displays and buttons.
         $('#cancelAddNewAlertBtn').on('click', function(evt) {
             $('#addNewAlertForm').hide(); // TODO: RESET VALUES too.
             $('#forward_enabled').show();
@@ -194,6 +170,7 @@
             $('#openAlertFormBtn').show();
         })
 
+        // Add New Alerts: event listener, AJAX call, and success handler below.
         function refreshAlerts(result) {
             alert(result);
             window.location.href="/alerts";
@@ -223,6 +200,7 @@
     </div>
 
     <script>
+    // Add New Alert Btn: click to display form and hide button.
     $('#openAlertFormBtn').on('click', function(evt) {
         $('#addNewAlertForm').show();
         $('#openAlertFormBtn').hide();

@@ -40,24 +40,24 @@
                     <input type="submit" value="{{ add_or_update }} Companion Profile">
                 </div>
             </form>
-            <form action="/companion/{{companion_id}}" method="POST">
+            <form action="/companion/name/{{ companion_name }}" method="POST">
                 <input type="hidden" name="delete" value="delete_companion_profile">
                 <input type="submit" value="delete companion profile">
             </form>
         </div><!-- Closing column.-->
         <div class="col-xs-6 col-md-6 col-lg-6">
 
-            <form action="/medications/{{ companion_id }}" method="GET">
+            <form action="/medications" method="GET">
                 <input type="submit" value="{{ add_or_update }} medications">
             </form>
 
-                <div>
-                    <a href="/veterinary_specialists">{{ add_or_update }} Veterinary Specialists</a>
-                </div>
+            <div>
+                <a href="/veterinarians">{{ add_or_update }} Veterinary Specialists</a>
+            </div>
 
-                <div>
-                    <a href="/photos">{{ add_or_update }} Photos</a>
-                </div>
+            <div>
+                <a href="/photos">{{ add_or_update }} Photos</a>
+            </div>
             
             <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
 
