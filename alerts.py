@@ -1,15 +1,8 @@
 import datetime
 from model import db, User, Companion, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
+from queries import most_recent_alertlog_given_alert_id, most_recent_alertlog_id_given_alert_id
 import send_messages
 from sqlalchemy import update, delete, exc
-
-def most_recent_alertlog_given_alert_id(alert_id):
-    alertlog = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first()
-    return alertlog
-
-def most_recent_alertlog_id_given_alert_id(alert_id):
-    alertlog_id = most_recent_alertlog_given_alert_id(alert_id).id
-    return alertlog_id
 
 
 def schedule_alert(alert_id, scheduled_alert_datetime, secondary_contact=None):

@@ -11,7 +11,6 @@ from queries import *
 from collections import OrderedDict, defaultdict
 import multiprocessing
 from vet_finder import search
-# from celery import Celery
 import send_messages
 import datetime
 import time
@@ -46,7 +45,6 @@ class objdict(defaultdict):
             return self.__getitem__(key)
 
     __setattr__ = lambda self, k, v: self.__setitem__(k,v)
-
 
 objtree = lambda: objdict(objtree)
 
@@ -406,7 +404,6 @@ def show_data_tree():
         for companion_obj in user_companions_list:
             companion_name = companion_obj.name
             companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
-            # alert_dict["companion_petvets_list"] = companion_petvets_list
             alert_dict[companion_obj] = objdict(objtree)
             for petvet in companion_petvets_list:
                 vet_obj = petvet.veterinarian
@@ -420,6 +417,7 @@ def show_data_tree():
                         alert_id = alert.id
                         alert_dict[companion_obj][vet_obj][medication] = alert
         ddict = dd2dr(alert_dict)
+        print ddict, "<<<<DDICT"
 
         def convertToD3Form(d):
             if not isinstance(d, dict):  # if d has no children, stop recursing
@@ -447,19 +445,9 @@ def show_all_alerts_and_form():
     if not user_obj:
         return redirect("/")
     else:
-        ####### THIS NEEDS WORK!!!!! GO BACK
-
-        # Query for list of all user's companions.
-        user_companions_list = get_all_user_companions()
-        print user_companions_list
-
-        # INFO NEEDED: medication, petmed, petvet id >>> vet name
-
-        # Pass through petmed IDs to enable adding alerts onto meds.  JS front-end mechanism: click the med to popup a modal with a form to add the alert.
-        # Or add a new alert to a medication not listed (will create a medication object too).
-        # Enable user to minimize the add_new_alert div (on front-end).
-
-        return render_template('alerts.html', user_obj=user_obj)
+        # Calls function, get_all_alerts(), from queries.py and unpacks returned values.
+        alert_dict, inactive_alert_dict = get_all_alerts()
+        return render_template('alerts.html', user_obj=user_obj, alert_dict=alert_dict, inactive_alert_dict=inactive_alert_dict)
 
 
 @app.route('/add_new_alert', methods=["POST"])
