@@ -51,11 +51,12 @@
             <div>{{ photo_obj.name }}</div>
             <div>Tags: {{ photo_obj.tags }}</div>
             <br><br>
-            <h4><a href="/photos">View All Photos</a></h4>
+            <h4><a href="/photos" class="btn btn-primary">View All Photos</a></h4>
         </div><!-- Closing out col.-->
     {% endif %}
-
+        <br>
     {% if image_list is defined %}
+    <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" align="left">
             <h3 style="color: #1695A3">Photo Archive</h3>
             <hr>
@@ -68,8 +69,8 @@
                     <div>Tags: {{ image_obj.tags }}</div>
                     <br><br>
                 </div><!-- Closing out col.-->
-
             {% endfor %}
         </div><!-- Closing out images div.-->
+    </div>
     {% endif %}
 {% endblock %}

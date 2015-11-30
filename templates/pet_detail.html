@@ -37,26 +37,29 @@
                 </table>
                 <br>
                 <div>
-                    <input type="submit" value="{{ add_or_update }} Companion Profile">
+                    <input type="submit" class="btn btn-primary" value="{{ add_or_update }} Companion Profile">
                 </div>
             </form>
+
+
+
+
             <form action="/companion/name/{{ companion_name }}" method="POST">
                 <input type="hidden" name="delete" value="delete_companion_profile">
-                <input type="submit" value="delete companion profile">
+                <input type="submit" class="btn btn-primary" value="delete companion profile">
             </form>
         </div><!-- Closing column.-->
         <div class="col-xs-6 col-md-6 col-lg-6">
 
-            <form action="/medications" method="GET">
-                <input type="submit" value="{{ add_or_update }} medications">
-            </form>
+            <a href="/medications" class="btn btn-primary"> 
+                {{ add_or_update }} medications</a>
 
             <div>
-                <a href="/veterinarians">{{ add_or_update }} Veterinary Specialists</a>
+                <a href="/veterinarians" class="btn btn-primary" >{{ add_or_update }} Veterinary Specialists</a>
             </div>
 
             <div>
-                <a href="/photos">{{ add_or_update }} Photos</a>
+                <a href="/photos" class="btn btn-primary" >{{ add_or_update }} Photos</a>
             </div>
             
             <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
@@ -64,4 +67,43 @@
         </div><!-- Closing column.-->
     </div><!-- Closing row.-->
 
+            <form method="POST" id="photoForm" enctype="multipart/form-data" action="/photos/upload" style="display: block">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-xs-8 col-sm-8 col-md-4 col-lg-4 col-xs-offset-2 col-sm-offset-2 col-md-offset-4 col-lg-offset-4" align="center">
+                            <h3>Upload new photo</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <label id="image_name">Image Name</label>
+                        </div><!-- Closing out col.-->
+                        <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <input type="text" name="name" class="form-control" id="name-field">
+                        </div><!-- Closing out col.-->
+                    </div><!-- Closing out row.-->
+                    <div class="row">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <label id="name">Image to Upload</label>
+                        </div><!-- Closing out col.-->
+                        <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <input type="file" name="photo" class="form-control" id="photo-field">
+                        </div><!-- Closing out col.-->
+                    </div><!-- Closing out row.-->
+                    <div class="row">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <label id="tags">Tags</label>
+                        </div><!-- Closing out col.-->
+                        <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                            <input type="text" name="tags" class="form-control" id="tags-field">
+                        </div><!-- Closing out col.-->
+                    </div><!-- Closing out row.-->
+                </div><!-- Closing out form group.-->
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8 col-sm-offset-2 col-md-offset-2 col-lg-offset-2" align="right">
+                            <input type="submit" class="btn btn-primary" value="Upload"></input>
+                        </div><!-- Closing out col.-->
+                    </div><!-- Closing out row.-->
+                </div><!-- Closing out form group.-->
+            </form>
 {% endblock %}

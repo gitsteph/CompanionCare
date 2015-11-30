@@ -303,58 +303,67 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/photos/upload', methods=["POST"])
 def upload_file_online():
+    """Uploads to AWS S3 by taking in form data (file, name, tag) if user is logged in."""
+    data_file = request.files.get("photo")
+    if data_file and allowed_file(data_file.filename):
+        file_name = data_file.filename
+        conn = boto.s3.connect_to_region('us-west-1',
+                                         aws_access_key_id=app.config["AWS_ACCESS_KEY"],
+                                         aws_secret_access_key=app.config["AWS_SECRET_KEY"],
+                                         is_secure=True,
+                                         calling_format=boto.s3.connection.OrdinaryCallingFormat(),
+                                         )
+        bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
+        k = Key(bucket)
+        k.set_contents_from_string(data_file.read())
+        k.set_acl('public-read')
+        location_url = k.generate_url(expires_in=0, query_auth=False)  # public
+        image_dict = {}
+        image_dict["location_url"] = location_url
+        image_dict["user_id"] = session.get("user_id")
+        image_dict["name"] = request.form.get("name")
+        image_dict["tags"] = request.form.get("tags")
+
+        # Check to see if image already has a pointer stored in db.
+        image_query = Image.query.filter(Image.location_url == location_url).first()
+        if image_query:
+            # If pointer already stored, update instead of adding.
+            image_query_id = image_query.id
+            image_dict["updated_at"] = datetime.datetime.now()
+            image_dict = {k:v for k,v in image_dict.iteritems() if v}
+
+            img_update = update(Image.__table__).where(Image.id == image_query_id).values(**image_dict)
+            db.session.execute(img_update)
+            flash("Your photo has been updated.")
+        else:
+            # If no pointer stored, add new image entry to db.
+            image_dict["created_at"] = datetime.datetime.now()
+            new_image = Image(**image_dict)
+            db.session.add(new_image)
+            flash("Your photo has been uploaded.")
+
+        db.session.commit()
+
+        image_obj = Image.query.filter(Image.location_url == location_url).first()
+        return image_obj.id
+    else:
+        flash("Upload unsuccessful")
+    return None
+
+
+@app.route('/photos/upload', methods=["POST"])
+def photo_upload_to_S3():
     # Uploads files (photos) to AWS S3.
     user_obj = confirm_loggedin
     if not user_obj:
         return redirect('/')
     else:
         if request.method == 'POST':
-            data_file = request.files.get("photo")
-            if data_file and allowed_file(data_file.filename):
-                file_name = data_file.filename
-                conn = boto.s3.connect_to_region('us-west-1',
-                                                 aws_access_key_id=app.config["AWS_ACCESS_KEY"],
-                                                 aws_secret_access_key=app.config["AWS_SECRET_KEY"],
-                                                 is_secure=True,
-                                                 calling_format=boto.s3.connection.OrdinaryCallingFormat(),
-                                                 )
-                bucket = conn.get_bucket(app.config["AWS_BUCKET_NAME"])
-                k = Key(bucket)
-                k.set_contents_from_string(data_file.read())
-                k.set_acl('public-read')
-                location_url = k.generate_url(expires_in=0, query_auth=False)  # public
-                image_dict = {}
-                image_dict["location_url"] = location_url
-                image_dict["user_id"] = session.get("user_id")
-                image_dict["name"] = request.form.get("name")
-                image_dict["tags"] = request.form.get("tags")
-
-                # Check to see if image already has a pointer stored in db.
-                image_query = Image.query.filter(Image.location_url == location_url).first()
-                if image_query:
-                    # If pointer already stored, update instead of adding.
-                    image_query_id = image_query.id
-                    image_dict["updated_at"] = datetime.datetime.now()
-                    image_dict = {k:v for k,v in image_dict.iteritems() if v}
-
-                    img_update = update(Image.__table__).where(Image.id == image_query_id).values(**image_dict)
-                    db.session.execute(img_update)
-                    flash("Your photo has been updated.")
-                else:
-                    # If no pointer stored, add new image entry to db.
-                    image_dict["created_at"] = datetime.datetime.now()
-                    new_image = Image(**image_dict)
-                    db.session.add(new_image)
-                    flash("Your photo has been uploaded.")
-
-                db.session.commit()
-
-                image_obj = Image.query.filter(Image.location_url == location_url).first()
-                return redirect('/photos/'+ str(image_obj.id))
+            image_id = upload_file_online()
+            if image_id:
+                return redirect('/photos/' + str(image_id))
             else:
-                flash("Upload unsuccessful")
                 return redirect('/photos')
 
 
@@ -455,7 +464,6 @@ def show_all_alerts_and_form():
 def add_new_alert():
     alert_variables = ["primary_alert_phone", "secondary_alert_phone", "alert_datetime_start", "alert_datetime_end", "alert_type"]
     alert_frequency = request.form.get("alert_frequency")
-    print alert_frequency, "<<<<ALF"
     alert_frequency_unit = request.form.get("alert_frequency_unit")
     if alert_frequency_unit == "days":  # to convert to hours
         alert_frequency = alert_frequency * 24
@@ -520,8 +528,7 @@ def show_all_medications():
         redirect('/')
     else:
         medications = Medication.query.order_by(Medication.name).all()
-
-        ### TODO: MAY WANT TO SORT BASED ON name.lower() b/c ascii alpha is weird.
+        # TODO: MAY WANT TO SORT BASED ON name.lower() b/c ascii alpha is weird.
 
         # Splitting the med_name_list into three mini-lists to enable easy display in columns on the front-end.
         third_med_list = len(medications)/3
@@ -843,48 +850,6 @@ def add_new_companion():
             return redirect("/")
 
 
-@app.route('/alerts/<companion_name>', methods=["GET", "POST"])
-def show_alerts_and_form(companion_name):
-    # Will return a list of petmed_ids (unicode) that the user selects to add alert.
-    user_obj = confirm_loggedin()
-    companion_obj = get_companion_obj(companion_name)
-    if not (user_obj and companion_obj):
-        return redirect("/")
-    else:
-        if request.method == "POST":
-            petmed_id_for_alerts = request.form.getlist("alerts")
-            companion_obj = get_companion_obj(companion_name)
-            petmed_med_dict = get_petmed_medication_by_petmed_id_list(petmed_id_for_alerts)
-
-            # Renders new form with existing alerts, petmeds that have been selected, and
-            # fields to add alerts to selected petmeds.
-            return render_template('alerts.html',
-                                    companion_obj=companion_obj,
-                                    petmed_med_dict=petmed_med_dict,
-                                    user_obj=user_obj)
-
-
-@app.route('/alerts/<int:companion_id>/add', methods=["POST"])
-def add_alerts(companion_name):
-    # TO ADD AN ALERT ONLY-- need to update too. (TODO)  ALSO validate logged in.
-    value_types = ["primary_alert_phone", "secondary_alert_phone", "petmed_id"]
-    values_dict = {val:request.form.get(val) for val in value_types}
-    values_dict["alert_options"] = request.form.getlist("alert_options")
-    values_dict["created_at"] = datetime.datetime.now()
-    values_dict["updated_at"] = datetime.datetime.now()  # Only true for creation.
-
-    new_alert = Alert(**values_dict)
-    db.session.add(new_alert)
-    db.session.commit()
-
-    # Schedule alert in alertlog (set to not-issued).
-    alert_id = db.session.query(Alert).filter(Alert.petmed_id == values_dict["petmed_id"]).order_by(Alert.updated_at.desc()).first().id
-    scheduled_alert_datetime = request.form.get("scheduled_alert_datetime")
-    schedule_alert(alert_id, scheduled_alert_datetime)
-
-    return redirect('/')
-
-
 @app.route('/companion/name/<companion_name>', methods=['GET', 'POST'])
 def edit_companion(companion_name):
     """Edit companions individually."""
@@ -932,7 +897,8 @@ def edit_companion(companion_name):
                 return redirect("/")  # maybe redirect back to pet detail.
 
 ##############################################################################
-# Helper functions
+
+########  Multiprocessing Daemonic Child Process ######## 
 
 def install_alerts_daemon(*args, **kwargs):
     p = multiprocessing.Process(target=time_alerts)
