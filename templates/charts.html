@@ -47,7 +47,7 @@
                     <button type="button" class="btn btn-primary" id="submitChartQueryBtn" value="submitChartQuery">Submit Chart Query</button>&nbsp;<input type="reset" class="btn btn-primary" value="Reset">
                 </div>
             </div><!-- Closing out row.-->
-            <div><br><br></div>
+            <div><br><br><br></div>
             <div class="row">
                 <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
                     <div class="response-chart">
@@ -56,7 +56,31 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
-                    <div id="chartDetails"></div>
+                    <div id="chartDetails" style="display: none"> <!-- TODO: refactor to clean and make DRY.-->
+                        <div>
+                            <strong>Response: </strong> No Response </span><br>
+                            <strong>Frequency: </strong> <span id="noResponseFrequency"></span><br>
+                            <strong>Alert ID: </strong> <a href="/alerts"><span id="noResponseAlerts"></span></a><br>
+                        <hr>
+                        </div>
+                        <div>
+                            <strong>Response: </strong> Given </span><br>
+                            <strong>Frequency: </strong> <span id="givenFrequency"></span><br>
+                            <strong>Alert ID: </strong> <a href="/alerts"><span id="givenAlerts"></span></a><br>
+                        <hr>
+                        </div>
+                        <div>
+                            <strong>Response: </strong> Delay (+2 Hours) </span><br>
+                            <strong>Frequency: </strong> <span id="delayedFrequency"></span><br>
+                            <strong>Alert ID: </strong> <a href="/alerts"><span id="delayedAlerts"></span></a><br>
+                        <hr>
+                        </div>
+                        <div>
+                            <strong>Response: </strong> Forward </span><br>
+                            <strong>Frequency: </strong> <span id="forwardedFrequency"></span><br>
+                            <strong>Alert ID: </strong> <a href="/alerts"><span id="forwardedAlerts"></span></a><br>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div><!-- Closing out container.-->
@@ -66,7 +90,6 @@
     // Chart Query: event listener, AJAX call, and success handler below.
     function showChart(result) {
         data = result;
-        console.log(data);
         var options = {
             responsive: true,
             tooltipTemplate: "<%= label %>: <%= value %>%"
@@ -75,6 +98,32 @@
 
         var myDonutChart = new Chart(ctx_donut).Doughnut(data.responseData, options);
         $('#donutLegend').html(myDonutChart.generateLegend());
+
+        var noResponseVal = "No Response"; 
+        var givenVal = "Given";
+        var forwardVal = "Forward";
+        var delayVal = "Delay";
+
+        for (var responseDict in data.responseData) {
+            if (data.responseData[responseDict]["label"] == noResponseVal) {
+                $('#noResponseFrequency').text(data.responseData[responseDict]["frequency"]);
+                $('#noResponseAlerts').text(data.responseData[responseDict]["alerts"]);
+            }
+            else if (data.responseData[responseDict]["label"] == givenVal) {
+                $('#givenFrequency').text(data.responseData[responseDict]["frequency"]);
+                $('#givenAlerts').text(data.responseData[responseDict]["alerts"]);
+            }
+            else if (data.responseData[responseDict]["label"] == forwardVal) {
+                $('#forwardedFrequency').text(data.responseData[responseDict]["frequency"]);
+                $('#forwardedAlerts').text(data.responseData[responseDict]["alerts"]);
+            }
+            else if (data.responseData[responseDict]["label"] == delayVal) {
+                $('#delayedFrequency').text(data.responseData[responseDict]["frequency"]);
+                $('#delayedAlerts').text(data.responseData[responseDict]["alerts"]);
+            }
+        }
+
+        $('#chartDetails').show();
     }
 
     $('#submitChartQueryBtn').on('click', function(evt) {

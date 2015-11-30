@@ -741,6 +741,7 @@ def render_charts():
             {
                 "value": int(response_none[0]/total_responses*100),
                 "frequency": response_none[0],
+                "alerts": sorted(response_none[1]),
                 "color": "#ACF0F2",
                 "highlight": "#F3D740",
                 "label": "No Response"
@@ -748,6 +749,7 @@ def render_charts():
             {
                 "value": int(response_given[0]/total_responses*100),
                 "frequency": response_given[0],
+                "alerts": sorted(response_given[1]),
                 "color": "#1695A3",
                 "highlight": "#F3D740",
                 "label": "Given"
@@ -755,6 +757,7 @@ def render_charts():
             {
                 "value": int(response_forward[0]/total_responses*100),
                 "frequency": response_forward[0],
+                "alerts": sorted(response_forward[1]),
                 "color": "#225378",
                 "highlight": "#F3D740",
                 "label": "Forward"
@@ -762,6 +765,7 @@ def render_charts():
             {
                 "value": int(response_delay[0]/total_responses*100),
                 "frequency": response_delay[0],
+                "alerts": sorted(response_delay[1]),
                 "color": "#EB7F00",
                 "highlight": "#F3D740",
                 "label": "Delay"
