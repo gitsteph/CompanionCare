@@ -1,30 +1,53 @@
 {% extends 'base.html' %}
 {% block title %}CompanionCare: Dashboard{% endblock %}
 
-{% block content1 %}Companions & Reminders{% endblock %}
+{% block content1 %}Companions & Active Alerts{% endblock %}
 {% block content2 %} 
 
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-        {% if companion_obj_list %}
+        {% if companion_dash_list %}
             <h3 style="color: #1695A3" align="left">Companions<hr style="border-bottom: 2px solid #1695A3;"></h3>
-            {% for companion_obj in companion_obj_list %}
+            {% for companion_obj, companion_vetname_list, companion_medname_list in companion_dash_list %}
                 <div class="rcorners">
                     <strong>Name: <a href='/companion/name/{{ companion_obj.name }}'>{{ companion_obj.name }}</a></strong>
                     <ul><li> PHOTO HERE</li>
-                        <li>User: {{ companion_obj.user_id }}</li>
-                        <li>Species: {{ companion_obj.species }}</li>
-                        <li>Gender: {{ companion_obj.gender }}</li>
-                        <li>Age: {{ companion_obj.age }} </li>
+                        <li><strong>Nickname:</strong> {{ companion_obj.primary_nickname }}</li>
+                        <li><strong>Species:</strong> {{ companion_obj.species }}</li>
+                        <li><strong>Breed:</strong> {{ companion_obj.breed }}</li>
+                        <li><strong>Gender:</strong> {{ companion_obj.gender }}</li>
+                        <li><strong>Age:</strong> {{ companion_obj.age }} year{% if companion_obj.age > 1 %}s{% endif %} old</li>
+                        <li><strong>Veterinarians:</strong>
+                        {% if companion_vetname_list != ['Unknown'] %}
+                            {% for vetname in companion_vetname_list %}
+                                {% if vetname != "Unknown" %}
+                                    <a href="/veterinarians">{{ vetname }}</a>
+                                    {% if not loop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No veterinarians on record.
+                        {% endif %}
+                        </li>
+                        <li><strong>Medications:</strong>
+                        {% if companion_medname_list %}
+                            {% for medname in companion_medname_list %}
+                                <a href="/medications/{{ medname }}">{{ medname }}</a>
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No medications on record.
+                        {% endif %}
+                        </li>
                         <!-- If meds or alerts, render icon. -->
                     </ul>
                 </div>
                 <br><br>
             {% endfor %}
-            <div class="col-xs-6 col-md-6 col-lg-6"><a href="/new_companion" class="btn btn-primary">Add New Companion</a></div>
-            <div class="col-xs-12 col-sm-12 hidden-md hidden-lg">
-                <br><br><hr><br><br>
-            </div>
         {% endif %}
+        <div class="col-xs-6 col-md-6 col-lg-6"><a href="/new_companion" class="btn btn-primary">Add New Companion</a></div>
+        <div class="col-xs-12 col-sm-12 hidden-md hidden-lg">
+            <br><br><hr><br><br>
+        </div>
     </div>
 
 

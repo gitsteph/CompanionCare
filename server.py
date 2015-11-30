@@ -166,8 +166,34 @@ def show_homedash():
     user_obj = confirm_loggedin()
     if user_obj:
         companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
+
+        # Retrieve all active alerts for all user's companions.
         active_alerts_list = get_alerts_sorted_by_time()
-        return render_template("index.html", user_obj=user_obj, companion_obj_list=companion_obj_list, active_alerts_list=active_alerts_list)
+
+        companion_dash_list = []
+        # Retrieve all medications for each of user's companions.
+        for companion_obj in companion_obj_list:
+            companion_petvet_list = db.session.query(PetVet).filter(PetVet.pet_id == companion_obj.id).all()
+
+            # Retrieve all vets for each of user's companions.
+            companion_vetname_list = []
+            for petvet in companion_petvet_list:
+                vet_name = petvet.veterinarian.name
+                companion_vetname_list.append(vet_name)
+
+            # Retrieve all meds for each of user's companions.
+            petmed_list = get_petmed_list_by_companion(companion_obj.id)
+            companion_medname_list = []
+            for petmed_obj in petmed_list:
+                med_name = petmed_obj.medication.name
+                companion_medname_list.append(med_name)
+            companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list))
+
+        # Retrieve all photos for each of user's companions.  #### TODO
+
+
+        return render_template("index.html", user_obj=user_obj, companion_dash_list=companion_dash_list, active_alerts_list=active_alerts_list)
+
     else:
         user_attributes_dict = OrderedDict([("logged_in", False),
                                                 ("Email", ("email", "email")),

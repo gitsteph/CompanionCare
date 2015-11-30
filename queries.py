@@ -78,6 +78,7 @@ def get_all_alerts():
     inactive_alert_dict = dd2dr(inactive_alert_dict)
     return alert_dict, inactive_alert_dict
 
+
 def get_alerts_sorted_by_time():
     # Query for list of all user's companions.
     user_companions_list = get_all_user_companions()
@@ -101,14 +102,6 @@ def get_alerts_sorted_by_time():
                             if not alertlog:
                                 print "invalid alert id", alert.id, alert
                             alert_list.append( (companion_obj, medication, alert, alertlog) )
-                        # Inactive Alerts
-                        # else:
-                            # inactive_alert_dict[companion_obj][medication][alert] = most_recent_alertlog_given_alert_id(alert.id)
-                # PetMedications never assigned alerts
-                # elif medication not in inactive_alert_dict[companion_obj]:
-                        # inactive_alert_dict[companion_obj][medication] = objtree()
-
-
     return sorted(alert_list,key=lambda v: v[3].scheduled_alert_datetime)
 
 
@@ -129,7 +122,6 @@ def get_petvet_id_list(companion_id):
     for petvet_tuple in companion_petvet_list:
         # petvet_tuple[0] is the petvet id.
         petvet_id_list.append(petvet_tuple[0])
-    # print petvet_id_list, "<<< PETVET ID LIST"
     return petvet_id_list
 
 
