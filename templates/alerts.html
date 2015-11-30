@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}MedAlert (for non-human companions){% endblock %}
 
-{% block content1 %} <span id="alerts_title">Alerts</span> {% endblock %}
+{% block content1 %} <span id="alerts_title"><span id="alertsTitle">Active Alerts</span></span> {% endblock %}
 
 {% block content2 %}
     {% macro input(name, variable, display="block", type='text') -%}
@@ -16,8 +16,113 @@
             </div><!-- Closing out row.-->
         </div><!-- Closing out form group.-->
     {%- endmacro %}
+    <div id="mainButtons" align="center">
+        <button type="button" class="btn btn-primary" id="activeAlertsBtn" style="display: none">Active Alerts</button>
+        <button type="button" class="btn btn-primary" id="inactiveAlertsBtn">Inactive Alerts</button>
+        <button type="button" class="btn btn-primary" id="openAlertFormBtn">Add New Alert</button>
+    </div>
 
-<button type="button" class="btn btn-primary" id="openAlertFormBtn">Add New Alert</button>
+    <div id="activeAlertsDiv" style="display: block">
+        {% for companion, comp_medications in alert_dict.iteritems() %}
+            <div class="col-sm-12 col-md-12 col-lg-12"><h3 style="color: #1695A3">Companion Name: <span style="color: #EB7F00"><a href="/companion/name/{{ companion.name }}">{{ companion.name }}</a></span></h3><br></div>
+            {% for medication, alerts in comp_medications.iteritems() %}
+                <div class="col-sm-12 col-md-6 col-lg-6">
+                    {% for alert, alertlog in alerts.iteritems() %}
+                        <div class="rcorners">
+                            <h4><span id="medication"><center><strong><a href="/medications/{{ medication.name }}">{{ medication.name }}</a></strong></center></h4>
+                            <strong>Alert ID: </strong> <span id="alertID">{{ alert.id }} </span><br>
+                            <strong>Next Scheduled Alert: </strong> <span id="nextAlert">{{ alertlog.scheduled_alert_datetime.strftime('%m-%d-%Y at %I:%M %p') }}</span><br>
+                            <strong>Alert Status: </strong> <span id="alertIssuedStatus">{% if alertlog.alert_issued %} Issued {% else %} Not Yet Issued {% endif %}</span><br>
+                            {% if alertlog.alert_issued %}
+                            <strong>User Response: </strong> <span id="userResponseStatus">{% if alertlog.action_taken %} {{ alertlog.action_taken }} {% else %} No response yet from user. Next alert to issue for {{ medication.name }} will be scheduled following user response.{% endif %}</span><br>{% endif %}
+                            <strong>Medication Frequency: </strong> <span id="medFrequency">Every {{ alert.alert_frequency }} hours</span><br>
+                            <strong>Alert Start: </strong> <span id="alertStart">{{ alert.alert_datetime_start.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                            <strong>Alert End: </strong> <span id="alertEnd">{{ alert.alert_datetime_end.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                            <strong>Primary Alert Phone: </strong>
+                            <span id="primaryAlertPhone">
+                                {% if alert.primary_alert_phone %}
+                                    {{ alert.primary_alert_phone }}
+                                {% else %}
+                                    Null
+                                {% endif %}
+                            </span><br>
+
+                            <strong>Secondary Alert Phone: </strong>
+                            <span id="secondaryAlertPhone">
+                                {% if alert.secondary_alert_phone %}
+                                    {{ alert.secondary_alert_phone }}
+                                {% else %}
+                                    None provided.
+                                {% endif %}
+                            </span><br>
+                            <div align="right"><a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
+                        </div>
+                        <br>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if not loop.last %}<hr> {% endif %}
+        {% endfor %}
+    </div>           
+
+    <div id="inactiveAlertsDiv" style="display: none">
+        {% for companion, comp_medications in inactive_alert_dict.iteritems() %}
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <h3 style="color: #1695A3">Companion Name: <span style="color: #EB7F00"><a href="/companion/name/{{ companion.name }}">{{ companion.name }}</a></span></h3><br>
+            </div>
+                {% for medication, alerts in comp_medications.iteritems() %}
+                    {% if inactive_alert_dict[companion][medication] %}
+                        <div class="col-sm-12 col-md-6 col-lg-6">
+                            {% for alert, alertlog in alerts.iteritems() %}
+                                <div class="rcorners">
+                                    <h4><span id="medication"><center><strong><a href="/medications/{{ medication.name }}">{{ medication.name }}</a></strong></center></h4>
+                                    <strong>Alert ID: </strong> <span id="alertID">{{ alert.id }} </span><br>
+                                    <strong>Last Alert Issued: </strong> <span id="nextAlert">{{ alertlog.scheduled_alert_datetime.strftime('%m-%d-%Y at %I:%M %p') }}</span><br>
+                                    <strong>Medication Frequency: </strong> <span id="medFrequency">{{ alert.alert_frequency }} </span><br>
+                                    <strong>Alert Start: </strong> <span id="alertStart">{{ alert.alert_datetime_start.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                                    <strong>Alert End: </strong> <span id="alertEnd">{{ alert.alert_datetime_end.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                                    <strong>Primary Alert Phone: </strong>
+                                    <span id="primaryAlertPhone">
+                                        {% if alert.primary_alert_phone %}
+                                            {{ alert.primary_alert_phone }}
+                                        {% else %}
+                                            None provided.
+                                        {% endif %}
+                                    </span><br>
+                                    <strong>Secondary Alert Phone: </strong>
+                                    <span id="secondaryAlertPhone">
+                                        {% if alert.secondary_alert_phone %}
+                                            {{ alert.secondary_alert_phone }}
+                                        {% else %}
+                                            None provided.
+                                        {% endif %}
+                                    </span><br>
+                                    <div align="right"><a href="#"><span class="glyphicon glyphicon-bell" aria-hidden="true"></span></a></div>
+                                </div>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="col-sm-12 col-md-6 col-lg-6">
+                            <div class="rcorners">
+                                <h4><span id="medication"><center><strong><a href="/medications/{{ medication.name }}">{{ medication.name }}</a></strong></center></h4>
+                                <strong>Alert ID: </strong> <span id="alertID">No alert has been set yet for this medication.</span><br>
+                                <strong>Next Scheduled Alert: </strong> <span id="nextAlert"></span><br>
+                                <strong>Medication Frequency: </strong> <span id="medFrequency"></span><br>
+                                <strong>Alert Start: </strong> <span id="alertStart"></span><br>
+                                <strong>Alert End: </strong> <span id="alertEnd"></span><br>
+                                <strong>Primary Alert Phone: </strong><span id="primaryAlertPhone"></span><br>
+                                <strong>Secondary Alert Phone: </strong><span id="secondaryAlertPhone"></span><br>
+                                <div align="right"><a href="#"><span class="glyphicon glyphicon-bell" aria-hidden="true"></span></a></div>
+                            </div>
+                            <br>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% if not loop.last %}<hr> {% endif %}
+        {% endfor %}
+    </div>           
+
 
 
         <div id="addNewAlertForm" style="display: none">
@@ -168,6 +273,10 @@
             $('#secondary_alert_phone-label').hide();
             $('#secondary_alert_phone-field').hide();
             $('#openAlertFormBtn').show();
+            $('#inactiveAlertsBtn').show();
+            $('#activeAlertsBtn').hide();
+            $('#activeAlertsDiv').show();
+            $('#alertsTitle').text("Active Alerts");
         })
 
         // Add New Alerts: event listener, AJAX call, and success handler below.
@@ -204,7 +313,29 @@
     $('#openAlertFormBtn').on('click', function(evt) {
         $('#addNewAlertForm').show();
         $('#openAlertFormBtn').hide();
+        $('#inactiveAlertsBtn').hide();
+        $('#activeAlertsBtn').hide();
+        $('#activeAlertsDiv').hide();
+        $('#inactiveAlertsDiv').hide();
+        $('#alertsTitle').text("Add New Alert");
     })
+
+      $('#inactiveAlertsBtn').on('click', function(evt) {
+            $('#activeAlertsDiv').hide();
+            $('#activeAlertsBtn').show();
+            $('#inactiveAlertsDiv').show();
+            $('#inactiveAlertsBtn').hide();
+            $('#alertsTitle').text("Inactive Alerts");
+        })
+
+      $('#activeAlertsBtn').on('click', function(evt) {
+            $('#activeAlertsDiv').show();
+            $('#activeAlertsBtn').hide();
+            $('#inactiveAlertsDiv').hide();
+            $('#inactiveAlertsBtn').show();
+            $('#alertsTitle').text("Active Alerts");
+        })
+
     </script>
 
 

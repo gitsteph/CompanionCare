@@ -20,6 +20,15 @@ h3 {
     font-weight: 700;
 }
 
+hr {
+   height: 0;
+   max-height: 0;
+   font-size: 1px;
+   line-height: 0;
+   clear: both;
+   border-bottom: 1px solid #EB7F00;
+}
+
 .rcorners {
     border-radius: 10px;
     border: 2px solid #1695A3;

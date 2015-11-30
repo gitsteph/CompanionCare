@@ -447,6 +447,7 @@ def show_all_alerts_and_form():
     else:
         # Calls function, get_all_alerts(), from queries.py and unpacks returned values.
         alert_dict, inactive_alert_dict = get_all_alerts()
+        print inactive_alert_dict, "<<<<"
         return render_template('alerts.html', user_obj=user_obj, alert_dict=alert_dict, inactive_alert_dict=inactive_alert_dict)
 
 
@@ -454,13 +455,12 @@ def show_all_alerts_and_form():
 def add_new_alert():
     alert_variables = ["primary_alert_phone", "secondary_alert_phone", "alert_datetime_start", "alert_datetime_end", "alert_type"]
     alert_frequency = request.form.get("alert_frequency")
+    print alert_frequency, "<<<<ALF"
     alert_frequency_unit = request.form.get("alert_frequency_unit")
     if alert_frequency_unit == "days":  # to convert to hours
         alert_frequency = alert_frequency * 24
-    alert_values_dict = {}
-    alert_values_dict["alert_frequency"] = alert_frequency
     alert_values_dict = {var:request.form.get(var) for var in alert_variables}
-    print alert_values_dict
+    alert_values_dict["alert_frequency"] = alert_frequency
     alert_values_dict["created_at"] = datetime.datetime.now()
 
     companion_name = request.form.get("companion_name")  # Companion must exist already or user will need to add via different route.

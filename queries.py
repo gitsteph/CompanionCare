@@ -64,12 +64,15 @@ def get_all_alerts():
                     for alert in alerts:
                         # Active Alerts
                         if datetime.datetime.now() < alert.alert_datetime_end:
-                            alert_dict[companion_obj][medication][alert] = most_recent_alertlog_given_alert_id(alert.id)
+                            alertlog = most_recent_alertlog_given_alert_id(alert.id)
+                            if not alertlog:
+                                print "invalid alert id", alert.id, alert
+                            alert_dict[companion_obj][medication][alert] = alertlog
                         # Inactive Alerts
                         else:
                             inactive_alert_dict[companion_obj][medication][alert] = most_recent_alertlog_given_alert_id(alert.id)
                 # PetMedications never assigned alerts
-                elif medication not in alert_dict[companion_obj]:
+                elif medication not in inactive_alert_dict[companion_obj]:
                         inactive_alert_dict[companion_obj][medication] = objtree()
     alert_dict = dd2dr(alert_dict)
     inactive_alert_dict = dd2dr(inactive_alert_dict)
