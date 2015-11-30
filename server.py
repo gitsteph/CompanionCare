@@ -496,7 +496,6 @@ def add_new_alert():
     for companion_petvet in companion_petvets_list:
         companion_petvet_ids_set.add(companion_petvet.id)
 
-
     # Iterate through list of petvets to see if there is a match for a medication issued connected to petvet.
     # If no medication issued, prompt user to add medication for pet via different route.
     # Else, assign petvet id for alert dict.
@@ -687,6 +686,91 @@ def delete_medication_fromdb(med_name):
 
     db.session.commit()
     return "The medication entry has been deleted."
+
+
+################
+
+######## CHARTS ########
+@app.route('/charts/alerts', methods=["GET"])
+def show_charts_page():
+    user_obj = confirm_loggedin()
+    if not user_obj:
+        return redirect("/")
+    else:
+        return render_template('/charts.html', user_obj=user_obj)
+
+
+@app.route('/render_chart.json', methods=["GET", "POST"])
+def render_charts():
+    """AJAX call to render charts requested by user."""
+    chart_query_start = request.form.get("chart_query_start")
+    chart_query_end = request.form.get("chart_query_end")
+
+    chartQueryObjList = AlertLog.query.filter(AlertLog.alert_issued > chart_query_start, AlertLog.alert_issued < chart_query_end).all()
+    chartQueryResponseList = db.session.query(AlertLog.alert_id, AlertLog.action_taken).filter(AlertLog.alert_issued > chart_query_start, AlertLog.alert_issued < chart_query_end).all()
+
+    print chartQueryResponseList
+    print chartQueryObjList
+
+    response_none = [0, []]
+    response_given = [0, []]
+    response_delay = [0, []]
+    response_forward = [0, []]
+    total_responses = 0
+
+    for id, response in chartQueryResponseList:
+        total_responses += 1
+        if response is None:  # check if this works
+            response_none[0] += 1
+            response_none[1].append(id)
+            print "Response None!"
+        elif response == "given":
+            response_given[0] += 1
+            response_given[1].append(id)
+        elif response == "delay":
+            response_delay[0] += 1
+            response_delay[1].append(id)
+        elif response == "forward":
+            response_forward[0] += 1
+            response_forward[1].append(id)
+        else:
+            print "Weird response?"
+
+    chartResponsesData = {
+        'responseData': [
+            {
+                "value": int(response_none[0]/total_responses*100),
+                "frequency": response_none[0],
+                "color": "#ACF0F2",
+                "highlight": "#F3D740",
+                "label": "No Response"
+            },
+            {
+                "value": int(response_given[0]/total_responses*100),
+                "frequency": response_given[0],
+                "color": "#1695A3",
+                "highlight": "#F3D740",
+                "label": "Given"
+            },
+            {
+                "value": int(response_forward[0]/total_responses*100),
+                "frequency": response_forward[0],
+                "color": "#225378",
+                "highlight": "#F3D740",
+                "label": "Forward"
+            },
+            {
+                "value": int(response_delay[0]/total_responses*100),
+                "frequency": response_delay[0],
+                "color": "#EB7F00",
+                "highlight": "#F3D740",
+                "label": "Delay"
+            }
+        ]
+    }
+
+    return jsonify(chartResponsesData)
+
 
 ################
 

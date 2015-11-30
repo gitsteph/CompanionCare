@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}CompanionCare{% endblock %}
+{% block style %}
+    .chart-legend li span{
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+    }
+    ul.doughnut-legend {
+        list-style-type: none;
+    }
+{% endblock %}
+{% block content1 %}Alert Response History{% endblock %}
+{% block content2 %}
+    <div><br></div>
+    <form action="/render_chart" class="form-horizontal" id="chartQueryForm" method="POST">
+        <div class="form-group">
+            <div class="row">                            
+                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-md-offset-1 col-lg-offset-1">
+                    <div class='input-group date' name="chart_query_start" id="chartQueryStart">
+                        <input type='text' placeholder="from date" id="chartQueryStart-field" class="form-control" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div><!-- Closing out col.-->
+                <script type="text/javascript">
+                    $(function () {
+                        $('#chartQueryStart').datetimepicker();
+                    });
+                </script>
+                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+                    <div class='input-group date' id='chartQueryEnd'>
+                        <input type='text' id="chartQueryEnd-field" placeholder="to date" name="chart_query_end" class="form-control" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div><!-- Closing out col.-->
+                <script type="text/javascript">
+                    $(function () {
+                        $('#chartQueryEnd').datetimepicker();
+                    });
+                </script>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                    <button type="button" class="btn btn-primary" id="submitChartQueryBtn" value="submitChartQuery">Submit Chart Query</button>&nbsp;<input type="reset" class="btn btn-primary" value="Reset">
+                </div>
+            </div><!-- Closing out row.-->
+            <div><br><br></div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
+                    <div class="response-chart">
+                        <canvas id="donutChart"></canvas>
+                        <div id="donutLegend" class="chart-legend"></div>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                    <div id="chartDetails"></div>
+                </div>
+            </div>
+        </div><!-- Closing out container.-->
+    </form>
+
+    <script>
+    // Chart Query: event listener, AJAX call, and success handler below.
+    function showChart(result) {
+        data = result;
+        console.log(data);
+        var options = {
+            responsive: true,
+            tooltipTemplate: "<%= label %>: <%= value %>%"
+        };
+        var ctx_donut = $("#donutChart").get(0).getContext("2d");
+
+        var myDonutChart = new Chart(ctx_donut).Doughnut(data.responseData, options);
+        $('#donutLegend').html(myDonutChart.generateLegend());
+    }
+
+    $('#submitChartQueryBtn').on('click', function(evt) {
+        evt.preventDefault();
+        var chartQueryInputs = {
+            "chart_query_start": $('#chartQueryStart-field').val(),
+            "chart_query_end": $('#chartQueryEnd-field').val()
+        }
+
+        $.post("/render_chart.json", chartQueryInputs, showChart);
+    })
+
+    </script>
+
+{% endblock %}
