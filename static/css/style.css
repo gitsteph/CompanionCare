@@ -33,9 +33,38 @@ hr {
     border-radius: 10px;
     border: 2px solid #1695A3;
     padding: 10px; 
-    width: 400px;
+    width: auto;
     height: auto;
 }
+
+.scorners {
+    border-radius: 5px;
+    border: 1px solid #EB7F00;
+    padding: 5px; 
+    width: 200px;
+    height: 200px;
+}
+
+.navbar {
+    background-color: #1695A3;
+}
+
+.navbar.navbar-default.navbar-fixed-top li a {
+    color: #FFFFFF;
+}
+
+.navbar-default .navbar-brand {
+    color: #FFFFFF;
+    font-family: 'Lobster', cursive;
+    font-size: 250%;
+}
+
+.navbar-default .navbar-brand:hover {
+    color: #000000;
+}
+
+ul.nav a:hover { color: #000000 !important; }
+
 
 /* Sticky footer styles
 -------------------------------------------------- */

@@ -8,25 +8,6 @@
 
 /* Toggle Styles */
 
-.navbar {
-    background-color: #1695A3;
-}
-
-.navbar.navbar-default.navbar-fixed-top li a {
-    color: #FFFFFF;
-}
-
-.navbar-default .navbar-brand {
-    color: #FFFFFF;
-    font-family: 'Lobster', cursive;
-    font-size: 250%;
-}
-
-.navbar-default .navbar-brand:hover {
-    color: #000000;
-}
-
-ul.nav a:hover { color: #000000 !important; }
 
 #wrapper {
     padding-left: 0;

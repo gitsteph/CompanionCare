@@ -187,10 +187,11 @@ def show_homedash():
             for petmed_obj in petmed_list:
                 med_name = petmed_obj.medication.name
                 companion_medname_list.append(med_name)
-            companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list))
 
-        # Retrieve all photos for each of user's companions.  #### TODO
-
+            # Retrieve all photos for each of user's companions.
+            companion_name = companion_obj.name
+            image_obj = Image.query.filter(Image.tags.match("%"+companion_name+"%")).order_by(Image.created_at.desc()).first()
+            companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list, image_obj))
 
         return render_template("index.html", user_obj=user_obj, companion_dash_list=companion_dash_list, active_alerts_list=active_alerts_list)
 

@@ -63,12 +63,14 @@
         </div>
         <div id="images">
             {% for image_obj in image_list %}
-                <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4" align="center">
-                    <div><a href="/photos/{{ image_obj.id }}"><img src="{{ image_obj.location_url }}" alt="{{ image_obj.name }}" style="width:304px; height:auto;"></a> </div>
-                    <div>{{ image_obj.name }}</div>
-                    <div>Tags: {{ image_obj.tags }}</div>
-                    <br><br>
-                </div><!-- Closing out col.-->
+                {% if image_obj.name != "pupplaceholder" %} <!-- Omits placeholder images from user photo archive.-->
+                    <div class="col-xs-8 col-sm-6 col-md-4 col-lg-4" align="center">
+                        <div><a href="/photos/{{ image_obj.id }}"><img src="{{ image_obj.location_url }}" alt="{{ image_obj.name }}" style="width:304px; height:auto;"></a> </div>
+                        <div>{{ image_obj.name }}</div>
+                        <div>Tags: {{ image_obj.tags }}</div>
+                        <br><br>
+                    </div><!-- Closing out col.-->
+                {% endif %}
             {% endfor %}
         </div><!-- Closing out images div.-->
     </div>

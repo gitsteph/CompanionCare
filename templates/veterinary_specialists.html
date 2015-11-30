@@ -34,7 +34,7 @@
                         <strong>Companions</strong>: {% for comp_obj in comp_list %}
                             <a href="/companion/name/{{ comp_obj.name }}">{{ comp_obj.name }}</a>{% if not loop.last %}, {% endif %}                    
                         {% endfor %}
-                        <div align="right"><a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
+                        <div align="right"><a href="#"><i class="fa fa-paw"></i></a>&nbsp;&nbsp;<a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
                     </div>
                     <br>
                 </div>
@@ -53,7 +53,7 @@
                 <strong>Phone Number: </strong> <span id="vetPhoneNumber">{{ vet.phone_number }} </span><br>
                 <strong>Email: </strong> <span id="vetEmail">{{ vet.email }} </span><br>
                 <strong>Address: </strong> <span id="vetAddress">{{ vet.address }} </span><br>
-                <div align="right"><a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
+                <div align="right"><a href="#"><i class="fa fa-paw"></i></a>&nbsp;&nbsp;<a href="#"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></div>
 
             </div>
             <br>
