@@ -3,36 +3,51 @@
 
 {% block content1 %}Companions & Reminders{% endblock %}
 {% block content2 %} 
-    {% if companion_obj_list %}
-        {% for companion_obj in companion_obj_list %}
-            <div class="rounded-companions">
-                <strong>Name: <a href='/companion/name/{{ companion_obj.name }}'>{{ companion_obj.name }}</a></strong>
-                <ul><li> PHOTO HERE</li>
-                    <li>User: {{ companion_obj.user_id }}</li>
-                    <li>Species: {{ companion_obj.species }}</li>
-                    <li>Gender: {{ companion_obj.gender }}</li>
-                    <li>Age: {{ companion_obj.age }} </li>
-                    <!-- If meds or alerts, render icon. -->
-                </ul>
+
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        {% if companion_obj_list %}
+            <h3 style="color: #1695A3" align="left">Companions<hr style="border-bottom: 3px solid #1695A3;"></h3>
+            {% for companion_obj in companion_obj_list %}
+                <div class="rcorners">
+                    <strong>Name: <a href='/companion/name/{{ companion_obj.name }}'>{{ companion_obj.name }}</a></strong>
+                    <ul><li> PHOTO HERE</li>
+                        <li>User: {{ companion_obj.user_id }}</li>
+                        <li>Species: {{ companion_obj.species }}</li>
+                        <li>Gender: {{ companion_obj.gender }}</li>
+                        <li>Age: {{ companion_obj.age }} </li>
+                        <!-- If meds or alerts, render icon. -->
+                    </ul>
+                </div>
+                <br><br>
+            {% endfor %}
+            <div class="col-xs-6 col-md-6 col-lg-6"><a href="/new_companion" class="btn btn-primary">Add New Companion</a></div>
+            <div class="col-xs-12 col-sm-12 hidden-md hidden-lg">
+                <br><br><hr><br><br>
             </div>
-            <br><br>
-        {% endfor %}
-    {% endif %}
-    
-    <div class="row">
-        <div class="col-xs-6 col-md-6 col-lg-6">TEST</div>
-        <div class="col-xs-6 col-md-6 col-lg-6"><a href="/new_companion">Add companion</a></div>
+        {% endif %}
     </div>
 
-<div class="col-xs-6 col-md-6 col-lg-6">
-    <div class="row">hihi</div>
-    <div class="row">hihi</div>
-    <div class="row">hihi</div>
-</div>
 
-<div class="col-xs-6 col-md-6 col-lg-6">
-    <div class="row">hihi</div>
-    <div class="row">hihi</div>
-    <div class="row">hihi</div>
-</div>
+    {% if active_alerts_list %}
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+            <div id="activeAlertsDiv" style="display: block">
+                <h3 style="color: #1695A3" align="left">Active Alerts<hr style="border-bottom: 3px solid #1695A3;"></h3>
+                {% for companion, medication, alert, alertlog in active_alerts_list %}
+                    <div>
+                        <h4><span id="medication"><center><strong><a href="/alerts">Alert ID #<span id="alertID">{{ alert.id }}</a></span><br><a href="/medications/{{ medication.name }}">{{ medication.name }}</a></strong> for <strong><a href="/companion/name/{{ companion.name }}">{{ companion.name }}</a></strong></center></h4>
+                        <strong>Next Scheduled Alert: </strong> <span id="nextAlert">{{ alertlog.scheduled_alert_datetime.strftime('%m-%d-%Y at %I:%M %p') }}</span><br>
+                        <strong>Alert Status: </strong> <span id="alertIssuedStatus">{% if alertlog.alert_issued %} Issued {% else %} Not Yet Issued {% endif %}</span><br>
+                        {% if alertlog.alert_issued %}
+                        <strong>User Response: </strong> <span id="userResponseStatus">{% if alertlog.action_taken %} {{ alertlog.action_taken }} {% else %} No response yet from user. Next alert to issue for {{ medication.name }} will be scheduled following user response.{% endif %}</span><br>{% endif %}
+                        <strong>Medication Frequency: </strong> <span id="medFrequency">Every {{ alert.alert_frequency }} hours</span><br>
+                        <strong>Alert Start: </strong> <span id="alertStart">{{ alert.alert_datetime_start.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                        <strong>Alert End: </strong> <span id="alertEnd">{{ alert.alert_datetime_end.strftime('%m-%d-%Y at %I:%M %p') }} </span><br>
+                        {% if not loop.last %}<hr> {% endif %}
+
+                    </div>
+                    <br>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

@@ -166,8 +166,8 @@ def show_homedash():
     user_obj = confirm_loggedin()
     if user_obj:
         companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
-        print companion_obj_list
-        return render_template("index.html", user_obj=user_obj, companion_obj_list=companion_obj_list)
+        active_alerts_list = get_alerts_sorted_by_time()
+        return render_template("index.html", user_obj=user_obj, companion_obj_list=companion_obj_list, active_alerts_list=active_alerts_list)
     else:
         user_attributes_dict = OrderedDict([("logged_in", False),
                                                 ("Email", ("email", "email")),
@@ -175,27 +175,11 @@ def show_homedash():
                                                 ("First Name", ("first_name", "text")),
                                                 ("Last Name", ("last_name", "text")),
                                                 ("Phone Number", ("phone", "text"))])
-            
         return render_template("home.html", user_attributes_dict=user_attributes_dict)
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register_user():
-    # if request.method == 'GET':
-    #     """Shows form to register new user."""
-    #     if confirm_loggedin():
-    #         flash('logged into account, already have account')
-    #         return redirect("/")
-    #     else:
-    #         user_attributes_dict = OrderedDict([("logged_in", False),
-    #                                             ("Email", ("email", "email")),
-    #                                             ("Password", ("password", "password")),
-    #                                             ("First Name", ("first_name", "text")),
-    #                                             ("Last Name", ("last_name", "text")),
-    #                                             ("Phone Number", ("phone", "text"))])
-    #         return render_template("registration_form.html", user_attributes_dict=user_attributes_dict)
-
-    # el
     if request.method == 'POST':
         """Processes new user registration."""
 
@@ -229,7 +213,6 @@ def register_user():
 @app.route('/user_profile/delete', methods=['POST'])
 def delete_user_profile():
     """Deletes user profile and returns to home page, logged out."""
-    # To delete a user:
     db.session.delete(User.query.filter(User.id == session["user_id"]).first())
     db.session.commit()
     flash('Your account has been deleted.')
@@ -267,9 +250,6 @@ def process_add_new_companion(value_types):
     companion_values_dict["updated_at"] = None
     new_companion = Companion(**companion_values_dict)
 
-    #### TODO: Fix minor bug--default value in form is empty string if no input provided.
-    #### Either make age required or remove default val. Age requires int.
-
     db.session.add(new_companion)
     db.session.commit()
 
@@ -277,6 +257,7 @@ def process_add_new_companion(value_types):
     companion_name = request.form.get("name")
 
     petvet_values_dict = {}
+
     # Queries for id of newly-created companion in db.
     petvet_values_dict["pet_id"] = Companion.query.filter(Companion.name == companion_name).first().id
     petvet_values_dict["vet_id"] = Veterinarian.query.filter(Veterinarian.name == "Unknown").first().id  # Unknown Vet
@@ -898,7 +879,7 @@ def edit_companion(companion_name):
 
 ##############################################################################
 
-########  Multiprocessing Daemonic Child Process ######## 
+########  Multiprocessing Daemonic Child Process ########
 
 def install_alerts_daemon(*args, **kwargs):
     p = multiprocessing.Process(target=time_alerts)

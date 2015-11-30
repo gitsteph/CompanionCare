@@ -78,6 +78,39 @@ def get_all_alerts():
     inactive_alert_dict = dd2dr(inactive_alert_dict)
     return alert_dict, inactive_alert_dict
 
+def get_alerts_sorted_by_time():
+    # Query for list of all user's companions.
+    user_companions_list = get_all_user_companions()
+
+    # Iterate through list of user's companions to generate a list of petmed IDs and related info to show user for alerts.
+    alert_list = []
+
+    # Creates a defaultdict with the companion, medication, alert, and last scheduled alertlog entry for each petmed.
+    for companion_obj in user_companions_list:
+        companion_petvets_list = companion_obj.petvets  # returns list of petvets per pet
+        for petvet in companion_petvets_list:
+            petmeds_list = petvet.petmeds  # returns list of petmeds per petvet
+            for petmed in petmeds_list:
+                medication = petmed.medication
+                alerts = petmed.alerts
+                if alerts:
+                    for alert in alerts:
+                        # Active Alerts
+                        if datetime.datetime.now() < alert.alert_datetime_end:
+                            alertlog = most_recent_alertlog_given_alert_id(alert.id)
+                            if not alertlog:
+                                print "invalid alert id", alert.id, alert
+                            alert_list.append( (companion_obj, medication, alert, alertlog) )
+                        # Inactive Alerts
+                        # else:
+                            # inactive_alert_dict[companion_obj][medication][alert] = most_recent_alertlog_given_alert_id(alert.id)
+                # PetMedications never assigned alerts
+                # elif medication not in inactive_alert_dict[companion_obj]:
+                        # inactive_alert_dict[companion_obj][medication] = objtree()
+
+
+    return sorted(alert_list,key=lambda v: v[3].scheduled_alert_datetime)
+
 
 def most_recent_alertlog_given_alert_id(alert_id):
     alertlog = db.session.query(AlertLog).filter(AlertLog.alert_id == alert_id).order_by(AlertLog.updated_at.desc()).first()
