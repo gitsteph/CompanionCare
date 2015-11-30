@@ -825,7 +825,6 @@ def find_veterinarian(location="San Francisco"):
 ################
 
 ######## NEED TO COMPLETE ROUTES BELOW ########
-#### TODO ENABLE ADDING PHOTO TO SPECIFIC PET!
 
 @app.route('/new_companion', methods=['GET', 'POST'])
 def add_new_companion():
@@ -902,7 +901,7 @@ def edit_companion(companion_name):
                 ind_update = update(Companion.__table__).where(Companion.id == companion_id).values(**values_dict)
                 db.session.execute(ind_update)
                 db.session.commit()
-                return redirect("/")  # maybe redirect back to pet detail.
+                return redirect("/")
 
 ##############################################################################
 
