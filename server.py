@@ -215,9 +215,7 @@ def register_user():
         values_dict = {val:request.form.get(val) for val in value_types}
         values_dict["created_at"] = datetime.datetime.now()
         unhashed_pw = request.form.get("password")
-        print unhashed_pw, "<<< unhashed"
         password = generate_password_hash(unhashed_pw)  # hashes and salts pw
-        print password, "<<< hashed"
         values_dict["password"] = password
 
         # Queries "users" table in database to determine whether user already has an account.
@@ -255,7 +253,7 @@ def update_user_profile():
     else:
         value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
         values_dict = {val:request.form.get(val) for val in value_types}
-        print values_dict
+
         values_dict["updated_at"] = datetime.datetime.now()
         values_dict = {k:v for k,v in values_dict.iteritems() if v}
 
@@ -288,7 +286,6 @@ def process_add_new_companion(value_types):
     # Queries for id of newly-created companion in db.
     petvet_values_dict["pet_id"] = Companion.query.filter(Companion.name == companion_name).first().id
     petvet_values_dict["vet_id"] = Veterinarian.query.filter(Veterinarian.name == "Unknown").first().id  # Unknown Vet
-    print petvet_values_dict
 
     new_petvet = PetVet(**petvet_values_dict)
     db.session.add(new_petvet)
@@ -432,7 +429,6 @@ def show_data_tree():
                         alert_id = alert.id
                         alert_dict[companion_obj][vet_obj][medication] = alert
         ddict = dd2dr(alert_dict)
-        print ddict, "<<<<DDICT"
 
         def convertToD3Form(d):
             if not isinstance(d, dict):  # if d has no children, stop recursing
@@ -454,7 +450,6 @@ def show_data_tree():
 
         user_obj.name = user_obj.first_name + ' ' + user_obj.last_name
         ddict_tree = convertToD3Form({user_obj:ddict})
-        print 'D3 Form:', ddict_tree
 
         return render_template('visualization.html', user_obj=user_obj, ddict_tree=str(ddict_tree))
 
@@ -471,7 +466,6 @@ def show_all_alerts_and_form():
     else:
         # Calls function, get_all_alerts(), from queries.py and unpacks returned values.
         alert_dict, inactive_alert_dict = get_all_alerts()
-        print inactive_alert_dict, "<<<<"
         return render_template('alerts.html', user_obj=user_obj, alert_dict=alert_dict, inactive_alert_dict=inactive_alert_dict)
 
 
@@ -502,7 +496,6 @@ def add_new_alert():
     for companion_petvet in companion_petvets_list:
         companion_petvet_ids_set.add(companion_petvet.id)
 
-    print companion_petvet_ids_set
 
     # Iterate through list of petvets to see if there is a match for a medication issued connected to petvet.
     # If no medication issued, prompt user to add medication for pet via different route.
@@ -511,9 +504,7 @@ def add_new_alert():
     petmed_obj = PetMedication.query.filter(PetMedication.medication_id == medication_id, PetMedication.petvet_id.in_(companion_petvet_ids_set)).first()
     petmed_id = petmed_obj.id
 
-    print petmed_obj, "<<< ", petmed_id
     alert_values_dict["petmed_id"] = petmed_id
-    print alert_values_dict
 
     new_alert = Alert(**alert_values_dict)
     db.session.add(new_alert)
@@ -586,7 +577,6 @@ def add_medications_for_companion(companion_name):
 
     # If PetVet relationship is not yet in the database, add it.
     vet_id = Veterinarian.query.filter(Veterinarian.name == vet_name).first().id
-    print "vet_id = ", vet_id
     petvet_obj = PetVet.query.filter(PetVet.vet_id == vet_id, PetVet.pet_id == companion_id).first()
     if petvet_obj:
         print "PetVet already in db."
@@ -616,9 +606,7 @@ def add_medications_for_companion(companion_name):
         frequency = int(request.form.get("frequency"))
         frequency_unit = request.form.get("frequency_units")
         if frequency_unit == "days":
-            print frequency_unit
             frequency = frequency * 24
-            print frequency
         values_dict["medication_id"] = int(med_id)
         values_dict["petvet_id"] = int(petvet_id)
         values_dict["frequency"] = frequency
