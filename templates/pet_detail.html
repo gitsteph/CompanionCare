@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}CompanionCare{% endblock %}
 
-{% block content1 %}{{ Heading }} Companion Profile{% endblock %}
+{% block content1 %}Companion Profile{% endblock %} <!-- TODO: Pass in name if true.-->
 
     {% if companion_attributes_dict['new_companion'] %}
         {% set add_or_update = "Add" %}
@@ -18,15 +18,15 @@
            {% macro input(name, variable, type, placeholder='', value='', size=20) -%}
                 <tr>
                     <td>
-                        {{ name }}
+                        <label>{{ name }}&nbsp;
                     </td>
                     <td>
                         <input type="{{ type }}" name="{{ variable }}" value="{{
-                        value|e }}" size="{{ size }}" placeholder="{{ placeholder }}">
+                        value|e }}" size="{{ size }}" placeholder="{{ placeholder }}" class="form-control"></label>
                     </td>
                 </tr>
             {%- endmacro %}
-
+            <h3>{{ add_or_update }} Companion Profile</h3>
             <form action="{{ action_path }}" method="POST">
                 <table>
                     {% for name, key in companion_attributes_dict.items() %}
@@ -37,30 +37,16 @@
                 </table>
                 <br>
                 <div>
-                    <input type="submit" class="btn btn-primary" value="{{ add_or_update }} Companion Profile">
+                    <input type="submit" class="btn btn-primary" value="{{ add_or_update }}">
                 </div>
-            </form>
-
-            <form action="/companion/name/{{ companion_name }}" method="POST">
-                <input type="hidden" name="delete" value="delete_companion_profile">
-                <input type="submit" class="btn btn-primary" value="delete companion profile">
             </form>
         </div><!-- Closing column.-->
         <div class="col-xs-6 col-md-6 col-lg-6">
-
-            <a href="/medications" class="btn btn-primary"> 
-                {{ add_or_update }} medications</a>
-
-            <div>
-                <a href="/veterinarians" class="btn btn-primary" >{{ add_or_update }} Veterinary Specialists</a>
-            </div>
-
-            <div>
-                <a href="/photos" class="btn btn-primary" >{{ add_or_update }} Photos</a>
-            </div>
-            
-            <!-- TODO: ONLY SHOW BELOW FOR CREATED PET PROFILES -->
-
+            <h3>Delete Companion Profile</h3>
+            <form action="/companion/name/{{ companion_name }}" method="POST">
+                <input type="hidden" name="delete" value="delete_companion_profile">
+                <input type="submit" class="btn btn-primary" value="Delete">
+            </form>
         </div><!-- Closing column.-->
     </div><!-- Closing row.-->
 

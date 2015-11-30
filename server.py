@@ -409,8 +409,6 @@ def show_data_tree():
     if not user_obj:
         return redirect("/")
     else:
-        ####### THIS NEEDS WORK!!!!! GO BACK
-
         # Query for list of all user's companions.
         user_companions_list = get_all_user_companions()
         print user_companions_list
@@ -438,7 +436,16 @@ def show_data_tree():
 
         def convertToD3Form(d):
             if not isinstance(d, dict):  # if d has no children, stop recursing
-                return [{'name':str(d.id)}]
+                most_recent_alertlog = most_recent_alertlog_given_alert_id(d.id)
+                if most_recent_alertlog.alert_issued:
+                    alert_status = "Issued, "
+                    if most_recent_alertlog.action_taken:
+                        alert_status += str(action_taken)
+                    else:
+                        alert_status += "Awaiting User Response"
+                else:
+                    alert_status = "Not Yet Issued"
+                return [{'name': 'Alert ID: '+str(d.id)+"\nNext Alert: "+str(most_recent_alertlog.scheduled_alert_datetime.strftime('%m-%d-%Y at %I:%M %p'))+"\nStatus: "+alert_status}]
 
             l = []
             for k,v in d.iteritems():  # iterate through all children of d
@@ -485,12 +492,10 @@ def add_new_alert():
     # Assign petvet id matching companion and unknown vet.  User can update with more info at a later point in time if needed.
     companion_obj = get_companion_obj(companion_name)
     companion_id = companion_obj.id
-    print "pet_id", companion_id
 
     # Gets medication obj from db.
     medication_obj = Medication.query.filter(Medication.name == medication_name).first()
     medication_id = medication_obj.id
-    print medication_id, "medID"
 
     companion_petvets_list = companion_obj.petvets  # returns list of petvets
     companion_petvet_ids_set = set()
@@ -781,7 +786,6 @@ def add_petvet(companions_list, vet_id):
 @app.route('/add_new_veterinarian', methods=["POST"])
 def add_new_veterinarian():
     """AJAX route to add new veterinarian from veterinarians route."""
-    print 'Full Form',request.form
 
     veterinarian_attributes = ["name", "office_name", "phone_number", "email", "address", "specialties"]
     new_vet_dict = {val:request.form.get(val) for val in veterinarian_attributes}
@@ -803,7 +807,6 @@ def add_new_veterinarian():
     companions = request.form.getlist("companions[]")
     if not companions:
         companions = [request.form.get("companions")]
-    print companions, "<<<<"
     if companions:
         add_petvet(companions, vet_obj.id)
     return rtrn_msg
