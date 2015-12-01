@@ -12,6 +12,6 @@ CompanionCare is an app that helps conscientious pet partners manage the care of
 Technology Stack & APIs
 ========================
 
-**Backend:** Python, Flask, PostgreSQL, SQLAlchemy, BeautifulSoup4, Amazon S3, Twilio
+**Backend:** Python, Flask, PostgreSQL, SQLAlchemy, BeautifulSoup4, Amazon S3, Twilio, Multiprocessing
 
 **Frontend:** JavaScript, jQuery, AJAX, D3.js, Chart.js, Jinja2, Bootstrap, HTML, CSS
