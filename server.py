@@ -982,6 +982,19 @@ def edit_companion(companion_name):
                 db.session.commit()
                 return redirect("/")
 
+
+# @app.route('/testing')
+# def testing():
+#     chartQueryObjList = AlertLog.query.filter().all()
+
+#     AlertLog.query.filter(AlertLog.id == Alert.query.filter(Alert.id == ))
+
+#     AlertLog.alert.petmedication.petvet.companion.user_id == session["user_id"]
+#     print chartQueryObjList
+
+#     return redirect('/')
+
+
 ##############################################################################
 
 ########  Multiprocessing Daemonic Child Process ########

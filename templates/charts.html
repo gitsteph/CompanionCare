@@ -107,19 +107,23 @@
         for (var responseDict in data.responseData) {
             if (data.responseData[responseDict]["label"] == noResponseVal) {
                 $('#noResponseFrequency').text(data.responseData[responseDict]["frequency"]);
-                $('#noResponseAlerts').text(data.responseData[responseDict]["alerts"]);
+                var alerts = (data.responseData[responseDict]["alerts"].length > 0) ? data.responseData[responseDict]["alerts"]: "None";
+                $('#noResponseAlerts').text(alerts);
             }
             else if (data.responseData[responseDict]["label"] == givenVal) {
                 $('#givenFrequency').text(data.responseData[responseDict]["frequency"]);
-                $('#givenAlerts').text(data.responseData[responseDict]["alerts"]);
+                var alerts = (data.responseData[responseDict]["alerts"].length > 0) ? data.responseData[responseDict]["alerts"]: "None";
+                $('#givenAlerts').text(alerts);
             }
             else if (data.responseData[responseDict]["label"] == forwardVal) {
                 $('#forwardedFrequency').text(data.responseData[responseDict]["frequency"]);
-                $('#forwardedAlerts').text(data.responseData[responseDict]["alerts"]);
+                var alerts = (data.responseData[responseDict]["alerts"].length > 0) ? data.responseData[responseDict]["alerts"]: "None";
+                $('#forwardedAlerts').text(alerts);
             }
             else if (data.responseData[responseDict]["label"] == delayVal) {
                 $('#delayedFrequency').text(data.responseData[responseDict]["frequency"]);
-                $('#delayedAlerts').text(data.responseData[responseDict]["alerts"]);
+                var alerts = (data.responseData[responseDict]["alerts"].length > 0) ? data.responseData[responseDict]["alerts"]: "None";
+                $('#delayedAlerts').text(alerts);
             }
         }
 
