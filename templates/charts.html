@@ -95,7 +95,9 @@
             tooltipTemplate: "<%= label %>: <%= value %>%"
         };
         var ctx_donut = $("#donutChart").get(0).getContext("2d");
-
+        for (var responseDict in data.responseData) { // quick fix to set unique 'value' fields
+            data.responseData[responseDict]["value"] = responseDict;
+        }
         var myDonutChart = new Chart(ctx_donut).Doughnut(data.responseData, options);
         $('#donutLegend').html(myDonutChart.generateLegend());
 
