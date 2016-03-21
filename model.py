@@ -291,9 +291,9 @@ def connect_to_db(app):
     """Connect the database to our Flask app."""
 
     DATABASE_URL = os.environ.get("DATABASE_URL",
-                                  "postgresql://localhost")
+                                  "postgresql://localhost/companions")
     # Configure to use PostgreSQL database.
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL+'/companions'
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.app = app
