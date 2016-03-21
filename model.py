@@ -3,7 +3,6 @@ import os
 
 db = SQLAlchemy()
 
-
 class User(db.Model):
     """User of site."""
 
@@ -298,6 +297,8 @@ def connect_to_db(app):
 
     db.app = app
     db.init_app(app)
+    db.create_all()
+
 
 if __name__ == "__main__":
     # If module is run interactively, user will be able to work with db directly.
