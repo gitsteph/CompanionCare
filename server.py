@@ -1010,14 +1010,16 @@ def install_alerts_daemon(*args, **kwargs):
 if __name__ == "__main__":
 
     connect_to_db(app)
+    debug = False
 
     # only run this once (on reload if in debug, or normal load if not debug)
-    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    print app.debug, os.environ.get("WERKZEUG_RUN_MAIN")
+    if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         install_alerts_daemon()
 
     PORT = int(os.environ.get("PORT", 5000))
 
-    app.run(debug=False, host="0.0.0.0", port=PORT)
+    app.run(debug=debug, host="0.0.0.0", port=PORT)
 
     # To use the DebugToolbar, uncomment below:
     # DebugToolbarExtension(app)
