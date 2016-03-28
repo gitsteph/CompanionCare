@@ -82,7 +82,11 @@ def retrieve_user_response_and_reply():
         user_response = request.values.get('Body', None)
         user_response = user_response.lower()
         user_from = user_from.strip('+1')
-        user_name = db.session.query(User).filter(User.phone == user_from).first().first_name
+        user_name = db.session.query(User).filter(User.phone == user_from).first()
+        if not user_name:
+            user_name = "Hello"
+        else:
+            user_name = user_name.first_name
 
         # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
         # and saves the desired action.  This will then trigger setting the next alert.
