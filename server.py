@@ -19,7 +19,6 @@ import boto
 from boto.s3.key import Key
 import boto.s3.connection
 import os
-import traceback
 
 
 
@@ -77,32 +76,29 @@ def add_unknown_vet():
 ######## ALERTS MULTIPROCESSING SEND & RESPOND ########
 @app.route('/sms', methods=["POST"])
 def retrieve_user_response_and_reply():
-    try:
-        user_from = request.values.get('From', None)
-        user_response = request.values.get('Body', None)
-        user_response = user_response.lower()
-        user_from = user_from.strip('+1')
-        user_name = db.session.query(User).filter(User.phone == user_from).first()
-        if not user_name:
-            user_name = "Hello"
-        else:
-            user_name = user_name.first_name
+    user_from = request.values.get('From', None)
+    user_response = request.values.get('Body', None)
+    user_response = user_response.lower()
+    user_from = user_from.strip('+1')
+    user_name = db.session.query(User).filter(User.phone == user_from).first()
+    if not user_name:
+        user_name = "Hello"
+    else:
+        user_name = user_name.first_name
 
-        # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
-        # and saves the desired action.  This will then trigger setting the next alert.
-        user_response = user_response.split()
-        alert_id = user_response[0]
-        action_taken = user_response[1]
+    # Given the alert_id and action_taken from user_response, queries the database for the alertlog entry
+    # and saves the desired action.  This will then trigger setting the next alert.
+    user_response = user_response.split()
+    alert_id = user_response[0]
+    action_taken = user_response[1]
 
-        # Processes user_response and returns the datetime of next scheduled alert.
-        new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
-        new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
-        companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
-        medication_name = new_alertlog_obj.alert.petmedication.medication.name
-        missed_dose = new_alertlog_obj.alert.petmedication.medication.missed_dose
-        return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, medication_name, missed_dose, user_name)
-    except:
-        traceback.print_exc()
+    # Processes user_response and returns the datetime of next scheduled alert.
+    new_scheduled_alert, new_alertlog_obj, user_response = process_user_response(alert_id, action_taken)
+    new_scheduled_alert_str = new_scheduled_alert.strftime('%I:%M %p on %x')
+    companion_name = new_alertlog_obj.alert.petmedication.petvet.companion.name
+    medication_name = new_alertlog_obj.alert.petmedication.medication.name
+    missed_dose = new_alertlog_obj.alert.petmedication.medication.missed_dose
+    return send_messages.reply_to_user(companion_name, new_scheduled_alert_str, user_response, medication_name, missed_dose, user_name)
 
 
 
