@@ -19,6 +19,7 @@ import boto
 from boto.s3.key import Key
 import boto.s3.connection
 import os
+import traceback
 
 
 
@@ -170,47 +171,50 @@ def logout(deleted):
 ######## HOME, DASHBOARD, USER REGISTRATION, UPDATE, DELETE USER ########
 @app.route('/', methods=['GET'])
 def show_homedash():
-    """If not logged in, will show homepage.  Else, will show dashboard."""
-    user_obj = confirm_loggedin()
-    if user_obj:
-        companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
+    try:
+        """If not logged in, will show homepage.  Else, will show dashboard."""
+        user_obj = confirm_loggedin()
+        if user_obj:
+            companion_obj_list = Companion.query.filter(Companion.user_id == session['user_id']).all()
 
-        # Retrieve all active alerts for all user's companions.
-        active_alerts_list = get_alerts_sorted_by_time()
+            # Retrieve all active alerts for all user's companions.
+            active_alerts_list = get_alerts_sorted_by_time()
 
-        companion_dash_list = []
-        # Retrieve all medications for each of user's companions.
-        for companion_obj in companion_obj_list:
-            companion_petvet_list = db.session.query(PetVet).filter(PetVet.pet_id == companion_obj.id).all()
+            companion_dash_list = []
+            # Retrieve all medications for each of user's companions.
+            for companion_obj in companion_obj_list:
+                companion_petvet_list = db.session.query(PetVet).filter(PetVet.pet_id == companion_obj.id).all()
 
-            # Retrieve all vets for each of user's companions.
-            companion_vetname_list = []
-            for petvet in companion_petvet_list:
-                vet_name = petvet.veterinarian.name
-                companion_vetname_list.append(vet_name)
+                # Retrieve all vets for each of user's companions.
+                companion_vetname_list = []
+                for petvet in companion_petvet_list:
+                    vet_name = petvet.veterinarian.name
+                    companion_vetname_list.append(vet_name)
 
-            # Retrieve all meds for each of user's companions.
-            petmed_list = get_petmed_list_by_companion(companion_obj.id)
-            companion_medname_list = []
-            for petmed_obj in petmed_list:
-                med_name = petmed_obj.medication.name
-                companion_medname_list.append(med_name)
+                # Retrieve all meds for each of user's companions.
+                petmed_list = get_petmed_list_by_companion(companion_obj.id)
+                companion_medname_list = []
+                for petmed_obj in petmed_list:
+                    med_name = petmed_obj.medication.name
+                    companion_medname_list.append(med_name)
 
-            # Retrieve all photos for each of user's companions.
-            companion_name = companion_obj.name
-            image_obj = Image.query.filter(Image.tags.match("%"+companion_name+"%")).order_by(Image.created_at.desc()).first()
-            companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list, image_obj))
+                # Retrieve all photos for each of user's companions.
+                companion_name = companion_obj.name
+                image_obj = Image.query.filter(Image.tags.match("%"+companion_name+"%")).order_by(Image.created_at.desc()).first()
+                companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list, image_obj))
 
-        return render_template("index.html", user_obj=user_obj, companion_dash_list=companion_dash_list, active_alerts_list=active_alerts_list)
+            return render_template("index.html", user_obj=user_obj, companion_dash_list=companion_dash_list, active_alerts_list=active_alerts_list)
 
-    else:
-        user_attributes_dict = OrderedDict([("logged_in", False),
-                                                ("Email", ("email", "email")),
-                                                ("Password", ("password", "password")),
-                                                ("First Name", ("first_name", "text")),
-                                                ("Last Name", ("last_name", "text")),
-                                                ("Phone Number", ("phone", "text"))])
-        return render_template("home.html", user_attributes_dict=user_attributes_dict)
+        else:
+            user_attributes_dict = OrderedDict([("logged_in", False),
+                                                    ("Email", ("email", "email")),
+                                                    ("Password", ("password", "password")),
+                                                    ("First Name", ("first_name", "text")),
+                                                    ("Last Name", ("last_name", "text")),
+                                                    ("Phone Number", ("phone", "text"))])
+            return render_template("home.html", user_attributes_dict=user_attributes_dict)
+    except:
+        traceback.print_exc()
 
 
 @app.route('/register', methods=['POST'])
