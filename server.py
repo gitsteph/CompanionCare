@@ -97,6 +97,8 @@ def retrieve_user_response_and_reply():
 
 
 def time_alerts():
+    connect_to_db(app)
+    
     while True:
         current_datetime = datetime.datetime.now()
         # query for alerts with past datetimes that have not yet been issued.
@@ -1009,13 +1011,14 @@ def install_alerts_daemon(*args, **kwargs):
 
 if __name__ == "__main__":
 
-    connect_to_db(app)
+    
     debug = False
 
     # only run this once (on reload if in debug, or normal load if not debug)
-    print app.debug, os.environ.get("WERKZEUG_RUN_MAIN")
     if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         install_alerts_daemon()
+
+    connect_to_db(app)
 
     PORT = int(os.environ.get("PORT", 5000))
 
