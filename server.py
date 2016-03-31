@@ -200,7 +200,7 @@ def show_homedash():
 
                 # Retrieve all photos for each of user's companions.
                 companion_name = companion_obj.name
-                image_obj = Image.query.filter(Image.tags.match(companion_name)).order_by(Image.created_at.desc()).first()
+                image_obj = Image.query.filter(Image.tags.contains(companion_name)).order_by(Image.created_at.desc()).first()
                 companion_dash_list.append((companion_obj, companion_vetname_list, companion_medname_list, image_obj))
 
             return render_template("index.html", user_obj=user_obj, companion_dash_list=companion_dash_list, active_alerts_list=active_alerts_list)
@@ -282,6 +282,7 @@ def process_add_new_companion(value_types):
     # Requests information about each companion.
     add_unknown_vet()
     companion_values_dict = {val:request.form.get(val) for val in value_types}
+    companion_values_dict = {k:v for k,v in companion_values_dict.iteritems() if v}
     companion_values_dict["user_id"] = session["user_id"]
     companion_values_dict["created_at"] = datetime.datetime.now()
     companion_values_dict["updated_at"] = None
