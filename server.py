@@ -1027,7 +1027,7 @@ def install_alerts_daemon(*args, **kwargs):
 
 if __name__ == "__main__":
 
-    debug = True
+    debug = False
 
     # only run this once (on reload if in debug, or normal load if not debug)
     if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
