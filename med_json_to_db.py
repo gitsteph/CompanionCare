@@ -55,9 +55,6 @@ def write_med_to_db():
 
 
 if __name__ == "__main__":
-    app.debug = True
 
     connect_to_db(app)
-    app.run()
-
     write_med_to_db()
