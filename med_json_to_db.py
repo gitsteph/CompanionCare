@@ -24,7 +24,6 @@ def strip_and_stringify_med_vals(med_values_list):
     return med_val_str
 
 
-@app.route('/')
 def write_med_to_db():
     for med_name, med_attribute_dict in all_meds_list:
         med_dict = {}
@@ -60,3 +59,5 @@ if __name__ == "__main__":
 
     connect_to_db(app)
     app.run()
+
+    write_med_to_db()
