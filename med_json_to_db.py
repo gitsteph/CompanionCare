@@ -47,6 +47,7 @@ def write_med_to_db():
             elif key_attr_value == "med_url":
                 med_dict["petmd_url"] = str(med_values_list)
             med_dict["created_at"] = datetime.datetime.now()
+            med_dict["created_by"] = -1
         if med_dict["name"] != "Selegiline":
             new_med = Medication(**med_dict)
             db.session.add(new_med)

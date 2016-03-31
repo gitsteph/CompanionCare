@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from model import connect_to_db, db, User, Companion, Image, PetVet, Veterinarian, PetMedication, Medication, Alert, AlertLog
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug import secure_filename
-from sqlalchemy import update, delete, exc
+from sqlalchemy import update, delete, exc, or_
 from alerts import *
 from queries import *
 from collections import OrderedDict, defaultdict
@@ -543,7 +543,7 @@ def show_all_medications():
     if not user_obj:
         redirect('/')
     else:
-        medications = Medication.query.order_by(Medication.name).all()
+        medications = Medication.query.filter(or_(Medication.created_by == -1, Medication.created_by == session.get("user_id"))).order_by(Medication.name).all()
         # TODO: MAY WANT TO SORT BASED ON name.lower() b/c ascii alpha is weird.
 
         # Splitting the med_name_list into three mini-lists to enable easy display in columns on the front-end.
@@ -681,6 +681,7 @@ def add_medication_todb():
 
     medication_attributes_list = ['name', 'general_description', 'how_it_works', 'missed_dose', 'storage_information', 'side_effects_and_drug_interactions']
     new_med_dict = {val:request.form.get(val) for val in medication_attributes_list}
+    new_med_dict["created_by"] = session.get("user_id")
     new_med_dict["created_at"] = datetime.datetime.now()
 
     new_med = Medication(**new_med_dict)
@@ -692,13 +693,17 @@ def add_medication_todb():
 
 @app.route('/medications/directory_delete/<med_name>', methods=['POST'])
 def delete_medication_fromdb(med_name):
-    try:
-        db.session.delete(Medication.query.filter(Medication.name == med_name).first())
-    except:  # TODO: fix this in a better way.  Error because of model db cascade alls.
-        return "Cannot delete medication as it is already assigned to companions."
+    print session.get("user_id")
+    if Medication.query.filter(Medication.name == med_name).filter(Medication.created_by == session.get("user_id")).first():
+        try:
+            db.session.delete(Medication.query.filter(Medication.name == med_name).first())
+        except:  # TODO: fix this in a better way.  Error because of model db cascade alls.
+            return "Cannot delete medication as it is already assigned to companions."
 
-    db.session.commit()
-    return "The medication entry has been deleted."
+        db.session.commit()
+        return "The medication entry has been deleted."
+    else:
+        return "This medication cannot be deleted by individual users.  Users may only delete medications they added to the database.  To suggest a deletion for this medication, contact the administrator (admin@ccare.com)."
 
 
 ################
@@ -1022,7 +1027,7 @@ def install_alerts_daemon(*args, **kwargs):
 
 if __name__ == "__main__":
 
-    debug = False
+    debug = True
 
     # only run this once (on reload if in debug, or normal load if not debug)
     if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":

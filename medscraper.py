@@ -110,7 +110,7 @@ with open('medications.json', 'r') as fp:
 # all_meds_list = [('/pet-medication/pancreatic-enzymes', 'Pancreatic Enzymes')]
 all_meds_list = get_meds_list()
 
-rescrape = False  # set this to True if you want to re-download+scrape medicines that are already in the json
+rescrape = True  # set this to True if you want to re-download+scrape medicines that are already in the json
 
 for (med_url, med_name) in all_meds_list:
     print 'grabbing', med_name

@@ -161,6 +161,7 @@ class Medication(db.Model):
     storage_information = db.Column(db.String, nullable=True)
     side_effects_and_drug_interactions = db.Column(db.String, nullable=True)
     petmd_url = db.Column(db.String, nullable=True)
+    created_by = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False)
     updated_at = db.Column(db.DateTime, nullable=True)
 

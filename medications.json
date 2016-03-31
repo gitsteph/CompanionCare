@@ -689,7 +689,7 @@
             "",
             "",
             "",
-            "LimelightPlayerUtil.initEmbed('limelight_player_799607');",
+            "LimelightPlayerUtil.initEmbed('limelight_player_327185');",
             "",
             "\u00a0"
         ],
@@ -1714,7 +1714,7 @@
         "Possible Side Effects": [
             "Deracoxib (Deramaxx) like other NSAIDS may cause some side effects. The most common side effects of Deracoxib involve digestive issues such as vomiting and decrease appetite. Other possible side effects of Deracoxib include:",
             "",
-            "Change in bowl movements (diarrhea, or black, tarry or bloody stools)",
+            "Change in bowel movements (diarrhea, or black, tarry or bloody stools)",
             "Change in behavior (decreased or increased activity level, incoordination, seizure, or aggression)",
             "Jaundice (yellowing of gums, skin or whites of eyes)",
             "Increase water consumption or urination changes (frequency, color, or smell)",
@@ -1915,7 +1915,6 @@
             "* Loss of appetite",
             "* Vomiting",
             "* Diarrhea",
-            "",
             "Difloxacin may react with these drugs:",
             "* Aminoglycoside antibiotics",
             "* Antacids",
@@ -1925,12 +1924,10 @@
             "* Cyclosporine",
             "* Nitrourantoin",
             "* Sucralfate",
-            "* TheophyllineDO NOT ADMINISTER THIS DRUG TO PREGNANT PETS - Difloxacin has detrimental effects on growing joints and bones.",
-            "",
-            "DO NOT ADMINISTER THIS DRUG TO DOGS UNDER ONE YEAR OF AGE - Difloxacin has detrimental effects on growing joints and bones. ",
-            "",
+            "* Theophylline",
+            "DO NOT ADMINISTER THIS DRUG TO PREGNANT PETS - Difloxacin has detrimental effects on growing joints and bones.",
+            "DO NOT ADMINISTER THIS DRUG TO DOGS UNDER ONE YEAR OF AGE - Difloxacin has detrimental effects on growing joints and bones.",
             "USE CAUTION WHEN ADMINISTERING THIS DRUG TO PETS WITH CENTRAL NERVOUS SYSTEM DISORDERS",
-            "",
             "USE CAUTION WHEN ADMINISTERING THIS DRUG TO CATS - Use with extreme caution and only with the recommendation of an experienced veterinarian when giving this drug to cats, especially those with pre-existing kidney failure. Difloxacin has a tendency to consistently cause loss of appetite and vomiting in cats."
         ],
         "STORAGE INFORMATION:": [],
@@ -3819,7 +3816,7 @@
             "",
             "",
             "",
-            "LimelightPlayerUtil.initEmbed('limelight_player_264181');",
+            "LimelightPlayerUtil.initEmbed('limelight_player_339556');",
             "",
             "\u00a0"
         ],
@@ -4632,7 +4629,7 @@
             "",
             "",
             "",
-            "LimelightPlayerUtil.initEmbed('limelight_player_889144');",
+            "LimelightPlayerUtil.initEmbed('limelight_player_875115');",
             "",
             "\u00a0"
         ],
@@ -5555,7 +5552,7 @@
             "",
             "",
             "",
-            "LimelightPlayerUtil.initEmbed('limelight_player_198931');",
+            "LimelightPlayerUtil.initEmbed('limelight_player_709715');",
             "",
             "\u00a0"
         ],
