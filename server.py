@@ -263,7 +263,7 @@ def update_user_profile():
     if not user_obj:
         return redirect("/")
     else:
-        value_types = ["email", "password", "first_name", "last_name", "zipcode", "phone"]
+        value_types = ["email", "password", "first_name", "last_name", "phone"]
         values_dict = {val:request.form.get(val) for val in value_types}
 
         values_dict["updated_at"] = datetime.datetime.now()
